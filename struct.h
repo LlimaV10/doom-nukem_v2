@@ -94,7 +94,10 @@ typedef struct	s_save_wall
 {
 	int		x;
 	float	len;
+	float	plen;
 	int		wall;
+	int		zu;
+	int		zd;
 	struct s_save_wall	*next;
 }				t_save_wall;
 

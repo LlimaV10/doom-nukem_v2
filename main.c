@@ -206,7 +206,6 @@ void	get_screen_line(t_sdl *iw, float len)
 
 	if (iw->d.view.a == 0.0f)
 	{
-		printf("1\n");
 		iw->d.screen_point.y = (float)iw->p.y;
 		iw->d.screen_point.x = (float)iw->p.x + ((iw->d.view_dir.x > 0) ? len : -len);
 		iw->d.screen.b = 0.0f;
@@ -215,7 +214,6 @@ void	get_screen_line(t_sdl *iw, float len)
 	}
 	else if (iw->d.view.b == 0.0f)
 	{
-		printf("2\n");
 		iw->d.screen_point.x = (float)iw->p.x;
 		iw->d.screen_point.y = (float)iw->p.y + ((iw->d.view_dir.y > 0) ? len : -len);
 		iw->d.screen.a = 0.0f;
@@ -276,31 +274,61 @@ void	get_direction(t_sdl *iw)
 		iw->d.view_dir.y = 1;
 }
 
-void	add_wall1(t_sdl *iw, int x, float len, int wall)
+void	add_wall1(t_sdl *iw, t_save_wall *tmp)
 {
-	t_save_wall	*tmp;
+	t_save_wall	*tmp2;
 
-	tmp = (t_save_wall *)malloc(sizeof(t_save_wall));
-	tmp->x = x;
-	tmp->len = len;
-	tmp->wall = wall;
-	tmp->next = 0;
-	if (iw->d.vw == 0)
+	if (iw->d.vw == 0 || iw->d.vw->len > tmp->len)
+	{
+		tmp->next = iw->d.vw;
 		iw->d.vw = tmp;
+	}
 	else
-		free(tmp); ////////////////
+	{
+		tmp2 = iw->d.vw;
+		while (tmp2->next != 0 && tmp2->next->len <= tmp->len)
+			tmp2 = tmp2->next;
+		tmp->next = tmp2->next->next;
+		tmp2->next = tmp;
+	}
+}
+
+int		get_floor_z(t_sdl *iw, int x, int y)
+{
+	if (iw->sectors[iw->d.cs].fr.n == 0)
+		return (iw->sectors[iw->d.cs].fr.z);
+	else
+		return ((iw->sectors[iw->d.cs].fr.n->a * (float)x + iw->sectors[iw->d.cs].fr.n->b *
+			(float)y + iw->sectors[iw->d.cs].fr.n->d) / (-iw->sectors[iw->d.cs].fr.n->c));
+}
+
+int		get_ceil_z(t_sdl *iw, int x, int y)
+{
+	if (iw->sectors[iw->d.cs].cl.n == 0)
+		return (iw->sectors[iw->d.cs].cl.z);
+	else
+		return ((iw->sectors[iw->d.cs].cl.n->a * (float)x + iw->sectors[iw->d.cs].cl.n->b *
+			(float)y + iw->sectors[iw->d.cs].cl.n->d) / (-iw->sectors[iw->d.cs].cl.n->c));
 }
 
 void	get_visible_walls2(t_sdl *iw, float clen, int wall)
 {
-	float	side;
-	int		x;
-
+	float		side;
+	t_save_wall	*w;
+	
+	w = (t_save_wall *)malloc(sizeof(t_save_wall));
 	side = iw->d.view.a * (float)iw->walls[wall].x + iw->d.view.b * (float)iw->walls[wall].y + iw->d.view.c;
 	if ((iw->d.view_dir.x < 0 && side < 0) || (iw->d.view_dir.x > 0 && side > 0))
-		x = WINDOW_W / 2 - (int)((float)WINDOW_W * clen / iw->d.screen_length / 2.0f);
+		w->x = WINDOW_W / 2 + (int)((float)WINDOW_W * clen / iw->d.screen_length / 2.0f);
 	else
-		x = WINDOW_W / 2 + (int)((float)WINDOW_W * clen / iw->d.screen_length / 2.0f);
+		w->x = WINDOW_W / 2 - (int)((float)WINDOW_W * clen / iw->d.screen_length / 2.0f);
+	w->len = sqrtf(powf((float)(iw->p.x - iw->walls[wall].x), 2.0f) +  powf((float)(iw->p.y - iw->walls[wall].y), 2.0f));
+	w->plen = fabsf(iw->d.screen.a * (float)iw->walls[wall].x + iw->d.screen.b * (float)iw->walls[wall].y + iw->d.screen.c) /
+				sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
+	w->wall = wall;
+	w->zu = get_ceil_z(iw, iw->walls[wall].x, iw->walls[wall].y);
+	w->zd = get_floor_z(iw, iw->walls[wall].x, iw->walls[wall].y);
+	add_wall1(iw, x, len, wall);
 }
 
 void	get_visible_walls(t_sdl *iw)
@@ -310,7 +338,6 @@ void	get_visible_walls(t_sdl *iw)
 	t_point2d	p;
 
 	wall = iw->sectors[iw->d.cs].sw;
-	printf("xdir %d\n", iw->d.view_dir.x);
 	while (wall < iw->sectors[iw->d.cs].sw + iw->sectors[iw->d.cs].nw)
 	{
 		side = iw->d.screen.a * (float)iw->walls[wall].x + iw->d.screen.b * (float)iw->walls[wall].y + iw->d.screen.c;
@@ -325,9 +352,35 @@ void	get_visible_walls(t_sdl *iw)
 				/*printf("x %d y %d len %f\n", iw->walls[wall].x, iw->walls[wall].y, side);*/
 		}
 		wall++;
-
 	}
+}
 
+void	get_left_right_visible_walls(t_sdl *iw)
+{
+	float	angle;
+	float	na;
+	t_line2d	nl;
+
+	angle = atanf(iw->d.screen_length / 1.0f);
+	na = iw->p.rot - angle;
+	if (na < 0.0f)
+		na += G360;
+	na = get_k_angle(na);
+	nl.a = tanf(na);
+	nl.b = -1.0f;
+	nl.c = (float)iw->p.y - iw->d.view.a * (float)iw->p.x;
+
+	/// LEFT
+
+	na = iw->p.rot + angle;
+	if (na > G360)
+		na -= G360;
+	na = get_k_angle(na);
+	nl.a = tanf(na);
+	nl.b = -1.0f;
+	nl.c = (float)iw->p.y - iw->d.view.a * (float)iw->p.x;
+
+	// RIGHT
 }
 
 void	draw(t_sdl *iw)
@@ -340,7 +393,15 @@ void	draw(t_sdl *iw)
 	get_screen_line(iw, 1.0f);
 	iw->d.vw = 0;
 	get_visible_walls(iw);
-
+	get_left_right_visible_walls(iw);
+	// t_save_wall *tmp;
+	// tmp = iw->d.vw;
+	// while (tmp != 0)
+	// {
+	// 	printf("x %d len %f wall %d\n", tmp->x, tmp->len, tmp->wall);
+	// 	tmp = tmp->next;
+	// }
+	// printf("\n\n");
 }
 
 void	get_def(t_sdl *iw)
@@ -348,7 +409,7 @@ void	get_def(t_sdl *iw)
 	iw->p.x = 500;
 	iw->p.y = 500;
 	iw->p.z = 200;
-	iw->p.rot = G90 * 30 / 90;
+	iw->p.rot = G90 * 2 / 90;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;
 }
