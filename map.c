@@ -26,13 +26,13 @@ void	get_map(t_sdl *iw)
 	iw->walls = (t_wall *)malloc(4 * sizeof(t_wall));
 	int i = 0;
 	new_wall(&(iw->walls[i++]), 0, 0 ,-1, -1);
-	new_wall(&(iw->walls[i]), 2000, 0, -1, -1);
+	new_wall(&(iw->walls[i]), 0, 2000, -1, -1);
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
 	new_wall(&(iw->walls[i]), 2000, 2000, -1, -1);
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
-	new_wall(&(iw->walls[i]), 0, 2000, -1, -1);
+	new_wall(&(iw->walls[i]), 2000, 0, -1, -1);
 	iw->walls[i - 1].next = &iw->walls[i];
 	iw->walls[i].next = &iw->walls[0];
 }

@@ -274,7 +274,7 @@ void	get_direction(t_sdl *iw)
 		iw->d.view_dir.y = 1;
 }
 
-void	add_wall1(t_sdl *iw, t_save_wall *tmp)
+void	add_wall(t_sdl *iw, t_save_wall *tmp)
 {
 	t_save_wall	*tmp2;
 
@@ -288,7 +288,8 @@ void	add_wall1(t_sdl *iw, t_save_wall *tmp)
 		tmp2 = iw->d.vw;
 		while (tmp2->next != 0 && tmp2->next->len <= tmp->len)
 			tmp2 = tmp2->next;
-		tmp->next = tmp2->next->next;
+		if (tmp2->next != 0)
+			tmp->next = tmp2->next->next;
 		tmp2->next = tmp;
 	}
 }
@@ -328,7 +329,8 @@ void	get_visible_walls2(t_sdl *iw, float clen, int wall)
 	w->wall = wall;
 	w->zu = get_ceil_z(iw, iw->walls[wall].x, iw->walls[wall].y);
 	w->zd = get_floor_z(iw, iw->walls[wall].x, iw->walls[wall].y);
-	add_wall1(iw, x, len, wall);
+	w->next = 0;
+	add_wall(iw, w);
 }
 
 void	get_visible_walls(t_sdl *iw)
@@ -355,6 +357,92 @@ void	get_visible_walls(t_sdl *iw)
 	}
 }
 
+int		cross_two_lines(t_line2d *l1, t_line2d *l2, t_intpoint2d *p)
+{
+	t_line2d	*tmp;
+
+	if (l1->a == l2->a && l1->b == l2->b)
+		return (0);
+	if (l1->a == 0 && l2->a != 0)
+	{
+		tmp = l1;
+		l1 = l2;
+		l2 = tmp;
+	}
+	else if (l1->a == 0)
+		return (0);
+	p->y = (l2->a * l1->c - l1->a * l2->c) / (l1->a * l2->b - l2->a * l1->b);
+	p->x = (l1->b * p->y + l1->c) / (-l1->a);
+	return (1);
+}
+
+int		ft_min(int p1, int p2)
+{
+	if (p1 < p2)
+		return (p1);
+	return (p2);
+}
+
+int		ft_max(int p1, int p2)
+{
+	if (p1 >= p2)
+		return (p1);
+	return (p2);
+}
+
+int		point_in_front_and_on_wall(t_sdl *iw, t_intpoint2d *p, int wall)
+{
+	float	side;
+
+	side = iw->d.screen.a * p->x + iw->d.screen.b * p->y + iw->d.screen.c;
+	if ((iw->d.view_dir.x < 0 && side < 0) || (iw->d.view_dir.x > 0 && side > 0))
+		if ((p->x >= ft_min(iw->walls[wall].x, iw->walls[wall].next->x) && p->x <= ft_max(iw->walls[wall].x, iw->walls[wall].next->x))
+			&& (p->y >= ft_min(iw->walls[wall].y, iw->walls[wall].next->y) && p->y <= ft_max(iw->walls[wall].y, iw->walls[wall].next->y)))
+			return (1);
+	return (0);
+}
+
+int		visible_wall(t_sdl *iw, int wall)
+{
+	if ((iw->p.x - iw->walls[wall].x) * (iw->walls[wall].next->y - iw->walls[wall].y) -
+			(iw->p.y - iw->walls[wall].y) * (iw->walls[wall].next->x - iw->walls[wall].x) >= 0)
+		return (1);
+	return (0);
+}
+
+void	add_lr_wall(t_sdl *iw, t_intpoint2d *p, int wall, int x)
+{
+	t_save_wall	*tmp;
+
+	tmp = (t_save_wall *)malloc(sizeof(t_save_wall));
+	tmp->x = x;
+	tmp->wall = wall;
+	tmp->len = sqrtf(powf((float)(iw->p.x - p->x), 2.0f) + powf((float)(iw->p.y - p->y), 2.0f));
+	tmp->plen = fabsf(iw->d.screen.a * (float)p->x + iw->d.screen.b * (float)p->y + iw->d.screen.c) /
+				sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
+	tmp->zd = get_floor_z(iw, p->x, p->y);
+	tmp->zd = get_ceil_z(iw, p->x, p->y);
+	tmp->next = 0;
+	add_wall(iw, tmp);
+}
+
+void	get_all_intersection_line(t_sdl *iw, t_line2d *nl, int right)
+{
+	int		sec;
+	int		wall;
+	t_intpoint2d	p;
+
+	sec = -1;
+	while (++sec < iw->v.sc)
+	{
+		wall = iw->sectors[sec].sw - 1;
+		while (++wall < iw->sectors[sec].sw + iw->sectors[sec].nw)
+			if (visible_wall(iw, wall) && cross_two_lines(nl, &iw->walls[wall].l, &p)
+				&& point_in_front_and_on_wall(iw, &p, wall))
+				add_lr_wall(iw, &p, wall + right, right * WINDOW_W);
+	}
+}
+
 void	get_left_right_visible_walls(t_sdl *iw)
 {
 	float	angle;
@@ -371,6 +459,7 @@ void	get_left_right_visible_walls(t_sdl *iw)
 	nl.c = (float)iw->p.y - iw->d.view.a * (float)iw->p.x;
 
 	/// LEFT
+	get_all_intersection_line(iw, &nl, 0);
 
 	na = iw->p.rot + angle;
 	if (na > G360)
@@ -381,6 +470,7 @@ void	get_left_right_visible_walls(t_sdl *iw)
 	nl.c = (float)iw->p.y - iw->d.view.a * (float)iw->p.x;
 
 	// RIGHT
+	get_all_intersection_line(iw, &nl, 1);
 }
 
 void	draw(t_sdl *iw)
@@ -394,14 +484,14 @@ void	draw(t_sdl *iw)
 	iw->d.vw = 0;
 	get_visible_walls(iw);
 	get_left_right_visible_walls(iw);
-	// t_save_wall *tmp;
-	// tmp = iw->d.vw;
-	// while (tmp != 0)
-	// {
-	// 	printf("x %d len %f wall %d\n", tmp->x, tmp->len, tmp->wall);
-	// 	tmp = tmp->next;
-	// }
-	// printf("\n\n");
+	t_save_wall *tmp;
+	tmp = iw->d.vw;
+	while (tmp != 0)
+	{
+		printf("x %d len %f wall %d\n", tmp->x, tmp->len, tmp->wall);
+		tmp = tmp->next;
+	}
+	printf("\n\n");
 }
 
 void	get_def(t_sdl *iw)
