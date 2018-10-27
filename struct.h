@@ -90,6 +90,27 @@ typedef struct	s_intpoint2d
 	int		y;
 }				t_intpoint2d;
 
+typedef struct	s_draw_line
+{
+	int			x0;
+	int			y0;
+	int			x1;
+	int			y1;
+}				t_draw_line;
+
+typedef struct	s_brez
+{
+	int			x;
+	int			y;
+	int			dx;
+	int			dy;
+	int			sx;
+	int			sy;
+	int			k;
+	int			color;
+	t_sdl		*iw;
+}				t_brez;
+
 typedef struct	s_save_wall
 {
 	int		x;
@@ -111,10 +132,14 @@ typedef struct	s_draw
 	t_point2d	screen_point;
 	// l / 2, where l - screen length
 	float		screen_length;
+	// Player Screen Side
+	float		pss;
 	// Current Sector
 	int			cs;
 	// Visible Walls
 	t_save_wall	*vw;
+	int			*wallTop;
+	int			*wallBot;
 }				t_draw;
 
 typedef struct	s_sdl
