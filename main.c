@@ -326,7 +326,7 @@ void	get_visible_walls2(t_sdl *iw, float clen, int wall)
 	w->len = sqrtf(powf((float)(iw->p.x - iw->walls[wall].x), 2.0f) +  powf((float)(iw->p.y - iw->walls[wall].y), 2.0f));
 	w->plen = fabsf(iw->d.screen.a * (float)iw->walls[wall].x + iw->d.screen.b * (float)iw->walls[wall].y + iw->d.screen.c) /
 				sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
-	w->wall = wall;
+	w->wall = &iw->walls[wall];
 	w->zu = get_ceil_z(iw, iw->walls[wall].x, iw->walls[wall].y);
 	w->zd = get_floor_z(iw, iw->walls[wall].x, iw->walls[wall].y);
 	w->next = 0;
@@ -372,7 +372,10 @@ int		cross_two_lines(t_line2d *l1, t_line2d *l2, t_intpoint2d *p)
 	else if (l1->a == 0)
 		return (0);
 	p->y = (l2->a * l1->c - l1->a * l2->c) / (l1->a * l2->b - l2->a * l1->b);
-	p->x = (l1->b * p->y + l1->c) / (-l1->a);
+	if (l2->b == 0 && l2->a != 0)
+		p->x = (l2->b * p->y + l2->c) / (-l2->a);
+	else
+		p->x = (l1->b * p->y + l1->c) / (-l1->a);
 	return (1);
 }
 
@@ -410,7 +413,7 @@ int		visible_wall(t_sdl *iw, int wall)
 	return (0);
 }
 
-void	add_lr_wall(t_sdl *iw, t_intpoint2d *p, int wall, int x)
+void	add_lr_wall(t_sdl *iw, t_intpoint2d *p, t_wall *wall, int x)
 {
 	t_save_wall	*tmp;
 
@@ -439,7 +442,7 @@ void	get_all_intersection_line(t_sdl *iw, t_line2d *nl, int right)
 		while (++wall < iw->sectors[sec].sw + iw->sectors[sec].nw)
 			if (visible_wall(iw, wall) && cross_two_lines(nl, &iw->walls[wall].l, &p)
 				&& point_in_front_and_on_wall(iw, &p, wall))
-				add_lr_wall(iw, &p, wall + right, right * WINDOW_W);
+				add_lr_wall(iw, &p, (right == 0) ? &iw->walls[wall] : iw->walls[wall].next, right * WINDOW_W);
 	}
 }
 
@@ -456,7 +459,7 @@ void	get_left_right_visible_walls(t_sdl *iw)
 	na = get_k_angle(na);
 	nl.a = tanf(na);
 	nl.b = -1.0f;
-	nl.c = (float)iw->p.y - iw->d.view.a * (float)iw->p.x;
+	nl.c = (float)iw->p.y - nl.a * (float)iw->p.x;
 
 	/// LEFT
 	get_all_intersection_line(iw, &nl, 0);
@@ -467,7 +470,7 @@ void	get_left_right_visible_walls(t_sdl *iw)
 	na = get_k_angle(na);
 	nl.a = tanf(na);
 	nl.b = -1.0f;
-	nl.c = (float)iw->p.y - iw->d.view.a * (float)iw->p.x;
+	nl.c = (float)iw->p.y - nl.a * (float)iw->p.x;
 
 	// RIGHT
 	get_all_intersection_line(iw, &nl, 1);
@@ -488,10 +491,11 @@ void	draw(t_sdl *iw)
 	tmp = iw->d.vw;
 	while (tmp != 0)
 	{
-		printf("x %d len %f wall %d\n", tmp->x, tmp->len, tmp->wall);
+		printf("x %d len %f xw %d yw %d\n", tmp->x, tmp->len, tmp->wall->x, tmp->wall->y);
 		tmp = tmp->next;
 	}
 	printf("\n\n");
+
 }
 
 void	get_def(t_sdl *iw)
@@ -499,7 +503,7 @@ void	get_def(t_sdl *iw)
 	iw->p.x = 500;
 	iw->p.y = 500;
 	iw->p.z = 200;
-	iw->p.rot = G90 * 2 / 90;
+	iw->p.rot = G360 - G90 * 10 / 90;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;
 }
