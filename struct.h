@@ -107,8 +107,8 @@ typedef struct	s_brez
 	int			sx;
 	int			sy;
 	int			k;
-	int			color;
-	t_sdl		*iw;
+	int			*wall_y;
+	int			prev_x;
 }				t_brez;
 
 typedef struct	s_save_wall

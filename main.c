@@ -3,7 +3,7 @@
 
 void	set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 {
-	if (x >= 0 && x < WINDOW_W)
+	if (x >= 0 && x < WINDOW_W && y >= 0 && y < WINDOW_H)
 	{
 		Uint8 *target_pixel = (Uint8 *)surface->pixels + y * surface->pitch + x * 4;
 		*(Uint32 *)target_pixel = pixel;
@@ -487,11 +487,11 @@ void	get_left_right_visible_walls(t_sdl *iw)
 	get_all_intersection_line(iw, &nl, 1);
 }
 
-t_save_wall	*find_next_vis_wall (t_save_wall *left)
+t_save_wall	*find_next_vis_wall (t_sdl *iw, t_save_wall *left)
 {
 	t_save_wall	*right;
 
-	right = left->next;
+	right = iw->d.vw;
 	while (right != 0)
 	{
 		if (right->wall == left->wall->next)
@@ -499,6 +499,15 @@ t_save_wall	*find_next_vis_wall (t_save_wall *left)
 		right = right->next;
 	}
 	return (right);
+}
+
+void	put_wall_pixel(t_brez *b, int x, int y)
+{
+	if (x != b->prev_x)
+	{
+		*(b->wall_y++) = y;
+		b->prev_x = x;
+	}
 }
 
 void	print_brez(t_brez *b, int d, int d1, int d2)
@@ -518,20 +527,23 @@ void	print_brez(t_brez *b, int d, int d1, int d2)
 		else
 			d += d1;
 		if (b->k > 0)
-			pixel_put_img(b->iw, b->x, b->y, b->color);
+			/*pixel_put_img(b->iw, b->x, b->y, b->color);*/
+			put_wall_pixel(b, b->x, b->y);
 		else
-			pixel_put_img(b->iw, b->y, b->x, b->color);
+			put_wall_pixel(b, b->y, b->x);
+			/*pixel_put_img(b->iw, b->y, b->x, b->color);*/
 		b->x += b->sx;
 	}
 }
 
-void	brez_line(t_sdl *iw, t_draw_line line, int color)
+void	brez_line(int *wall_y, t_draw_line line)
 {
 	t_brez	b;
 
-	pixel_put_img(iw, line.x0, line.y0, color);
-	b.iw = iw;
-	b.color = color;
+	/*pixel_put_img(iw, line.x0, line.y0, color);*/
+	*(wall_y++) = line.y0;
+	b.prev_x = line.x0;
+	b.wall_y = wall_y;
 	b.sx = (line.x1 >= line.x0) ? (1) : (-1);
 	b.sy = (line.y1 >= line.y0) ? (1) : (-1);
 	b.dx = (line.x1 > line.x0) ? (line.x1 - line.x0) : (line.x0 - line.x1);
@@ -554,18 +566,50 @@ void	brez_line(t_sdl *iw, t_draw_line line, int color)
 	}
 }
 
+void	draw_wall(t_sdl *iw, t_save_wall *left, int len)
+{
+	int		i;
+	int		j;
+
+	j = -1;
+	while (++j < len)
+	{
+		i = iw->d.wallTop[j] - 1;
+		while (++i < iw->d.wallBot[j])
+			set_pixel(iw->sur, left->x + j, i, 0x00FF00);
+	}
+}
+
+void	draw_all(t_sdl *iw, t_save_wall *left, int len)
+{
+	draw_wall(iw, left, len);
+}
+
 void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 {
 	t_draw_line		l;
 
-	iw->d.wallTop = (int *)malloc((right->x - left->x) * sizeof(int));
-	iw->d.wallBot = (int *)malloc((right->x - left->x) * sizeof(int));
+	if (left->x >= right->x)
+		return;
+	iw->d.wallTop = (int *)malloc((right->x - left->x + 1) * sizeof(int));
+	iw->d.wallBot = (int *)malloc((right->x - left->x + 1) * sizeof(int));
+	if (!iw->d.wallTop || !iw->d.wallBot)
+		return;
 	l.x0 = left->x;
 	l.x1 = right->x;
-	/*line.y0 = WINDOW_H * (iw->p.z + (int)d1.len / 2 - d1.zd) / d1.len;
-	line.y1 = WINDOW_H * (iw->p.z + (int)d2.len / 2 - d2.zd) / d2.len;*/
 	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - left->zd) / (int)left->plen;
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - right->zd) / (int)right->plen;
+	brez_line(iw->d.wallBot, l);
+	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - left->zu) / (int)left->plen;
+	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - right->zu) / (int)right->plen;
+	brez_line(iw->d.wallTop, l);
+	draw_all(iw, left, right->x - left->x + 1);
+	//int i = -1;
+	//while (++i < right->x - left->x + 1)
+	//	printf("y[%d] = %d\n", i, iw->d.wallTop[i]);
+	
+	free(iw->d.wallBot);
+	free(iw->d.wallTop);
 }
 
 void	draw_start(t_sdl *iw)
@@ -576,10 +620,10 @@ void	draw_start(t_sdl *iw)
 	if (iw->d.vw == 0)
 		return;
 	left = iw->d.vw;
-	while (left->next != 0)
+	while (left != 0)
 	{
-		right = find_next_vis_wall(left);
-
+		if ((right = find_next_vis_wall(iw, left)) != 0)
+			draw_left_right(iw, left, right);
 		left = left->next;
 	}
 }
@@ -601,11 +645,12 @@ void	draw(t_sdl *iw)
 	tmp = iw->d.vw;
 	while (tmp != 0)
 	{
-		printf("x %d len %f xw %d yw %d\n", tmp->x, tmp->len, tmp->wall->x, tmp->wall->y, tmp->zd,
-			tmp->zu);
+		printf("x %d len %f xw %d yw %d zu %d zd %d plen %f\n", tmp->x, tmp->len, tmp->wall->x, tmp->wall->y, tmp->zu,
+			tmp->zd, tmp->plen);
 		tmp = tmp->next;
 	}
 	printf("\n\n");
+
 	////////////
 
 	draw_start(iw);
@@ -616,7 +661,7 @@ void	get_def(t_sdl *iw)
 	iw->p.x = 500;
 	iw->p.y = 500;
 	iw->p.z = 200;
-	iw->p.rot = G90 * 235 / 90;
+	iw->p.rot = G360 - G90 * 30 / 90;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;
 }
