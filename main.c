@@ -652,11 +652,40 @@ void	draw_ceil(t_sdl *iw, t_save_wall *left, int len)
 	}
 }
 
+void	draw_start(t_sdl *iw);
+
+void	draw_next_sector(t_sdl *iw, t_save_wall *left, int len)
+{
+	t_sdl	iw2;
+
+	iw2 = *iw;
+	iw2.p.x += iw->walls[left->wall->nextsector_wall].x - left->wall->x;
+	iw2.p.y += iw->walls[left->wall->nextsector_wall].y - left->wall->y;
+	iw2.d.cs = left->wall->nextsector;
+	get_direction(&iw2);
+	get_view_line(&iw2);
+	get_screen_line(&iw2, 1.0f);
+	iw->d.vw = 0;
+	get_visible_walls(&iw2);
+	get_left_right_visible_walls(&iw2);
+	draw_start(&iw2);
+}
+
+void	draw_between_sectors_walls(t_sdl *iw, t_save_wall *left, int len)
+{
+
+}
+
 void	draw_all(t_sdl *iw, t_save_wall *left, int len)
 {
 	draw_floor(iw, left, len);
 	draw_ceil(iw, left, len);
-	draw_wall(iw, left, len);
+	if (left->wall->nextsector == -1)
+		draw_wall(iw, left, len);
+	else
+	{
+		printf("sss\n");
+	}
 }
 
 void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
