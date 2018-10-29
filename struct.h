@@ -67,6 +67,7 @@ typedef struct	s_player
 	int		y;
 	int		z;
 	float	rot;
+	int		introt;
 	float	rotup;
 }				t_player;
 
@@ -124,8 +125,8 @@ typedef struct	s_save_wall
 
 typedef struct	s_draw
 {
-	int			top[WINDOW_W];
-	int			bottom[WINDOW_W];
+	int			top[WINDOW_W + 1];
+	int			bottom[WINDOW_W + 1];
 	t_line2d	view;
 	t_intpoint2d	view_dir;
 	t_line2d	screen;

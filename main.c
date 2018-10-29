@@ -19,11 +19,39 @@ void	exit_x(t_sdl *iw)
 	exit(0);
 }
 
+void	draw(t_sdl *iw);
+
+void	update(t_sdl *iw)
+{
+	draw(iw);
+	SDL_UpdateWindowSurface(iw->win);
+}
+
 void	key_down(int code, t_sdl *iw)
 {
-	//printf("keydown = %d\n", code);
+	printf("keydown = %d\n", code);
 	if (code == 41)
 		exit_x(iw);
+	else if (code == 79)
+	{
+		/*iw->p.rot += G90 * 2 / 90;
+		if (iw->p.rot > G360)
+			iw->p.rot -= G360;*/
+		iw->p.introt += 2;
+		if (iw->p.introt > 360)
+			iw->p.introt -= 360;
+		iw->p.rot = (float)iw->p.introt * G1;
+		update(iw);
+	}
+	else if (code == 80)
+	{
+		iw->p.introt -= 2;
+		if (iw->p.introt < 0)
+			iw->p.introt += 360;
+		iw->p.rot = (float)iw->p.introt * G1;
+		update(iw);
+	}
+	printf("rot = %f\n", iw->p.rot);
 }
 
 void	main_loop(t_sdl *iw)
@@ -160,7 +188,7 @@ void	set_top_bottom(t_sdl *iw)
 	int		i;
 
 	i = -1;
-	while (++i < WINDOW_W)
+	while (++i <= WINDOW_W)
 	{
 		iw->d.top[i] = 0;
 		iw->d.bottom[i] = WINDOW_H;
@@ -379,7 +407,7 @@ int		cross_two_lines(t_line2d *l1, t_line2d *l2, t_intpoint2d *p)
 	}
 	else if (l1->a == 0)
 		return (0);
-	p->y = (l2->a * l1->c - l1->a * l2->c) / (l1->a * l2->b - l2->a * l1->b);
+	p->y = (int)roundf((l2->a * l1->c - l1->a * l2->c) / (l1->a * l2->b - l2->a * l1->b));
 	if (l2->b == 0 && l2->a != 0)
 		p->x = (l2->b * p->y + l2->c) / (-l2->a);
 	else
@@ -571,17 +599,63 @@ void	draw_wall(t_sdl *iw, t_save_wall *left, int len)
 	int		i;
 	int		j;
 
-	j = -1;
+	/*j = -1;
 	while (++j < len)
 	{
 		i = iw->d.wallTop[j] - 1;
 		while (++i < iw->d.wallBot[j])
 			set_pixel(iw->sur, left->x + j, i, 0x00FF00);
+	}*/
+	j = left->x - 1;
+	while (++j < left->x + len)
+	{
+		i = iw->d.top[j] - 1;
+		while (++i < iw->d.bottom[j])
+			set_pixel(iw->sur, j, i, 0x00FF00);
+		iw->d.top[j] = iw->d.bottom;
+	}
+}
+
+void	draw_floor(t_sdl *iw, t_save_wall *left, int len)
+{
+	int		i;
+	int		j;
+
+	j = -1;
+	while (++j < len)
+	{
+		if (iw->d.wallBot[j] >= iw->d.bottom[left->x + j] ||
+			iw->d.top[left->x + j] >= iw->d.bottom[left->x + j])
+			continue ;
+		i = iw->d.wallBot[j] - 1;
+		while (++i < iw->d.bottom[left->x + j])
+			set_pixel(iw->sur, left->x + j, i, 0x0000FF);
+		iw->d.bottom[left->x + j] = iw->d.wallBot[j];
+	}
+}
+
+void	draw_ceil(t_sdl *iw, t_save_wall *left, int len)
+{
+	int		i;
+	int		j;
+
+	j = -1;
+	while (++j < len)
+	{
+		if (iw->d.wallTop[j] <= iw->d.top[left->x + j] ||
+			iw->d.top[left->x + j] >= iw->d.bottom[left->x + j])
+			continue;
+		i = iw->d.top[left->x + j] - 1;
+		while (++i < iw->d.wallTop[j])
+			set_pixel(iw->sur, left->x + j, i, 0x00FFFF);
+		iw->d.top[left->x + j] = iw->d.wallTop[j];
 	}
 }
 
 void	draw_all(t_sdl *iw, t_save_wall *left, int len)
 {
+	draw_floor(iw, left, len);
+	draw_ceil(iw, left, len);
 	draw_wall(iw, left, len);
 }
 
@@ -661,7 +735,8 @@ void	get_def(t_sdl *iw)
 	iw->p.x = 500;
 	iw->p.y = 500;
 	iw->p.z = 200;
-	iw->p.rot = G360 - G90 * 30 / 90;
+	iw->p.introt = 241;
+	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;
 }
