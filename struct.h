@@ -137,6 +137,8 @@ typedef struct	s_draw
 	float		screen_length;
 	// Player Screen Side
 	float		pss;
+	// Left View Side
+	float		lvs;
 	// Current Sector
 	int			cs;
 	// Visible Walls

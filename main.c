@@ -295,6 +295,21 @@ void	get_screen_line(t_sdl *iw, float len)
 		len = sqrtf(powf((float)iw->p.x - iw->d.screen_point.x, 2.0f) + powf((float)iw->p.y - iw->d.screen_point.y, 2.0f));
 		iw->d.screen_length = len * tanf(iw->v.angle);
 		iw->d.pss = iw->d.screen.a * (float)iw->p.x + iw->d.screen.b * (float)iw->p.y + iw->d.screen.c;
+		if (iw->d.view_dir.y > 0)
+			iw->d.lvs = iw->d.view.a * (float)(iw->p.x + ((iw->d.view_dir.x > 0) ? -1 : 1)) + iw->d.view.b * (float)iw->p.y + iw->d.view.c;
+		else
+			iw->d.lvs = iw->d.view.a * (float)(iw->p.x + ((iw->d.view_dir.x > 0) ? 1 : -1)) + iw->d.view.b * (float)iw->p.y + iw->d.view.c;
+			//////////////////////////////////////////////////////////////
+		// if (iw->d.view_dir.x > 0)
+		// 	iw->d.lvs = iw->d.view.a * (float)iw->p.x + iw->d.view.b * (float)(iw->p.y + ((iw->d.view_dir.y > 0) ? 1 : -1)) + iw->d.view.c;
+		// else
+		// 	iw->d.lvs = iw->d.view.a * (float)iw->p.x + iw->d.view.b * (float)(iw->p.y + ((iw->d.view_dir.y > 0) ? 1 : -1)) + iw->d.view.c;
+
+		// {
+		// 	if (iw->d.view_dir.y > 0)
+		// 		iw->d.lvs = iw->d.view.a * (float)iw->p.x + iw->d.view.b * (float)(iw->p.y + 1) + iw->d.view.c;
+		// 	else
+		// }
 	}
 }
 
@@ -374,7 +389,8 @@ void	get_visible_walls2(t_sdl *iw, float clen, int wall)
 	else
 		tmp->x = (int)((float)(WINDOW_W / 2) - ((float)(WINDOW_W / 2) * d->sx / d->ssz));*/
 	side = iw->d.view.a * (float)iw->walls[wall].x + iw->d.view.b * (float)iw->walls[wall].y + iw->d.view.c;
-	if ((iw->d.view_dir.x < 0 && side < 0) || (iw->d.view_dir.x > 0 && side > 0))
+	if (side * iw->d.lvs <= 0)
+	// if ((iw->d.view_dir.x < 0 && side < 0) || (iw->d.view_dir.x > 0 && side > 0))
 		w->x = WINDOW_W / 2 + (int)((float)WINDOW_W / 2.0f * clen / iw->d.screen_length);
 	else
 		w->x = WINDOW_W / 2 - (int)((float)WINDOW_W * clen / iw->d.screen_length / 2.0f);
