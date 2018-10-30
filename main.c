@@ -293,7 +293,7 @@ void	get_screen_line(t_sdl *iw, float len)
 		iw->d.screen.b = -1.0f;
 		iw->d.screen.c = iw->d.screen_point.y - iw->d.screen.a * iw->d.screen_point.x;
 		len = sqrtf(powf((float)iw->p.x - iw->d.screen_point.x, 2.0f) + powf((float)iw->p.y - iw->d.screen_point.y, 2.0f));
-		iw->d.screen_length = (float)WINDOW_W / (float)WINDOW_H * len / 2.0f;
+		iw->d.screen_length = len * tanf(iw->v.angle);
 		iw->d.pss = iw->d.screen.a * (float)iw->p.x + iw->d.screen.b * (float)iw->p.y + iw->d.screen.c;
 	}
 }
@@ -494,6 +494,7 @@ void	add_lr_wall(t_sdl *iw, t_intpoint2d *p, t_wall *wall, int x)
 	tmp->zd = get_floor_z(iw, p->x, p->y);
 	tmp->zu = get_ceil_z(iw, p->x, p->y);
 	tmp->next = 0;
+	printf("Adding x %d px %d py %d len %f plen %f\n", tmp->x, p->x, p->y, tmp->len, tmp->plen);
 	add_wall(iw, tmp);
 }
 
@@ -516,12 +517,11 @@ void	get_all_intersection_line(t_sdl *iw, t_line2d *nl, int right)
 
 void	get_left_right_visible_walls(t_sdl *iw)
 {
-	float	angle;
 	float	na;
 	t_line2d	nl;
 
-	angle = atanf(iw->d.screen_length / 1.0f);
-	na = iw->p.rot - angle;
+	//angle = atanf(iw->d.screen_length / 1.0f);
+	na = iw->p.rot - iw->v.angle;
 	if (na < 0.0f)
 		na += G360;
 	na = get_k_angle(na);
@@ -530,9 +530,10 @@ void	get_left_right_visible_walls(t_sdl *iw)
 	nl.c = (float)iw->p.y - nl.a * (float)iw->p.x;
 
 	/// LEFT
+	printf("LEFT: a %f b %f c %f\n", nl.a, nl.b, nl.c);
 	get_all_intersection_line(iw, &nl, 0);
 
-	na = iw->p.rot + angle;
+	na = iw->p.rot + iw->v.angle;
 	if (na > G360)
 		na -= G360;
 	na = get_k_angle(na);
@@ -541,6 +542,8 @@ void	get_left_right_visible_walls(t_sdl *iw)
 	nl.c = (float)iw->p.y - nl.a * (float)iw->p.x;
 
 	// RIGHT
+	printf("angle: %f\n", iw->v.angle);
+	printf("RIGHT: a %f b %f c %f\n", nl.a, nl.b, nl.c);
 	get_all_intersection_line(iw, &nl, 1);
 }
 
@@ -798,10 +801,11 @@ void	get_def(t_sdl *iw)
 	iw->p.x = 2500;
 	iw->p.y = 2500;
 	iw->p.z = 200;
-	iw->p.introt = 241;
-	iw->p.rot = 0.506145f;//(float)iw->p.introt * G1;
+	iw->p.introt = 277;
+	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;
+	iw->v.angle = 0.698132f;
 }
 
 int		main(void)

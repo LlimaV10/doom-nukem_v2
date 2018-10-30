@@ -77,6 +77,8 @@ typedef struct	s_variables
 	int		sc;
 	// Last Sector
 	int		ls;
+	// FOV angle / 2
+	float	angle;
 }				t_variables;
 
 typedef struct	s_point2d
