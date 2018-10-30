@@ -299,7 +299,7 @@ void	get_screen_line(t_sdl *iw, float len)
 			iw->d.lvs = iw->d.view.a * (float)(iw->p.x + ((iw->d.view_dir.x > 0) ? -1 : 1)) + iw->d.view.b * (float)iw->p.y + iw->d.view.c;
 		else
 			iw->d.lvs = iw->d.view.a * (float)(iw->p.x + ((iw->d.view_dir.x > 0) ? 1 : -1)) + iw->d.view.b * (float)iw->p.y + iw->d.view.c;
-			//////////////////////////////////////////////////////////////
+			//////////////////////////////////////////////////////////////	
 		// if (iw->d.view_dir.x > 0)
 		// 	iw->d.lvs = iw->d.view.a * (float)iw->p.x + iw->d.view.b * (float)(iw->p.y + ((iw->d.view_dir.y > 0) ? 1 : -1)) + iw->d.view.c;
 		// else
