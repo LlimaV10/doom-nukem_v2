@@ -51,6 +51,12 @@ void	key_down(int code, t_sdl *iw)
 		iw->p.rot = (float)iw->p.introt * G1;
 		update(iw);
 	}
+	else if (code == 26)
+	{
+		iw->p.x += 60 * cosf((float)(iw->p.introt) * (3.14159265f / 180.0f));
+		iw->p.y += 60 * sinf((float)(iw->p.introt) * (3.14159265f / 180.0f));
+		update(iw);
+	}
 	printf("rot = %f\n", iw->p.rot);
 }
 
@@ -761,8 +767,8 @@ void	draw(t_sdl *iw)
 
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 500;
-	iw->p.y = 500;
+	iw->p.x = 2500;
+	iw->p.y = 2500;
 	iw->p.z = 200;
 	iw->p.introt = 241;
 	iw->p.rot = (float)iw->p.introt * G1;
