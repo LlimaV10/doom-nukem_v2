@@ -24,6 +24,7 @@ void	draw(t_sdl *iw);
 void	update(t_sdl *iw)
 {
 	draw(iw);
+	printf("Update\n");
 	SDL_UpdateWindowSurface(iw->win);
 }
 
@@ -309,6 +310,21 @@ void	get_direction(t_sdl *iw)
 		iw->d.view_dir.y = 1;
 }
 
+void	free_walls(t_sdl *iw)
+{
+	t_save_wall	*tmp;
+	t_save_wall	*tmp2;
+
+	tmp = iw->d.vw;
+	while (tmp != 0)
+	{
+		tmp2 = tmp;
+		tmp = tmp->next;
+		free(tmp2);
+	}
+	iw->d.vw = 0;
+}
+
 void	add_wall(t_sdl *iw, t_save_wall *tmp)
 {
 	t_save_wall	*tmp2;
@@ -362,6 +378,11 @@ void	get_visible_walls2(t_sdl *iw, float clen, int wall)
 		w->x = WINDOW_W / 2 + (int)((float)WINDOW_W / 2.0f * clen / iw->d.screen_length);
 	else
 		w->x = WINDOW_W / 2 - (int)((float)WINDOW_W * clen / iw->d.screen_length / 2.0f);
+	if (w->x < 0 || w->x > WINDOW_W)
+	{
+		free(w);
+		return ;
+	}
 	w->len = sqrtf(powf((float)(iw->p.x - iw->walls[wall].x), 2.0f) +  powf((float)(iw->p.y - iw->walls[wall].y), 2.0f));
 	w->plen = fabsf(iw->d.screen.a * (float)iw->walls[wall].x + iw->d.screen.b * (float)iw->walls[wall].y + iw->d.screen.c) /
 				sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
@@ -402,6 +423,7 @@ void	get_visible_walls(t_sdl *iw)
 int		cross_two_lines(t_line2d *l1, t_line2d *l2, t_intpoint2d *p)
 {
 	t_line2d	*tmp;
+	float		py;
 
 	if (l1->a == l2->a && l1->b == l2->b)
 		return (0);
@@ -413,11 +435,12 @@ int		cross_two_lines(t_line2d *l1, t_line2d *l2, t_intpoint2d *p)
 	}
 	else if (l1->a == 0)
 		return (0);
-	p->y = (int)roundf((l2->a * l1->c - l1->a * l2->c) / (l1->a * l2->b - l2->a * l1->b));
+	py = (l2->a * l1->c - l1->a * l2->c) / (l1->a * l2->b - l2->a * l1->b);
+	p->y = (int)roundf(py);
 	if (l2->b == 0 && l2->a != 0)
-		p->x = (l2->b * p->y + l2->c) / (-l2->a);
+		p->x = (int)roundf((l2->b * py + l2->c) / (-l2->a));
 	else
-		p->x = (l1->b * p->y + l1->c) / (-l1->a);
+		p->x = (int)roundf((l1->b * py + l1->c) / (-l1->a));
 	return (1);
 }
 
@@ -487,7 +510,7 @@ void	get_all_intersection_line(t_sdl *iw, t_line2d *nl, int right)
 		while (++wall < iw->sectors[sec].sw + iw->sectors[sec].nw)
 			if (visible_wall(iw, wall) && cross_two_lines(nl, &iw->walls[wall].l, &p)
 				&& point_in_front_and_on_wall(iw, &p, wall))
-				add_lr_wall(iw, &p, (right == 0) ? &iw->walls[wall] : iw->walls[wall].next, right * WINDOW_W);
+				add_lr_wall(iw, &p, ((right == 0) ? &iw->walls[wall] : iw->walls[wall].next), right * WINDOW_W);
 	}
 }
 
@@ -618,7 +641,7 @@ void	draw_wall(t_sdl *iw, t_save_wall *left, int len)
 		i = iw->d.top[j] - 1;
 		while (++i < iw->d.bottom[j])
 			set_pixel(iw->sur, j, i, 0x00FF00);
-		iw->d.top[j] = iw->d.bottom;
+		iw->d.top[j] = iw->d.bottom[j];
 	}
 }
 
@@ -636,7 +659,8 @@ void	draw_floor(t_sdl *iw, t_save_wall *left, int len)
 		i = iw->d.wallBot[j] - 1;
 		while (++i < iw->d.bottom[left->x + j])
 			set_pixel(iw->sur, left->x + j, i, 0x0000FF);
-		iw->d.bottom[left->x + j] = iw->d.wallBot[j];
+		if (iw->d.wallBot[j] < iw->d.bottom[left->x + j])
+			iw->d.bottom[left->x + j] = iw->d.wallBot[j];
 	}
 }
 
@@ -654,7 +678,8 @@ void	draw_ceil(t_sdl *iw, t_save_wall *left, int len)
 		i = iw->d.top[left->x + j] - 1;
 		while (++i < iw->d.wallTop[j])
 			set_pixel(iw->sur, left->x + j, i, 0x00FFFF);
-		iw->d.top[left->x + j] = iw->d.wallTop[j];
+		if (iw->d.wallTop[j] > iw->d.top[left->x + j])
+			iw->d.top[left->x + j] = iw->d.wallTop[j];
 	}
 }
 
@@ -700,8 +725,10 @@ void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 
 	if (left->x >= right->x)
 		return;
+	printf("malloc\n");
 	iw->d.wallTop = (int *)malloc((right->x - left->x + 1) * sizeof(int));
 	iw->d.wallBot = (int *)malloc((right->x - left->x + 1) * sizeof(int));
+	printf("malloced\n");
 	if (!iw->d.wallTop || !iw->d.wallBot)
 		return;
 	l.x0 = left->x;
@@ -735,6 +762,7 @@ void	draw_start(t_sdl *iw)
 			draw_left_right(iw, left, right);
 		left = left->next;
 	}
+	free_walls(iw);
 }
 
 void	draw(t_sdl *iw)
@@ -771,7 +799,7 @@ void	get_def(t_sdl *iw)
 	iw->p.y = 2500;
 	iw->p.z = 200;
 	iw->p.introt = 241;
-	iw->p.rot = (float)iw->p.introt * G1;
+	iw->p.rot = 0.506145f;//(float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;
 }
