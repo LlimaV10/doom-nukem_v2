@@ -23,10 +23,8 @@ void	draw(t_sdl *iw);
 
 void	update(t_sdl *iw)
 {
-	//SDL_FillRect(iw->sur, NULL, SDL_MapRGB(SDL_GetWindowPixelFormat(iw->win), 0, 0, 0));
 	SDL_FillRect(iw->sur, NULL, 0x000000);
 	draw(iw);
-	//SDL_FillRect(background, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
 	printf("Update\n");
 	SDL_UpdateWindowSurface(iw->win);
 }
@@ -38,9 +36,6 @@ void	key_down(int code, t_sdl *iw)
 		exit_x(iw);
 	else if (code == 79)
 	{
-		/*iw->p.rot += G90 * 2 / 90;
-		if (iw->p.rot > G360)
-			iw->p.rot -= G360;*/
 		iw->p.introt += 2;
 		if (iw->p.introt > 360)
 			iw->p.introt -= 360;
@@ -57,8 +52,32 @@ void	key_down(int code, t_sdl *iw)
 	}
 	else if (code == 26)
 	{
-		iw->p.x += 60 * cosf((float)(iw->p.introt) * (3.14159265f / 180.0f));
-		iw->p.y += 60 * sinf((float)(iw->p.introt) * (3.14159265f / 180.0f));
+		iw->p.x += 60;
+		update(iw);
+	}
+	else if (code == 22)
+	{
+		iw->p.x -= 60;
+		update(iw);
+	}
+	else if (code == 4)
+	{
+		iw->p.y += 60;
+		update(iw);
+	}
+	else if (code == 7)
+	{
+		iw->p.y -= 60;
+		update(iw);
+	}
+	else if (code == 8)
+	{
+		iw->p.z += 60;
+		update(iw);
+	}
+	else if (code == 20)
+	{
+		iw->p.z -= 60;
 		update(iw);
 	}
 	printf("rot = %f\n", iw->p.rot);
@@ -86,25 +105,10 @@ void	main_loop(t_sdl *iw)
 
 void	get_wall_line(t_sdl *iw, int wall)
 {
-	//if (iw->walls[wall].x == iw->walls[wall].next->x)
-	//{
-	//	iw->walls[wall].l.a = 0.0f;
-	//	iw->walls[wall].l.b = 1.0f;
-	//	iw->walls[wall].l.c = -1.0f * iw->walls[wall].y;
-	//}
-	//else if (iw->walls[wall].y == iw->walls[wall].next->y)
-	//{
-	//	iw->walls[wall].l.b = 0.0f;
-	//	iw->walls[wall].l.a = 1.0f;
-	//	iw->walls[wall].l.c = -1.0f * iw->walls[wall].x;
-	//}
-	//else
-	//{
 	iw->walls[wall].l.a = (float)(iw->walls[wall].next->y - iw->walls[wall].y);
 	iw->walls[wall].l.b = (float)(iw->walls[wall].x - iw->walls[wall].next->x);
 	iw->walls[wall].l.c = (float)(iw->walls[wall].next->x * iw->walls[wall].y -
 		iw->walls[wall].x * iw->walls[wall].next->y);
-	//}
 }
 
 void	create_map(t_sdl *iw)
@@ -213,31 +217,6 @@ float	get_k_angle(float rot)
 		return (G360 - rot);
 }
 
-//void	get_view_line(t_sdl *iw)
-//{
-//	float	k;
-//
-//	k = get_k_angle(iw->p.rot);
-//	if (tanf(k) == 0.0f)
-//	{
-//		iw->d.view.a = 0.0f;
-//		iw->d.view.b = 1.0f;
-//		iw->d.view.c = -1.0f * (float)iw->p.y;
-//	}
-//	else if (tanf(k) == INFINITY)
-//	{
-//		iw->d.view.b = 0.0f;
-//		iw->d.view.a = 1.0f;
-//		iw->d.view.c = -1.0f * (float)iw->p.x;
-//	}
-//	else
-//	{
-//		iw->d.view.a = tanf(k);
-//		iw->d.view.b = -1.0f;
-//		iw->d.view.c = (float)iw->p.y - iw->d.view.a * (float)iw->p.x;
-//	}
-//}
-
 void	get_left_right_lines_points(t_sdl *iw)
 {
 	float	na;
@@ -274,52 +253,6 @@ void	get_screen_line(t_sdl *iw)
 {
 	float	na;
 
-	/*if (iw->d.view.a == 0.0f)
-	{
-		iw->d.screen_point.y = (float)iw->p.y;
-		iw->d.screen_point.x = (float)iw->p.x + ((iw->d.view_dir.x > 0) ? len : -len);
-		iw->d.screen.b = 0.0f;
-		iw->d.view.a = 1.0f;
-		iw->d.view.c = -1.0f * iw->d.screen_point.x;
-	}
-	else if (iw->d.view.b == 0.0f)
-	{
-		iw->d.screen_point.x = (float)iw->p.x;
-		iw->d.screen_point.y = (float)iw->p.y + ((iw->d.view_dir.y > 0) ? len : -len);
-		iw->d.screen.a = 0.0f;
-		iw->d.screen.b = 1.0f;
-		iw->d.screen.c = -1.0f * iw->d.screen_point.y;
-	}
-	else
-	{*/
-	//if (iw->d.view_dir.x > 0)
-	//	iw->d.screen_point.y = (sqrtf(powf(iw->d.view.a * len, 2.0f) -
-	//		powf(iw->d.view.a * (float)iw->p.x, 2.0f) -
-	//		2.0f * iw->d.view.a * iw->d.view.b * (float)(iw->p.x * iw->p.y) -
-	//		2.0f * iw->d.view.a * iw->d.view.c * (float)iw->p.x +
-	//		powf(iw->d.view.b * len, 2.0f) - powf(iw->d.view.b * (float)iw->p.y, 2.0f) -
-	//		2.0f * iw->d.view.b * iw->d.view.c * (float)iw->p.y -
-	//		powf(iw->d.view.c, 2.0f)) / iw->d.view.a -
-	//		(iw->d.view.b * iw->d.view.c) / iw->d.view.a / iw->d.view.a -
-	//		iw->d.view.b * (float)iw->p.x / iw->d.view.a + (float)iw->p.y) /
-	//		(powf(iw->d.view.b / iw->d.view.a, 2.0f) + 1.0f);
-	//else
-	//	iw->d.screen_point.y = (-sqrtf(powf(iw->d.view.a * len, 2.0f) -
-	//		powf(iw->d.view.a * (float)iw->p.x, 2.0f) -
-	//		2.0f * iw->d.view.a * iw->d.view.b * (float)(iw->p.x * iw->p.y) -
-	//		2.0f * iw->d.view.a * iw->d.view.c * (float)iw->p.x +
-	//		powf(iw->d.view.b * len, 2.0f) - powf(iw->d.view.b * (float)iw->p.y, 2.0f) -
-	//		2.0f * iw->d.view.b * iw->d.view.c * (float)iw->p.y -
-	//		powf(iw->d.view.c, 2.0f)) / iw->d.view.a -
-	//		(iw->d.view.b * iw->d.view.c) / iw->d.view.a / iw->d.view.a -
-	//		iw->d.view.b * (float)iw->p.x / iw->d.view.a + (float)iw->p.y) /
-	//		(powf(iw->d.view.b / iw->d.view.a, 2.0f) + 1.0f);
-	///*if (iw->d.view_dir.x > 0)
-	//	iw->d.screen_point.x = (float)iw->p.x + sqrtf(len * len - powf(fabsf((float)iw->p.y - iw->d.screen_point.y), 2.0f));
-	//else
-	//	iw->d.screen_point.x = (float)iw->p.x - sqrtf(len * len - powf(fabsf((float)iw->p.y - iw->d.screen_point.y), 2.0f));*/
-	//iw->d.screen_point.x = (iw->d.view.c + iw->d.view.b * iw->d.screen_point.y) / (-iw->d.view.a);
-	// angle of screen line
 	na = iw->p.rot + G90;
 	if (na > G360)
 		na -= G360;
@@ -327,34 +260,6 @@ void	get_screen_line(t_sdl *iw)
 	iw->d.screen.a = tanf(na);
 	iw->d.screen.b = -1.0f;
 	iw->d.screen.c = (float)iw->p.y - iw->d.screen.a * (float)iw->p.x;
-	/*len = sqrtf(powf((float)iw->p.x - iw->d.screen_point.x, 2.0f) + powf((float)iw->p.y - iw->d.screen_point.y, 2.0f));
-	iw->d.screen_length = len * tanf(iw->v.angle);
-	iw->d.pss = iw->d.screen.a * (float)iw->p.x + iw->d.screen.b * (float)iw->p.y + iw->d.screen.c;*/
-	
-
-	/*diskr = iw->p.rot - iw->v.angle;
-	if (diskr < 0.0f)
-		diskr += G360;
-	diskr = get_k_angle(diskr);
-	iw->d.left_view.a = tanf(diskr);
-	iw->d.left_view.b = -1.0f;
-	iw->d.left_view.c = (float)iw->p.y - iw->d.left_view.a * (float)iw->p.x;*/
-	
-		/*if (iw->d.view_dir.y > 0)
-			iw->d.lvs = iw->d.view.a * (float)(iw->p.x + ((iw->d.view_dir.x > 0) ? -1 : 1)) + iw->d.view.b * (float)iw->p.y + iw->d.view.c;
-		else
-			iw->d.lvs = iw->d.view.a * (float)(iw->p.x + ((iw->d.view_dir.x > 0) ? 1 : -1)) + iw->d.view.b * (float)iw->p.y + iw->d.view.c;*/
-			//////////////////////////////////////////////////////////////	
-		// if (iw->d.view_dir.x > 0)
-		// 	iw->d.lvs = iw->d.view.a * (float)iw->p.x + iw->d.view.b * (float)(iw->p.y + ((iw->d.view_dir.y > 0) ? 1 : -1)) + iw->d.view.c;
-		// else
-		// 	iw->d.lvs = iw->d.view.a * (float)iw->p.x + iw->d.view.b * (float)(iw->p.y + ((iw->d.view_dir.y > 0) ? 1 : -1)) + iw->d.view.c;
-		// {
-		// 	if (iw->d.view_dir.y > 0)
-		// 		iw->d.lvs = iw->d.view.a * (float)iw->p.x + iw->d.view.b * (float)(iw->p.y + 1) + iw->d.view.c;
-		// 	else
-		// }
-	//}
 }
 
 void	get_direction(t_sdl *iw)
@@ -432,28 +337,7 @@ void	get_visible_walls2(t_sdl *iw, int wall, float lang)
 	t_save_wall	*w;
 	
 	w = (t_save_wall *)malloc(sizeof(t_save_wall));
-	/*if ((d->vk * iw->walls[d->sw].x - iw->walls[d->sw].y + d->vb) * d->xdir < 0)
-		tmp->x = (int)((float)(WINDOW_W / 2) + ((float)(WINDOW_W / 2) * d->sx / d->ssz));
-	else
-		tmp->x = (int)((float)(WINDOW_W / 2) - ((float)(WINDOW_W / 2) * d->sx / d->ssz));*/
-	//side = iw->d.view.a * (float)iw->walls[wall].x + iw->d.view.b * (float)iw->walls[wall].y + iw->d.view.c;
-	//if (side * iw->d.lvs <= 0)
-	//// if ((iw->d.view_dir.x < 0 && side < 0) || (iw->d.view_dir.x > 0 && side > 0))
-	//	w->x = WINDOW_W / 2 + (int)((float)WINDOW_W / 2.0f * clen / iw->d.screen_length);
-	//else
-	//	w->x = WINDOW_W / 2 - (int)((float)WINDOW_W * clen / iw->d.screen_length / 2.0f);
-	/*ang = acosf((iw->d.left_line.a * (float)(iw->walls[wall].y - iw->p.y) + iw->d.left_line.b * (float)(iw->p.x - iw->walls[wall].x)) /
-		(sqrtf(powf(iw->d.left_line.a, 2.0f) + powf(iw->d.left_line.b, 2.0f)) *
-			sqrtf(powf(iw->walls[wall].y - iw->p.y, 2.0f) + powf(iw->walls[wall].x - iw->p.x, 2.0f))));
-	if (ang > 2 * iw->v.angle)
-		ang = G180 - ang;*/
 	w->x = (int)(lang * (float)WINDOW_W / (2.0f * iw->v.angle));
-	//printf("WX = %d ang = %f\n", w->x, ang);
-	/*if (w->x < 0 || w->x > WINDOW_W)
-	{
-		free(w);
-		return ;
-	}*/
 	w->len = sqrtf(powf((float)(iw->p.x - iw->walls[wall].x), 2.0f) +  powf((float)(iw->p.y - iw->walls[wall].y), 2.0f));
 	w->plen = fabsf(iw->d.screen.a * (float)iw->walls[wall].x + iw->d.screen.b * (float)iw->walls[wall].y + iw->d.screen.c) /
 				sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
@@ -480,23 +364,6 @@ void	get_visible_walls(t_sdl *iw)
 			(float)(iw->walls[wall].x - iw->p.x), (float)(iw->walls[wall].y - iw->p.y));
 		if (lang <= 2 * iw->v.angle && rang <= 2 * iw->v.angle)
 			get_visible_walls2(iw, wall, lang);
-		//((d->sk * iw->walls[d->sw].x - iw->walls[d->sw].y + d->sb) * d->ydir >= 0)
-		//side = iw->d.screen.a * (float)iw->walls[wall].x + iw->d.screen.b * (float)iw->walls[wall].y + iw->d.screen.c;
-		///*if ((iw->d.view_dir.x < 0 && side < 0) || (iw->d.view_dir.x > 0 && side > 0))
-		//if ((iw->walls[wall].x - iw->p.x) ^ iw->d.view_dir.x >= 0 && (iw->walls[wall].y - iw->p.y) ^ iw->d.view_dir.y >= 0)*/
-		//if (side * iw->d.view_dir.y < 0)
-		//{
-		//	p.x = (iw->d.screen.c / iw->d.screen.b * (float)(iw->walls[wall].x - iw->p.x) +
-		//		(float)(iw->walls[wall].x * iw->p.y - iw->walls[wall].y * iw->p.x)) /
-		//		((float)(iw->p.y - iw->walls[wall].y) - iw->d.screen.a / iw->d.screen.b * (float)(iw->walls[wall].x - iw->p.x));
-		//	p.y = (iw->d.screen.a * p.x + iw->d.screen.c) / (-iw->d.screen.b);
-		//	side = sqrtf(powf(p.x - iw->d.screen_point.x, 2.0f) + powf(p.y - iw->d.screen_point.y, 2.0f));
-		//	//printf("wall %d len_toscr_center %f", wall, side);
-		//	if (side <= iw->d.screen_length)
-		//		get_visible_walls2(iw, wall);
-		//		/*printf("x %d y %d len %f\n", iw->walls[wall].x, iw->walls[wall].y, side);*/
-		//}
-
 		wall++;
 	}
 }
@@ -598,32 +465,7 @@ void	get_all_intersection_line(t_sdl *iw, t_line2d *nl, int right)
 
 void	get_left_right_visible_walls(t_sdl *iw)
 {
-
-	//angle = atanf(iw->d.screen_length / 1.0f);
-	/*na = iw->p.rot - iw->v.angle;
-	if (na < 0.0f)
-		na += G360;
-	na = get_k_angle(na);
-	nl.a = tanf(na);
-	nl.b = -1.0f;
-	nl.c = (float)iw->p.y - nl.a * (float)iw->p.x;*/
-
-	//nl = iw->d.left_line;
-	/// LEFT
-	//printf("LEFT: a %f b %f c %f\n", nl.a, nl.b, nl.c);
 	get_all_intersection_line(iw, &iw->d.left_line, 0);
-
-	/*na = iw->p.rot + iw->v.angle;
-	if (na > G360)
-		na -= G360;
-	na = get_k_angle(na);
-	nl.a = tanf(na);
-	nl.b = -1.0f;
-	nl.c = (float)iw->p.y - nl.a * (float)iw->p.x;*/
-
-	// RIGHT
-	//printf("angle: %f\n", iw->v.angle);
-	//printf("RIGHT: a %f b %f c %f\n", nl.a, nl.b, nl.c);
 	get_all_intersection_line(iw, &iw->d.right_line, 1);
 }
 
@@ -667,11 +509,9 @@ void	print_brez(t_brez *b, int d, int d1, int d2)
 		else
 			d += d1;
 		if (b->k > 0)
-			/*pixel_put_img(b->iw, b->x, b->y, b->color);*/
 			put_wall_pixel(b, b->x, b->y);
 		else
 			put_wall_pixel(b, b->y, b->x);
-			/*pixel_put_img(b->iw, b->y, b->x, b->color);*/
 		b->x += b->sx;
 	}
 }
@@ -680,7 +520,6 @@ void	brez_line(int *wall_y, t_draw_line line)
 {
 	t_brez	b;
 
-	/*pixel_put_img(iw, line.x0, line.y0, color);*/
 	*(wall_y++) = line.y0;
 	b.prev_x = line.x0;
 	b.wall_y = wall_y;
@@ -711,13 +550,6 @@ void	draw_wall(t_sdl *iw, t_save_wall *left, int len)
 	int		i;
 	int		j;
 
-	/*j = -1;
-	while (++j < len)
-	{
-		i = iw->d.wallTop[j] - 1;
-		while (++i < iw->d.wallBot[j])
-			set_pixel(iw->sur, left->x + j, i, 0x00FF00);
-	}*/
 	j = left->x - 1;
 	while (++j < left->x + len)
 	{
@@ -835,10 +667,6 @@ void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - right->zu) / (int)right->plen;
 	brez_line(iw->d.wallTop, l);
 	draw_all(iw, left, right->x - left->x + 1);
-	//int i = -1;
-	//while (++i < right->x - left->x + 1)
-	//	printf("y[%d] = %d\n", i, iw->d.wallTop[i]);
-	
 	free(iw->d.wallBot);
 	free(iw->d.wallTop);
 }
@@ -866,7 +694,6 @@ void	draw(t_sdl *iw)
 	if ((iw->d.cs = get_sector(iw)) == -1)
 		return ;
 	get_direction(iw);
-	//get_view_line(iw);
 	get_screen_line(iw);
 	get_left_right_lines_points(iw);
 	iw->d.vw = 0;
@@ -915,15 +742,6 @@ int		main(void)
 	get_map(&iw);
 	create_map(&iw);
 	draw(&iw);
-	// t_wall *w = iw.walls;
-	// int i = 0;
-	// while (w && i < 6)
-	// {
-	// 	printf("x %d y %d\n", w->x, w->y);
-	// 	w = w->next;
-	// 	i++;
-	// }
-	// draw
 	SDL_UpdateWindowSurface(iw.win);
 	main_loop(&iw);
 	SDL_FreeSurface(iw.sur);
