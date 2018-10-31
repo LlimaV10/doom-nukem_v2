@@ -49,6 +49,7 @@ typedef struct	s_sector_fc
 	// Normal vector (null if no slope)
 	t_vector	*n;
 }				t_sector_fc;
+
 typedef struct	s_sector
 {
 	// Start Wall
@@ -149,6 +150,7 @@ typedef struct	s_draw
 	t_save_wall	*vw;
 	int			*wallTop;
 	int			*wallBot;
+	int			prev_sector;
 }				t_draw;
 
 typedef struct	s_sdl

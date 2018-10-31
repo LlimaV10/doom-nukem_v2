@@ -179,6 +179,7 @@ int		inside_sectorZ(int sector, t_sdl *iw)
 	// if (iw->p.z <= maxz && iw->p.z >= minz)
 	// 	return (1);
 	// return (0);
+	
 	return (1);
 }
 
@@ -607,31 +608,89 @@ void	draw_useless_lines(t_sdl *iw, t_save_wall *left, int len)
 		set_pixel(iw->sur, left->x, i, 0xFF00FF);
 }
 
-void	draw_start(t_sdl *iw);
-
-//void	draw_next_sector(t_sdl *iw, t_save_wall *left, int len)
-//{
-//	t_sdl	iw2;
-//
-//	iw2 = *iw;
-//	iw2.p.x += iw->walls[left->wall->nextsector_wall].x - left->wall->x;
-//	iw2.p.y += iw->walls[left->wall->nextsector_wall].y - left->wall->y;
-//	iw2.d.cs = left->wall->nextsector;
-//	get_direction(&iw2);
-//	get_view_line(&iw2);
-//	get_screen_line(&iw2, 1.0f);
-//	iw->d.vw = 0;
-//	get_visible_walls(&iw2);
-//	get_left_right_visible_walls(&iw2);
-//	draw_start(&iw2);
-//}
-
-void	draw_between_sectors_walls(t_sdl *iw, t_save_wall *left, int len)
+void	draw_between_sectors_bot(t_sdl *iw, t_save_wall *left, int len, int *tmp)
 {
+	int		i;
+	int		j;
 
+	j = -1;
+	while (++j < len)
+	{
+		if (iw->d.top[left->x + j] >= iw->d.bottom[left->x + j] ||
+			iw->d.bottom[left->x + j] <= tmp[j])
+			continue ;
+		i = tmp[j] - 1;
+		while (++i < iw->d.bottom[left->x + j])
+			set_pixel(iw->sur, left->x + j, i, 0xFF0000);
+		iw->d.bottom[left->x + j] = tmp[j];
+	}
 }
 
-void	draw_all(t_sdl *iw, t_save_wall *left, int len)
+void	draw_between_sectors_top(t_sdl *iw, t_save_wall *left, int len, int *tmp)
+{
+	int		i;
+	int		j;
+
+	j = -1;
+	while (++j < len)
+	{
+		if (iw->d.top[left->x + j] >= iw->d.bottom[left->x + j] ||
+			iw->d.top[left->x + j] >= tmp[j])
+			continue;
+		i = iw->d.top[left->x + j] - 1;
+		while (++i < tmp[j])
+			set_pixel(iw->sur, left->x + j, i, 0xFF0000);
+		iw->d.top[left->x + j] = tmp[j];
+	}
+}
+
+void	draw_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
+{
+	t_draw_line		l;
+	int				lz;
+	int				rz;
+	int				*tmp;
+
+	tmp = (int *)malloc((right->x - left->x + 1) * sizeof(int));
+	l.x0 = left->x;
+	l.x1 = right->x;
+	lz = get_floor_z(iw, left->wall->x, left->wall->y);
+	rz = get_floor_z(iw, right->wall->x, right->wall->y);
+	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen;
+	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen;
+	brez_line(tmp, l);
+	draw_between_sectors_bot(iw, left, right->x - left->x + 1, tmp);
+
+	lz = get_ceil_z(iw, left->wall->x, left->wall->y);
+	rz = get_ceil_z(iw, right->wall->x, right->wall->y);
+	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen;
+	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen;
+	brez_line(tmp, l);
+	draw_between_sectors_top(iw, left, right->x - left->x + 1, tmp);
+	free(tmp);
+}
+
+void	draw_start(t_sdl *iw);
+void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
+{
+	t_sdl	iw2;
+
+	iw2 = *iw;
+	iw2.p.x += iw->walls[left->wall->nextsector_wall].x - left->wall->next->x;
+	iw2.p.y += iw->walls[left->wall->nextsector_wall].y - left->wall->next->y;
+	iw2.d.cs = left->wall->nextsector;
+	draw_between_sectors_walls(&iw2, left, right, len);
+	get_direction(&iw2);
+	get_screen_line(&iw2);
+	get_left_right_lines_points(&iw2);
+	iw2.d.vw = 0;
+	get_visible_walls(&iw2);
+	get_left_right_visible_walls(&iw2);
+	iw2.d.prev_sector = iw->d.cs;
+	draw_start(&iw2);
+}
+
+void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 {
 	draw_floor(iw, left, len);
 	draw_ceil(iw, left, len);
@@ -640,10 +699,8 @@ void	draw_all(t_sdl *iw, t_save_wall *left, int len)
 		draw_wall(iw, left, len);
 		draw_useless_lines(iw, left, len);
 	}
-	else
-	{
-		printf("sss\n");
-	}
+	else if (left->wall->nextsector != iw->d.prev_sector)
+		draw_next_sector(iw, left, right, len);
 }
 
 void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
@@ -666,7 +723,7 @@ void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - left->zu) / (int)left->plen;
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - right->zu) / (int)right->plen;
 	brez_line(iw->d.wallTop, l);
-	draw_all(iw, left, right->x - left->x + 1);
+	draw_all(iw, left, right, right->x - left->x + 1);
 	free(iw->d.wallBot);
 	free(iw->d.wallTop);
 }
@@ -712,7 +769,7 @@ void	draw(t_sdl *iw)
 	printf("\n\n");
 
 	////////////
-
+	iw->d.prev_sector = -1;
 	draw_start(iw);
 }
 
@@ -721,7 +778,7 @@ void	get_def(t_sdl *iw)
 	iw->p.x = 2500;
 	iw->p.y = 2500;
 	iw->p.z = 200;
-	iw->p.introt = 353;
+	iw->p.introt = 1;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;
