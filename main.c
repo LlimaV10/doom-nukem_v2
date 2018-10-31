@@ -891,8 +891,8 @@ void	draw(t_sdl *iw)
 
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 500;
-	iw->p.y = 500;
+	iw->p.x = 2500;
+	iw->p.y = 2500;
 	iw->p.z = 200;
 	iw->p.introt = 353;
 	iw->p.rot = (float)iw->p.introt * G1;
