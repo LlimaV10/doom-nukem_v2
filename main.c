@@ -10,13 +10,13 @@ void	set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 	}
 }
 
-Uint32	read_pixel(SDL_Surface *surface, const int x, const int y)
+Uint32	get_pixel(SDL_Surface *sur, const int x, const int y)
 {
+	uint8_t *v;
 	int		bpp;
-	uint8_t *p;
 
-	bpp = surface->format->BytesPerPixel;
-	p = (uint8_t *)surface->pixels + y * surface->pitch + x * bpp;
+	bpp = sur->format->BytesPerPixel;
+	v = (uint8_t *)sur->pixels + y * sur->pitch + x * bpp;
 	/*printf("bpp %d\n", bpp);
 	if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
 		printf("big endian\n");
@@ -31,7 +31,7 @@ Uint32	read_pixel(SDL_Surface *surface, const int x, const int y)
 			if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
 				return (p[0] << 16 | p[1] << 8 | p[2]);
 			else*/
-	return (p[0] | p[1] << 8 | p[2] << 16);
+	return (v[0] | v[1] << 8 | v[2] << 16);
 	/*}
 	if (bpp == 4)
 		return (*(uint32_t *)p);
@@ -604,10 +604,10 @@ void	draw_wall_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	float	sing;
 	float	ang;
 	float	dang;
-	float	otx;
 	float	lenpl;
 	t_point2d	lv;
 	t_point2d	rv;
+	float tmp;
 
 	lv.x = (float)(left->p.x - iw->p.x);
 	lv.y = (float)(left->p.y - iw->p.y);
@@ -623,7 +623,6 @@ void	draw_wall_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 
 	j = -1;
 	tx = left->olen * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
-	otx = tx;
 	while (tx > (float)iw->t[left->wall->t]->w)
 		tx -= (float)iw->t[left->wall->t]->w;
 	while (++j < len)
@@ -631,27 +630,31 @@ void	draw_wall_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		if (iw->d.top[left->x + j] >= iw->d.bottom[left->x + j])
 			continue;
 		if (iw->d.wallTop[j] < iw->d.top[j + left->x])
-			ty = (float)((left->zd - left->zu) * (iw->d.top[j + left->x] - iw->d.wallTop[j])) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
+			ty = (float)left->zu + (float)((left->zu - left->zd) * (iw->d.top[j + left->x] - iw->d.wallTop[j])) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
 		else
 			ty = (float)left->zu;
 		ty = ty * (float)iw->t[left->wall->t]->h / 1000.0f;
-		dty = ((float)(left->zd - left->zu) * (float)iw->t[left->wall->t]->h / 1000.0f) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
+		dty = ((float)(left->zu - left->zd) * (float)iw->t[left->wall->t]->h / 1000.0f) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
 		while (ty > (float)iw->t[left->wall->t]->h)
 			ty -= (float)iw->t[left->wall->t]->h;
 		i = iw->d.top[j] - 1;
+		//printf("tx %f\n", tx);
 		while (++i < iw->d.bottom[j])
 		{
-			set_pixel(iw->sur, j, i, read_pixel(iw->t[left->wall->t], (int)tx, (int)ty));
+			set_pixel(iw->sur, j, i, get_pixel(iw->t[left->wall->t], (int)tx, (int)ty));
 			ty += dty;
 			while (ty > (float)iw->t[left->wall->t]->h)
 				ty -= (float)iw->t[left->wall->t]->h;
 		}
 		iw->d.top[j] = iw->d.bottom[j];
 		ang += dang;
-		tx = otx + sinf(ang) * lenpl / sin(sing - ang) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
+		/*tmp = sinf(ang) * lenpl / sin(sing - ang);
+		tx += sinf(ang) * lenpl / sin(sing - ang) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;*/
+		tx = (left->olen + sinf(ang) * lenpl / sin(sing - ang)) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
 		while (tx > (float)iw->t[left->wall->t]->w)
 			tx -= (float)iw->t[left->wall->t]->w;
 	}
+
 }
 
 void	draw_floor(t_sdl *iw, t_save_wall *left, int len)
@@ -833,6 +836,7 @@ void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - right->zu) / (int)right->plen;
 	brez_line(iw->d.wallTop, l);
 	draw_all(iw, left, right, right->x - left->x + 1);
+	printf("draw lpx %d lpy %d rpx %d rpy %d\n", left->p.x, left->p.y, right->p.x, right->p.y);
 	/*SDL_UpdateWindowSurface(iw->win);
 	system("PAUSE");*/
 	free(iw->d.wallBot);
@@ -896,10 +900,10 @@ void	read_textures(t_sdl *iw)
 
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 8500;
+	iw->p.x = 9400;
 	iw->p.y = 4200;
 	iw->p.z = 820;
-	iw->p.introt = 135;
+	iw->p.introt = 39;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;
