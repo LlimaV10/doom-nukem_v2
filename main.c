@@ -600,9 +600,12 @@ void	draw_wall_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	int		j;
 	float	tx;
 	float	ty;
+	float	dty;
 	float	sing;
 	float	ang;
 	float	dang;
+	float	otx;
+	float	lenpl;
 	t_point2d	lv;
 	t_point2d	rv;
 
@@ -615,21 +618,39 @@ void	draw_wall_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	ang = 0.0f;
 	rv.x = (float)(right->p.x - left->p.x);
 	rv.y = (float)(right->p.y - left->p.y);
-	sing = sinf(acosf((lv.x * rv.x + lv.y * rv.y) / (sqrtf(lv.x * lv.x + lv.y * lv.y) * sqrtf(rv.x * rv.x + rv.y * rv.y))));
+	sing = G180 - acosf((lv.x * rv.x + lv.y * rv.y) / (sqrtf(lv.x * lv.x + lv.y * lv.y) * sqrtf(rv.x * rv.x + rv.y * rv.y)));
+	lenpl = sqrtf(powf(iw->p.x - left->p.x, 2.0f) + powf(iw->p.y - left->p.y, 2.0f));
 
 	j = -1;
 	tx = left->olen * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
+	otx = tx;
 	while (tx > (float)iw->t[left->wall->t]->w)
 		tx -= (float)iw->t[left->wall->t]->w;
 	while (++j < len)
 	{
 		if (iw->d.top[left->x + j] >= iw->d.bottom[left->x + j])
 			continue;
-		
+		if (iw->d.wallTop[j] < iw->d.top[j + left->x])
+			ty = (float)((left->zd - left->zu) * (iw->d.top[j + left->x] - iw->d.wallTop[j])) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
+		else
+			ty = (float)left->zu;
+		ty = ty * (float)iw->t[left->wall->t]->h / 1000.0f;
+		dty = ((float)(left->zd - left->zu) * (float)iw->t[left->wall->t]->h / 1000.0f) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
+		while (ty > (float)iw->t[left->wall->t]->h)
+			ty -= (float)iw->t[left->wall->t]->h;
 		i = iw->d.top[j] - 1;
 		while (++i < iw->d.bottom[j])
-			set_pixel(iw->sur, j, i, 0x00FF00);
+		{
+			set_pixel(iw->sur, j, i, read_pixel(iw->t[left->wall->t], (int)tx, (int)ty));
+			ty += dty;
+			while (ty > (float)iw->t[left->wall->t]->h)
+				ty -= (float)iw->t[left->wall->t]->h;
+		}
 		iw->d.top[j] = iw->d.bottom[j];
+		ang += dang;
+		tx = otx + sinf(ang) * lenpl / sin(sing - ang) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
+		while (tx > (float)iw->t[left->wall->t]->w)
+			tx -= (float)iw->t[left->wall->t]->w;
 	}
 }
 
@@ -784,7 +805,7 @@ void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	draw_ceil(iw, left, len);
 	if (left->wall->nextsector == -1)
 	{
-		draw_wall(iw, left, len);
+		draw_wall_tex(iw, left, right, len);
 		draw_useless_lines(iw, left, len);
 	}
 	else if (left->wall->nextsector != iw->d.prev_sector)

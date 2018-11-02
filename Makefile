@@ -19,7 +19,7 @@ OBJ = $(SRC:.c=.o)
 
 INC =	-I SDL2/SDL2.framework/Headers\
 
-ERRFL = -Wall -Wextra# -Werror
+ERRFL = -Wall -Wextra -g # -Werror
 
 FL = -F SDL2/ -framework SDL2
 
