@@ -10,6 +10,34 @@ void	set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 	}
 }
 
+Uint32	read_pixel(SDL_Surface *surface, const int x, const int y)
+{
+	int		bpp;
+	uint8_t *p;
+
+	bpp = surface->format->BytesPerPixel;
+	p = (uint8_t *)surface->pixels + y * surface->pitch + x * bpp;
+	/*printf("bpp %d\n", bpp);
+	if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+		printf("big endian\n");
+	else
+		printf("small endian\n");*/
+		/*if (bpp == 1)
+			return (*p);
+		if (bpp == 2)
+			return (*(uint16_t *)p);
+		if (bpp == 3)
+		{
+			if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+				return (p[0] << 16 | p[1] << 8 | p[2]);
+			else*/
+	return (p[0] | p[1] << 8 | p[2] << 16);
+	/*}
+	if (bpp == 4)
+		return (*(uint32_t *)p);
+	return (0);*/
+}
+
 void	exit_x(t_sdl *iw)
 {
 	SDL_FreeSurface(iw->sur);
@@ -25,7 +53,7 @@ void	update(t_sdl *iw)
 {
 	SDL_FillRect(iw->sur, NULL, 0x000000);
 	draw(iw);
-	printf("Update\n");
+	//printf("Update\n");
 	SDL_UpdateWindowSurface(iw->win);
 }
 
@@ -80,7 +108,7 @@ void	key_down(int code, t_sdl *iw)
 		iw->p.z -= 60;
 		update(iw);
 	}
-	printf("rot = %f\n", iw->p.rot);
+	printf("rot = %d px %d py %d pz %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z);
 }
 
 void	main_loop(t_sdl *iw)
@@ -342,6 +370,9 @@ void	get_visible_walls2(t_sdl *iw, int wall, float lang)
 	w->len = sqrtf(powf((float)(iw->p.x - iw->walls[wall].x), 2.0f) +  powf((float)(iw->p.y - iw->walls[wall].y), 2.0f));
 	w->plen = fabsf(iw->d.screen.a * (float)iw->walls[wall].x + iw->d.screen.b * (float)iw->walls[wall].y + iw->d.screen.c) /
 				sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
+	w->olen = 0.0f;
+	w->p.x = iw->walls[wall].x;
+	w->p.y = iw->walls[wall].y;
 	w->wall = &iw->walls[wall];
 	w->zu = get_ceil_z(iw, iw->walls[wall].x, iw->walls[wall].y);
 	w->zd = get_floor_z(iw, iw->walls[wall].x, iw->walls[wall].y);
@@ -440,10 +471,12 @@ void	add_lr_wall(t_sdl *iw, t_intpoint2d *p, t_wall *wall, int x)
 	tmp->len = sqrtf(powf((float)(iw->p.x - p->x), 2.0f) + powf((float)(iw->p.y - p->y), 2.0f));
 	tmp->plen = fabsf(iw->d.screen.a * (float)p->x + iw->d.screen.b * (float)p->y + iw->d.screen.c) /
 				sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
+	tmp->olen = sqrtf(powf(p->x - wall->x, 2.0f) + powf(p->y - wall->y, 2.0f));
+	tmp->p = *p;
 	tmp->zd = get_floor_z(iw, p->x, p->y);
 	tmp->zu = get_ceil_z(iw, p->x, p->y);
 	tmp->next = 0;
-	printf("Adding x %d px %d py %d len %f plen %f\n", tmp->x, p->x, p->y, tmp->len, tmp->plen);
+	//printf("Adding x %d px %d py %d len %f plen %f\n", tmp->x, p->x, p->y, tmp->len, tmp->plen);
 	add_wall(iw, tmp);
 }
 
@@ -561,6 +594,45 @@ void	draw_wall(t_sdl *iw, t_save_wall *left, int len)
 	}
 }
 
+void	draw_wall_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
+{
+	int		i;
+	int		j;
+	float	tx;
+	float	ty;
+	float	sing;
+	float	ang;
+	float	dang;
+	t_point2d	lv;
+	t_point2d	rv;
+
+	lv.x = (float)(left->p.x - iw->p.x);
+	lv.y = (float)(left->p.y - iw->p.y);
+	rv.x = (float)(right->p.x - iw->p.x);
+	rv.y = (float)(right->p.y - iw->p.y);
+	ang = acosf((lv.x * rv.x + lv.y * rv.y) / (sqrtf(lv.x * lv.x + lv.y * lv.y) * sqrtf(rv.x * rv.x + rv.y * rv.y)));
+	dang = ang / (float)len;
+	ang = 0.0f;
+	rv.x = (float)(right->p.x - left->p.x);
+	rv.y = (float)(right->p.y - left->p.y);
+	sing = sinf(acosf((lv.x * rv.x + lv.y * rv.y) / (sqrtf(lv.x * lv.x + lv.y * lv.y) * sqrtf(rv.x * rv.x + rv.y * rv.y))));
+
+	j = -1;
+	tx = left->olen * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
+	while (tx > (float)iw->t[left->wall->t]->w)
+		tx -= (float)iw->t[left->wall->t]->w;
+	while (++j < len)
+	{
+		if (iw->d.top[left->x + j] >= iw->d.bottom[left->x + j])
+			continue;
+		
+		i = iw->d.top[j] - 1;
+		while (++i < iw->d.bottom[j])
+			set_pixel(iw->sur, j, i, 0x00FF00);
+		iw->d.top[j] = iw->d.bottom[j];
+	}
+}
+
 void	draw_floor(t_sdl *iw, t_save_wall *left, int len)
 {
 	int		i;
@@ -654,20 +726,33 @@ void	draw_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right
 	tmp = (int *)malloc((right->x - left->x + 1) * sizeof(int));
 	l.x0 = left->x;
 	l.x1 = right->x;
-	lz = get_floor_z(iw, left->wall->x, left->wall->y);
-	rz = get_floor_z(iw, right->wall->x, right->wall->y);
+	/*lz = get_floor_z(iw, left->wall->x, left->wall->y);
+	rz = get_floor_z(iw, right->wall->x, right->wall->y);*/
+	lz = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
+	rz = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
 	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen;
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen;
 	brez_line(tmp, l);
 	draw_between_sectors_bot(iw, left, right->x - left->x + 1, tmp);
 
-	lz = get_ceil_z(iw, left->wall->x, left->wall->y);
-	rz = get_ceil_z(iw, right->wall->x, right->wall->y);
+	/*lz = get_ceil_z(iw, left->wall->x, left->wall->y);
+	rz = get_ceil_z(iw, right->wall->x, right->wall->y);*/
+	lz = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
+	rz = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
 	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen;
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen;
 	brez_line(tmp, l);
 	draw_between_sectors_top(iw, left, right->x - left->x + 1, tmp);
 	free(tmp);
+}
+
+void	fill_portal(t_sdl *iw, t_save_wall *left, t_save_wall *right)
+{
+	int		j;
+
+	j = left->x - 1;
+	while (++j < right->x)
+		iw->d.top[j] = iw->d.bottom[j];
 }
 
 void	draw_start(t_sdl *iw);
@@ -688,6 +773,9 @@ void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	get_left_right_visible_walls(&iw2);
 	iw2.d.prev_sector = iw->d.cs;
 	draw_start(&iw2);
+	fill_portal(iw, left, right);
+	/*iw->d.top = iw2.d.top;
+	iw->d.bottom = iw2.d.bottom;*/
 }
 
 void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
@@ -709,10 +797,10 @@ void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 
 	if (left->x >= right->x)
 		return;
-	printf("malloc\n");
+	//printf("malloc\n");
 	iw->d.wallTop = (int *)malloc((right->x - left->x + 1) * sizeof(int));
 	iw->d.wallBot = (int *)malloc((right->x - left->x + 1) * sizeof(int));
-	printf("malloced\n");
+	//printf("malloced\n");
 	if (!iw->d.wallTop || !iw->d.wallBot)
 		return;
 	l.x0 = left->x;
@@ -724,6 +812,8 @@ void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - right->zu) / (int)right->plen;
 	brez_line(iw->d.wallTop, l);
 	draw_all(iw, left, right, right->x - left->x + 1);
+	/*SDL_UpdateWindowSurface(iw->win);
+	system("PAUSE");*/
 	free(iw->d.wallBot);
 	free(iw->d.wallTop);
 }
@@ -758,7 +848,7 @@ void	draw(t_sdl *iw)
 	get_left_right_visible_walls(iw);
 
 	//////////
-	t_save_wall *tmp;
+	/*t_save_wall *tmp;
 	tmp = iw->d.vw;
 	while (tmp != 0)
 	{
@@ -766,19 +856,29 @@ void	draw(t_sdl *iw)
 			tmp->zd, tmp->plen);
 		tmp = tmp->next;
 	}
-	printf("\n\n");
+	printf("\n\n");*/
 
 	////////////
 	iw->d.prev_sector = -1;
 	draw_start(iw);
 }
 
+void	read_textures(t_sdl *iw)
+{
+	iw->t[0] = SDL_LoadBMP("textures/1.bmp");
+	iw->tsz[0] = 1.0f;
+
+	//Uint8 *target_pixel = (Uint8 *)(iw->t)[0]->pixels;
+	//set_pixel((iw->t)[0], 0, 0, 0xFF0000);
+	//printf("%d\n", read_pixel((iw->t)[0], 2, 0));
+}
+
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 2500;
-	iw->p.y = 2500;
-	iw->p.z = 200;
-	iw->p.introt = 1;
+	iw->p.x = 8500;
+	iw->p.y = 4200;
+	iw->p.z = 820;
+	iw->p.introt = 135;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;
@@ -790,6 +890,7 @@ int		main(void)
 	t_sdl	iw;
 
 	get_def(&iw);
+	read_textures(&iw);
 	SDL_Init(SDL_INIT_EVERYTHING);
 	SDL_SetRelativeMouseMode(0);
 	iw.win = SDL_CreateWindow("SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,

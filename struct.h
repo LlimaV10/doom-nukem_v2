@@ -19,6 +19,8 @@ typedef struct	s_wall
 	int				y;
 	// Wall line
 	t_line2d		l;
+	// Texture number
+	int				t;
 	// Index of the next sector
 	int				nextsector;
 	// Index of the same wall in the next sector
@@ -120,6 +122,8 @@ typedef struct	s_save_wall
 	int		x;
 	float	len;
 	float	plen;
+	float	olen;
+	t_intpoint2d	p;
 	t_wall	*wall;
 	int		zu;
 	int		zd;
@@ -164,6 +168,8 @@ typedef struct	s_sdl
 	t_player	p;
 	t_variables	v;
 	t_draw		d;
+	SDL_Surface *(t)[TEXTURES_COUNT]; // textures
+	float		tsz[TEXTURES_COUNT]; // textures compression
 }				t_sdl;
 
 #endif
