@@ -616,8 +616,8 @@ void	draw_wall_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	ang = acosf((lv.x * rv.x + lv.y * rv.y) / (sqrtf(lv.x * lv.x + lv.y * lv.y) * sqrtf(rv.x * rv.x + rv.y * rv.y)));
 	dang = ang / (float)len;
 	ang = 0.0f;
-	rv.x = (float)(right->p.x - left->p.x);
-	rv.y = (float)(right->p.y - left->p.y);
+	rv.x = (float)(-right->p.x + left->p.x);
+	rv.y = (float)(-right->p.y + left->p.y);
 	sing = G180 - acosf((lv.x * rv.x + lv.y * rv.y) / (sqrtf(lv.x * lv.x + lv.y * lv.y) * sqrtf(rv.x * rv.x + rv.y * rv.y)));
 	lenpl = sqrtf(powf(iw->p.x - left->p.x, 2.0f) + powf(iw->p.y - left->p.y, 2.0f));
 
@@ -637,16 +637,16 @@ void	draw_wall_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		dty = ((float)(left->zu - left->zd) * (float)iw->t[left->wall->t]->h / 1000.0f) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
 		while (ty > (float)iw->t[left->wall->t]->h)
 			ty -= (float)iw->t[left->wall->t]->h;
-		i = iw->d.top[j] - 1;
+		i = iw->d.top[left->x + j] - 1;
 		//printf("tx %f\n", tx);
-		while (++i < iw->d.bottom[j])
+		while (++i < iw->d.bottom[left->x + j])
 		{
-			set_pixel(iw->sur, j, i, get_pixel(iw->t[left->wall->t], (int)tx, (int)ty));
+			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[left->wall->t], (int)tx, (int)ty));
 			ty += dty;
 			while (ty > (float)iw->t[left->wall->t]->h)
 				ty -= (float)iw->t[left->wall->t]->h;
 		}
-		iw->d.top[j] = iw->d.bottom[j];
+		iw->d.top[left->x + j] = iw->d.bottom[left->x + j];
 		ang += dang;
 		/*tmp = sinf(ang) * lenpl / sin(sing - ang);
 		tx += sinf(ang) * lenpl / sin(sing - ang) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;*/
@@ -836,7 +836,7 @@ void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - right->zu) / (int)right->plen;
 	brez_line(iw->d.wallTop, l);
 	draw_all(iw, left, right, right->x - left->x + 1);
-	printf("draw lpx %d lpy %d rpx %d rpy %d\n", left->p.x, left->p.y, right->p.x, right->p.y);
+	//printf("draw lpx %d lpy %d rpx %d rpy %d\n", left->p.x, left->p.y, right->p.x, right->p.y);
 	/*SDL_UpdateWindowSurface(iw->win);
 	system("PAUSE");*/
 	free(iw->d.wallBot);
@@ -903,7 +903,7 @@ void	get_def(t_sdl *iw)
 	iw->p.x = 9400;
 	iw->p.y = 4200;
 	iw->p.z = 820;
-	iw->p.introt = 39;
+	iw->p.introt = 89;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;
