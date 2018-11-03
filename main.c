@@ -607,7 +607,12 @@ void	draw_wall_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	float	lenpl;
 	t_point2d	lv;
 	t_point2d	rv;
-	float tmp;
+	float		zudiff;
+	float	zddiff;
+	float	zu;
+	float	zd;
+	float	left_len;
+	float	len_lr;
 
 	lv.x = (float)(left->p.x - iw->p.x);
 	lv.y = (float)(left->p.y - iw->p.y);
@@ -620,21 +625,28 @@ void	draw_wall_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	rv.y = (float)(-right->p.y + left->p.y);
 	sing = G180 - acosf((lv.x * rv.x + lv.y * rv.y) / (sqrtf(lv.x * lv.x + lv.y * lv.y) * sqrtf(rv.x * rv.x + rv.y * rv.y)));
 	lenpl = sqrtf(powf(iw->p.x - left->p.x, 2.0f) + powf(iw->p.y - left->p.y, 2.0f));
+	len_lr = sqrtf(powf(left->p.x - right->p.x, 2.0f) + powf(left->p.y - right->p.y, 2.0f));
+	zudiff = (right->zu - left->zu) / len_lr;
+	zddiff = (right->zd - left->zd) / len_lr;
 
-	j = -1;
+	left_len = 0.0f;
 	tx = left->olen * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
 	while (tx > (float)iw->t[left->wall->t]->w)
 		tx -= (float)iw->t[left->wall->t]->w;
+
+	j = -1;
 	while (++j < len)
 	{
 		if (iw->d.top[left->x + j] >= iw->d.bottom[left->x + j])
 			continue;
+		zu = (float)left->zu + left_len * zudiff;
+		zd = (float)left->zd + left_len * zddiff;
 		if (iw->d.wallTop[j] < iw->d.top[j + left->x])
-			ty = (float)left->zu + (float)((left->zu - left->zd) * (iw->d.top[j + left->x] - iw->d.wallTop[j])) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
+			ty = zu + (zu - zd) * (float)(iw->d.top[j + left->x] - iw->d.wallTop[j]) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
 		else
-			ty = (float)left->zu;
+			ty = zu;
 		ty = ty * (float)iw->t[left->wall->t]->h / 1000.0f;
-		dty = ((float)(left->zu - left->zd) * (float)iw->t[left->wall->t]->h / 1000.0f) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
+		dty = ((zu - zd) * (float)iw->t[left->wall->t]->h / 1000.0f) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
 		while (ty > (float)iw->t[left->wall->t]->h)
 			ty -= (float)iw->t[left->wall->t]->h;
 		i = iw->d.top[left->x + j] - 1;
@@ -650,7 +662,8 @@ void	draw_wall_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		ang += dang;
 		/*tmp = sinf(ang) * lenpl / sin(sing - ang);
 		tx += sinf(ang) * lenpl / sin(sing - ang) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;*/
-		tx = (left->olen + sinf(ang) * lenpl / sin(sing - ang)) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
+		left_len = sinf(ang) * lenpl / sin(sing - ang);
+		tx = (left->olen + left_len) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
 		while (tx > (float)iw->t[left->wall->t]->w)
 			tx -= (float)iw->t[left->wall->t]->w;
 	}
@@ -900,10 +913,10 @@ void	read_textures(t_sdl *iw)
 
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 9400;
-	iw->p.y = 4200;
-	iw->p.z = 820;
-	iw->p.introt = 89;
+	iw->p.x = 2500;
+	iw->p.y = 2500;
+	iw->p.z = 300;
+	iw->p.introt = 1;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;
