@@ -7,7 +7,7 @@ void	new_wall(t_wall *w, int x, int y, int ns, int nsw)
 	w->y = y;
 	w->nextsector = ns;
 	w->nextsector_wall = nsw;
-	w->t = 0;
+	w->t = 2;
 }
 
 void	get_map(t_sdl *iw)
@@ -101,7 +101,7 @@ void	get_map(t_sdl *iw)
 	new_wall(&(iw->walls[i]), 10000, -1000, -1, -1);
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
-	new_wall(&(iw->walls[i]), 7000, -1000, -1, -1);
+	new_wall(&(iw->walls[i]), 7000, -1000, 0, 3);
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
 	new_wall(&(iw->walls[i]), 7000, 2000, -1, -1);

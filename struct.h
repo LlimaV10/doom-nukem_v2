@@ -117,6 +117,25 @@ typedef struct	s_brez
 	int			prev_x;
 }				t_brez;
 
+typedef struct	s_draw_wall_tex
+{
+	float	tx;
+	float	ty;
+	float	dty;
+	float	sing;
+	float	ang;
+	float	dang;
+	float	lenpl;
+	t_point2d	lv;
+	t_point2d	rv;
+	float		zudiff;
+	float	zddiff;
+	float	zu;
+	float	zd;
+	float	left_len;
+	float	len_lr;
+}				t_draw_wall_tex;
+
 typedef struct	s_save_wall
 {
 	int		x;
@@ -129,6 +148,13 @@ typedef struct	s_save_wall
 	int		zd;
 	struct s_save_wall	*next;
 }				t_save_wall;
+
+typedef struct	s_save_wall_pairs
+{
+	t_save_wall		*left;
+	t_save_wall		*right;
+	struct	s_save_wall_pairs *next;
+}				t_save_wall_pairs;
 
 typedef struct	s_draw
 {
@@ -144,6 +170,8 @@ typedef struct	s_draw
 	int			cs;
 	// Visible Walls
 	t_save_wall	*vw;
+	// Left Right Walls to Draw
+	t_save_wall_pairs	*vwp;
 	int			*wallTop;
 	int			*wallBot;
 	int			prev_sector;
