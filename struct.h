@@ -134,20 +134,12 @@ typedef struct	s_draw
 {
 	int			top[WINDOW_W + 1];
 	int			bottom[WINDOW_W + 1];
-	/*t_line2d	view;*/
 	t_intpoint2d	view_dir;
 	t_line2d	screen;
-	/*t_point2d	screen_point;*/
 	t_line2d	left_line;
 	t_line2d	right_line;
 	t_point2d	left_point;
 	t_point2d	right_point;
-	// l / 2, where l - screen length
-	/*float		screen_length;*/
-	// Player Screen Side
-	/*float		pss;*/
-	// Left View Side
-	/*float		lvs;*/
 	// Current Sector
 	int			cs;
 	// Visible Walls
@@ -155,6 +147,8 @@ typedef struct	s_draw
 	int			*wallTop;
 	int			*wallBot;
 	int			prev_sector;
+	int			screen_left;
+	int			screen_right;
 }				t_draw;
 
 typedef struct	s_sdl

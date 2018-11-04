@@ -246,6 +246,18 @@ float	get_k_angle(float rot)
 		return (G360 - rot);
 }
 
+//void	recalculate_angle(t_sdl *iw)
+//{
+//	t_point2d	lv;
+//	t_point2d	rv;
+//
+//	lv.x = iw->d.left_point.x - (float)iw->p.x;
+//	lv.y = iw->d.left_point.y - (float)iw->p.y;
+//	rv.x = iw->d.right_point.x - (float)iw->p.x;
+//	rv.y = iw->d.right_point.y - (float)iw->p.y;
+//	iw->v.angle = acosf((lv.x * rv.x + lv.y * rv.y) / (sqrtf(lv.x * lv.x + lv.y * lv.y) * sqrtf(rv.x * rv.x + rv.y * rv.y))) / 2.0f;
+//}
+
 void	get_left_right_lines_points(t_sdl *iw)
 {
 	float	na;
@@ -358,7 +370,14 @@ int		get_ceil_z(t_sdl *iw, int x, int y)
 
 float	get_vectors_angle(float x1, float y1, float x2, float y2)
 {
-	return (acosf((x1 * x2 + y1 * y2) / (sqrtf(x1 * x1 + y1 * y1) * sqrtf(x2 * x2 + y2 * y2))));
+	float	k;
+
+	k = (x1 * x2 + y1 * y2) / (sqrtf(x1 * x1 + y1 * y1) * sqrtf(x2 * x2 + y2 * y2));
+	if (k > 1.0f)
+		return (acos(1.0f));
+	else if (k < -1.0f)
+		return (acos(-1.0f));
+	return (acosf(k));
 }
 
 void	get_visible_walls2(t_sdl *iw, int wall, float lang)
@@ -394,7 +413,7 @@ void	get_visible_walls(t_sdl *iw)
 			(float)(iw->walls[wall].x - iw->p.x), (float)(iw->walls[wall].y - iw->p.y));
 		rang = get_vectors_angle(iw->d.right_point.x - (float)iw->p.x, iw->d.right_point.y - (float)iw->p.y,
 			(float)(iw->walls[wall].x - iw->p.x), (float)(iw->walls[wall].y - iw->p.y));
-		if (lang <= 2 * iw->v.angle && rang <= 2 * iw->v.angle)
+		if ((lang <= 2 * iw->v.angle && rang <= 2 * iw->v.angle) || lang == 0.0f || rang == 0.0f)
 			get_visible_walls2(iw, wall, lang);
 		wall++;
 	}
@@ -482,19 +501,14 @@ void	add_lr_wall(t_sdl *iw, t_intpoint2d *p, t_wall *wall, int x)
 
 void	get_all_intersection_line(t_sdl *iw, t_line2d *nl, int right)
 {
-	int		sec;
 	int		wall;
 	t_intpoint2d	p;
 
-	sec = -1;
-	while (++sec < iw->v.sc)
-	{
-		wall = iw->sectors[sec].sw - 1;
-		while (++wall < iw->sectors[sec].sw + iw->sectors[sec].nw)
-			if (visible_wall(iw, wall) && cross_two_lines(nl, &iw->walls[wall].l, &p)
-				&& point_in_front_and_on_wall(iw, &p, wall))
-				add_lr_wall(iw, &p, ((right == 0) ? &iw->walls[wall] : iw->walls[wall].next), right * WINDOW_W);
-	}
+	wall = iw->sectors[iw->d.cs].sw - 1;
+	while (++wall < iw->sectors[iw->d.cs].sw + iw->sectors[iw->d.cs].nw)
+		if (visible_wall(iw, wall) && cross_two_lines(nl, &iw->walls[wall].l, &p)
+			&& point_in_front_and_on_wall(iw, &p, wall))
+			add_lr_wall(iw, &p, ((right == 0) ? &iw->walls[wall] : iw->walls[wall].next), right * WINDOW_W);
 }
 
 void	get_left_right_visible_walls(t_sdl *iw)
@@ -631,14 +645,17 @@ void	draw_wall_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 
 	left_len = 0.0f;
 	tx = left->olen * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
-	while (tx > (float)iw->t[left->wall->t]->w)
+	while (tx >= (float)iw->t[left->wall->t]->w)
 		tx -= (float)iw->t[left->wall->t]->w;
 
 	j = -1;
 	while (++j < len)
 	{
 		if (iw->d.top[left->x + j] >= iw->d.bottom[left->x + j])
+		{
+			ang += dang;
 			continue;
+		}
 		zu = (float)left->zu + left_len * zudiff;
 		zd = (float)left->zd + left_len * zddiff;
 		if (iw->d.wallTop[j] < iw->d.top[j + left->x])
@@ -650,18 +667,15 @@ void	draw_wall_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		while (ty > (float)iw->t[left->wall->t]->h)
 			ty -= (float)iw->t[left->wall->t]->h;
 		i = iw->d.top[left->x + j] - 1;
-		//printf("tx %f\n", tx);
 		while (++i < iw->d.bottom[left->x + j])
 		{
 			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[left->wall->t], (int)tx, (int)ty));
 			ty += dty;
-			while (ty > (float)iw->t[left->wall->t]->h)
+			while (ty >= (float)iw->t[left->wall->t]->h)
 				ty -= (float)iw->t[left->wall->t]->h;
 		}
 		iw->d.top[left->x + j] = iw->d.bottom[left->x + j];
 		ang += dang;
-		/*tmp = sinf(ang) * lenpl / sin(sing - ang);
-		tx += sinf(ang) * lenpl / sin(sing - ang) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;*/
 		left_len = sinf(ang) * lenpl / sin(sing - ang);
 		tx = (left->olen + left_len) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
 		while (tx > (float)iw->t[left->wall->t]->w)
@@ -792,6 +806,18 @@ void	fill_portal(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 		iw->d.top[j] = iw->d.bottom[j];
 }
 
+void	fill_tb_by_slsr(t_sdl *iw)
+{
+	int		i;
+
+	i = -1;
+	while (++i < iw->d.screen_left)
+		iw->d.top[i] = iw->d.bottom[i];
+	i = iw->d.screen_right - 1;
+	while (++i <= WINDOW_W)
+		iw->d.top[i] = iw->d.bottom[i];
+}
+
 void	draw_start(t_sdl *iw);
 void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 {
@@ -805,7 +831,11 @@ void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	get_direction(&iw2);
 	get_screen_line(&iw2);
 	get_left_right_lines_points(&iw2);
+	//recalculate_angle(&iw2); 
 	iw2.d.vw = 0;
+	iw2.d.screen_left = left->x;
+	iw2.d.screen_right = right->x;
+	fill_tb_by_slsr(&iw2);
 	get_visible_walls(&iw2);
 	get_left_right_visible_walls(&iw2);
 	iw2.d.prev_sector = iw->d.cs;
@@ -849,7 +879,7 @@ void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - right->zu) / (int)right->plen;
 	brez_line(iw->d.wallTop, l);
 	draw_all(iw, left, right, right->x - left->x + 1);
-	//printf("draw lpx %d lpy %d rpx %d rpy %d\n", left->p.x, left->p.y, right->p.x, right->p.y);
+	//printf("draw lpx %d lpy %d rpx %d rpy %d lplen %f lx %d rx %d\n", left->wall->x, left->wall->y, right->wall->x, right->wall->y, left->plen, left->x, right->x);
 	/*SDL_UpdateWindowSurface(iw->win);
 	system("PAUSE");*/
 	free(iw->d.wallBot);
@@ -866,8 +896,9 @@ void	draw_start(t_sdl *iw)
 	left = iw->d.vw;
 	while (left != 0)
 	{
-		if ((right = find_next_vis_wall(iw, left)) != 0)
-			draw_left_right(iw, left, right);
+		if ((right = find_next_vis_wall(iw, left)) != 0 && left->x < right->x)
+			if (!(right->x < iw->d.screen_left || left->x > iw->d.screen_right))
+				draw_left_right(iw, left, right);
 		left = left->next;
 	}
 	free_walls(iw);
@@ -881,7 +912,10 @@ void	draw(t_sdl *iw)
 	get_direction(iw);
 	get_screen_line(iw);
 	get_left_right_lines_points(iw);
+	//recalculate_angle(iw);
 	iw->d.vw = 0;
+	iw->d.screen_left = 0;
+	iw->d.screen_right = WINDOW_W - 1;
 	get_visible_walls(iw);
 	get_left_right_visible_walls(iw);
 
@@ -913,10 +947,10 @@ void	read_textures(t_sdl *iw)
 
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 2500;
-	iw->p.y = 2500;
-	iw->p.z = 300;
-	iw->p.introt = 1;
+	iw->p.x = 8380;
+	iw->p.y = 1300;
+	iw->p.z = 660;
+	iw->p.introt = 329;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;
@@ -931,7 +965,7 @@ int		main(void)
 	read_textures(&iw);
 	SDL_Init(SDL_INIT_EVERYTHING);
 	SDL_SetRelativeMouseMode(0);
-	iw.win = SDL_CreateWindow("SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+	iw.win = SDL_CreateWindow("SDL", 10/* SDL_WINDOWPOS_CENTERED*/, SDL_WINDOWPOS_CENTERED,
 		WINDOW_W, WINDOW_H, SDL_WINDOW_SHOWN);
 	iw.sur = SDL_GetWindowSurface(iw.win);
 	// draw
