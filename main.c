@@ -942,9 +942,8 @@ void	sort_pairs(t_sdl *iw)
 		f = 0;
 		while (tmp->next->next != 0)
 		{
-			if (tmp->next->right->x > tmp->next->next->left->x && tmp->next->right->len > tmp->next->next->left->len
-				&& tmp->next->left->x < tmp->next->next->left->x
-				/*&& tmp->next->next->right->x > tmp->next->left->x*/)
+			if (tmp->next->right->x >= tmp->next->next->left->x && tmp->next->right->len > tmp->next->next->left->len
+				&& tmp->next->left->x <= tmp->next->next->left->x)
 			{
 				tmp2 = tmp->next;
 				tmp->next = tmp->next->next;
@@ -977,16 +976,29 @@ void	draw_start(t_sdl *iw)
 	}
 
 	//////
-	/*t_save_wall_pairs *ttt;
+	t_save_wall_pairs *ttt;
 	ttt = iw->d.vwp;
 	while (ttt != 0)
 	{
 		printf("left: x %d len %f; right: x %d len %f\n", ttt->left->x, ttt->left->len, ttt->right->x, ttt->right->len);
 		ttt = ttt->next;
-	}*/
+	}
+	printf("\n\n");
 	/////
 
 	sort_pairs(iw);
+
+	//////
+	printf("sorted:\n");
+	ttt = iw->d.vwp;
+	while (ttt != 0)
+	{
+		printf("left: x %d len %f; right: x %d len %f\n", ttt->left->x, ttt->left->len, ttt->right->x, ttt->right->len);
+		ttt = ttt->next;
+	}
+	printf("\n\n");
+	/////
+
 	tmp = iw->d.vwp;
 	while (tmp != 0)
 	{
@@ -1014,7 +1026,7 @@ void	draw(t_sdl *iw)
 	get_left_right_visible_walls(iw);
 
 	//////////
-	/*t_save_wall *tmp;
+	t_save_wall *tmp;
 	tmp = iw->d.vw;
 	while (tmp != 0)
 	{
@@ -1023,7 +1035,7 @@ void	draw(t_sdl *iw)
 			tmp->zd, tmp->plen);
 		tmp = tmp->next;
 	}
-	printf("\n\n");*/
+	printf("\n\n");
 
 	////////////
 	iw->d.prev_sector = -1;
@@ -1047,10 +1059,10 @@ void	read_textures(t_sdl *iw)
 
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 160;
-	iw->p.y = 460;
+	iw->p.x = 220;
+	iw->p.y = 700;
 	iw->p.z = 240;
-	iw->p.introt = 9;
+	iw->p.introt = 345;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;
