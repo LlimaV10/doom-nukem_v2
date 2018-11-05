@@ -351,7 +351,7 @@ void	add_wall(t_sdl *iw, t_save_wall *tmp)
 {
 	t_save_wall	*tmp2;
 
-	if (iw->d.vw == 0 || iw->d.vw->len > tmp->len)
+	if (iw->d.vw == 0 || /*iw->d.vw->len > tmp->len*/iw->d.vw->x > tmp->x)
 	{
 		tmp->next = iw->d.vw;
 		iw->d.vw = tmp;
@@ -359,7 +359,7 @@ void	add_wall(t_sdl *iw, t_save_wall *tmp)
 	else
 	{
 		tmp2 = iw->d.vw;
-		while (tmp2->next != 0 && tmp2->next->len <= tmp->len)
+		while (tmp2->next != 0 && /*tmp2->next->len <= tmp->len*/tmp2->next->x < tmp->x)
 			tmp2 = tmp2->next;
 		if (tmp2->next != 0)
 			tmp->next = tmp2->next;
@@ -943,7 +943,8 @@ void	sort_pairs(t_sdl *iw)
 		while (tmp->next->next != 0)
 		{
 			if (tmp->next->right->x > tmp->next->next->left->x && tmp->next->right->len > tmp->next->next->left->len
-				&& tmp->next->next->right->x > tmp->next->left->x)
+				&& tmp->next->left->x < tmp->next->next->left->x
+				/*&& tmp->next->next->right->x > tmp->next->left->x*/)
 			{
 				tmp2 = tmp->next;
 				tmp->next = tmp->next->next;
@@ -974,6 +975,17 @@ void	draw_start(t_sdl *iw)
 				//draw_left_right(iw, left, right);
 		left = left->next;
 	}
+
+	//////
+	/*t_save_wall_pairs *ttt;
+	ttt = iw->d.vwp;
+	while (ttt != 0)
+	{
+		printf("left: x %d len %f; right: x %d len %f\n", ttt->left->x, ttt->left->len, ttt->right->x, ttt->right->len);
+		ttt = ttt->next;
+	}*/
+	/////
+
 	sort_pairs(iw);
 	tmp = iw->d.vwp;
 	while (tmp != 0)
@@ -1002,15 +1014,16 @@ void	draw(t_sdl *iw)
 	get_left_right_visible_walls(iw);
 
 	//////////
-	t_save_wall *tmp;
+	/*t_save_wall *tmp;
 	tmp = iw->d.vw;
 	while (tmp != 0)
 	{
-		printf("x %d len %f xw %d yw %d zu %d zd %d plen %f\n", tmp->x, tmp->len, tmp->wall->x, tmp->wall->y, tmp->zu,
+		if (tmp->wall == &iw->walls[0] || tmp->wall == &iw->walls[1] || tmp->wall == &iw->walls[7] || tmp->wall == &iw->walls[8])
+		printf("x %d len %f\n", tmp->x, tmp->len, tmp->wall->x, tmp->wall->y, tmp->zu,
 			tmp->zd, tmp->plen);
 		tmp = tmp->next;
 	}
-	printf("\n\n");
+	printf("\n\n");*/
 
 	////////////
 	iw->d.prev_sector = -1;
@@ -1034,10 +1047,10 @@ void	read_textures(t_sdl *iw)
 
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 1600;
-	iw->p.y = -1100;
+	iw->p.x = 160;
+	iw->p.y = 460;
 	iw->p.z = 240;
-	iw->p.introt = 257;
+	iw->p.introt = 9;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;
