@@ -12,7 +12,7 @@ void	new_wall(t_wall *w, int x, int y, int ns, int nsw)
 
 void	get_map(t_sdl *iw)
 {
-	iw->v.sc = 2;
+	iw->v.sc = 3;
 	iw->sectors = (t_sector *)malloc(iw->v.sc * sizeof(t_sector));
 	iw->sectors[0].sw = 0;
 	iw->sectors[0].nw = 6 + 4 + 4;/////
@@ -32,7 +32,7 @@ void	get_map(t_sdl *iw)
 	iw->sectors[0].cl.z = 1000;
 
 	iw->sectors[1].sw = 14;///////
-	iw->sectors[1].nw = 8;
+	iw->sectors[1].nw = 8 + 4;
 	iw->sectors[1].fr.n = 0;
 	iw->sectors[1].fr.x = 5000;
 	iw->sectors[1].fr.y = 0;
@@ -42,7 +42,21 @@ void	get_map(t_sdl *iw)
 	iw->sectors[1].cl.y = 0;
 	iw->sectors[1].cl.z = 1200;
 
-	iw->walls = (t_wall *)malloc((iw->sectors[0].nw + iw->sectors[1].nw) * sizeof(t_wall));
+	iw->sectors[2].sw = 26;///////
+	iw->sectors[2].nw = 4;
+	iw->sectors[2].fr.n = (t_sector_fc *)malloc(sizeof(t_sector_fc));
+	iw->sectors[2].fr.n->a = 0;
+	iw->sectors[2].fr.n->b = 1;
+	iw->sectors[2].fr.n->c = 1;
+	iw->sectors[2].fr.x = 8000;
+	iw->sectors[2].fr.y = 4000;
+	iw->sectors[2].fr.z = 350;
+	iw->sectors[2].cl.n = 0;
+	iw->sectors[2].cl.x = 5000;
+	iw->sectors[2].cl.y = 0;
+	iw->sectors[2].cl.z = 600;
+
+	iw->walls = (t_wall *)malloc((iw->sectors[0].nw + iw->sectors[1].nw + iw->sectors[2].nw) * sizeof(t_wall));
 	int i = 0;
 	new_wall(&(iw->walls[i++]), 0, 0 ,-1, -1);
 	new_wall(&(iw->walls[i]), 0, 5000, -1, -1);
@@ -101,11 +115,8 @@ void	get_map(t_sdl *iw)
 	i++;
 	new_wall(&(iw->walls[i]), 5000, 3000, -1, -1);
 	iw->walls[i - 1].next = &iw->walls[i];
-	/*i++;
-	new_wall(&(iw->walls[i]), 7000, 3000, -1, -1);
-	iw->walls[i - 1].next = &iw->walls[i];*/
 	i++;
-	new_wall(&(iw->walls[i]), 7000, 5000, 0, 3);
+	new_wall(&(iw->walls[i]), 7000, 5000, -1, 3);
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
 	new_wall(&(iw->walls[i]), 7000, 6000, -1, -1);
@@ -118,11 +129,41 @@ void	get_map(t_sdl *iw)
 	new_wall(&(iw->walls[i]), 10000, -1000, -1, -1);
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
-	new_wall(&(iw->walls[i]), 7000, -1000, 0, 3);
+	new_wall(&(iw->walls[i]), 7000, -1000, -1, 3);
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
 	new_wall(&(iw->walls[i]), 7000, 2000, -1, -1);
 	iw->walls[i - 1].next = &iw->walls[i];
 
 	iw->walls[i].next = &iw->walls[14];
+
+	i++;
+	new_wall(&(iw->walls[i]), 8000, 4000, 2, 29);
+	//iw->walls[i - 1].next = &iw->walls[i];
+	i++;
+	new_wall(&(iw->walls[i]), 8000, 3900, 2, 28);
+	iw->walls[i - 1].next = &iw->walls[i];
+	i++;
+	new_wall(&(iw->walls[i]), 8100, 3900, 2, 27);
+	iw->walls[i - 1].next = &iw->walls[i];
+	i++;
+	new_wall(&(iw->walls[i]), 8100, 4000, 2, 26);
+	iw->walls[i - 1].next = &iw->walls[i];
+
+	iw->walls[i].next = &iw->walls[22];
+
+	i++;
+	new_wall(&(iw->walls[i]), 8000, 4000, 1, 25);
+	//iw->walls[i - 1].next = &iw->walls[i];
+	i++;
+	new_wall(&(iw->walls[i]), 8100, 4000, 1, 24);
+	iw->walls[i - 1].next = &iw->walls[i];
+	i++;
+	new_wall(&(iw->walls[i]), 8100, 3900, 1, 23);
+	iw->walls[i - 1].next = &iw->walls[i];
+	i++;
+	new_wall(&(iw->walls[i]), 8000, 3900, 1, 22);
+	iw->walls[i - 1].next = &iw->walls[i];
+
+	iw->walls[i].next = &iw->walls[26];
 }

@@ -248,18 +248,6 @@ float	get_k_angle(float rot)
 		return (G360 - rot);
 }
 
-//void	recalculate_angle(t_sdl *iw)
-//{
-//	t_point2d	lv;
-//	t_point2d	rv;
-//
-//	lv.x = iw->d.left_point.x - (float)iw->p.x;
-//	lv.y = iw->d.left_point.y - (float)iw->p.y;
-//	rv.x = iw->d.right_point.x - (float)iw->p.x;
-//	rv.y = iw->d.right_point.y - (float)iw->p.y;
-//	iw->v.angle = acosf((lv.x * rv.x + lv.y * rv.y) / (sqrtf(lv.x * lv.x + lv.y * lv.y) * sqrtf(rv.x * rv.x + rv.y * rv.y))) / 2.0f;
-//}
-
 void	get_left_right_lines_points(t_sdl *iw)
 {
 	float	na;
@@ -713,7 +701,10 @@ void	draw_floor(t_sdl *iw, t_save_wall *left, int len)
 		if (iw->d.wallBot[j] >= iw->d.bottom[left->x + j] ||
 			iw->d.top[left->x + j] >= iw->d.bottom[left->x + j])
 			continue ;
-		i = iw->d.wallBot[j] - 1;
+		if (iw->d.wallBot[j] < iw->d.top[left->x + j])
+			i = iw->d.top[left->x + j] - 1;
+		else
+			i = iw->d.wallBot[j] - 1;
 		while (++i < iw->d.bottom[left->x + j])
 			set_pixel(iw->sur, left->x + j, i, 0x0000FF);
 		if (iw->d.wallBot[j] < iw->d.bottom[left->x + j])
@@ -733,7 +724,7 @@ void	draw_ceil(t_sdl *iw, t_save_wall *left, int len)
 			iw->d.top[left->x + j] >= iw->d.bottom[left->x + j])
 			continue;
 		i = iw->d.top[left->x + j] - 1;
-		while (++i < iw->d.wallTop[j])
+		while (++i < iw->d.wallTop[j] && i < iw->d.bottom[left->x + j])
 			set_pixel(iw->sur, left->x + j, i, 0x00FFFF);
 		if (iw->d.wallTop[j] > iw->d.top[left->x + j])
 			iw->d.top[left->x + j] = iw->d.wallTop[j];
@@ -779,7 +770,7 @@ void	draw_between_sectors_top(t_sdl *iw, t_save_wall *left, int len, int *tmp)
 			iw->d.top[left->x + j] >= tmp[j])
 			continue;
 		i = iw->d.top[left->x + j] - 1;
-		while (++i < tmp[j])
+		while (++i < tmp[j] && i < iw->d.bottom[left->x + j])
 			set_pixel(iw->sur, left->x + j, i, 0xFF0000);
 		iw->d.top[left->x + j] = tmp[j];
 	}
@@ -815,13 +806,18 @@ void	draw_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right
 	free(tmp);
 }
 
-void	fill_portal(t_sdl *iw, t_save_wall *left, t_save_wall *right)
+void	fill_portal(t_sdl *iw, t_save_wall *left, t_save_wall *right, t_sdl *iw2)
 {
 	int		j;
 
 	j = left->x - 1;
 	while (++j < right->x)
-		iw->d.top[j] = iw->d.bottom[j];
+	{
+		if (iw2->d.top[j] > iw->d.top[j])
+			iw->d.top[j] = iw2->d.top[j];
+		if (iw2->d.bottom[j] < iw->d.bottom[j])
+			iw->d.bottom[j] = iw2->d.bottom[j];
+	}
 }
 
 void	fill_tb_by_slsr(t_sdl *iw)
@@ -841,11 +837,13 @@ void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 {
 	t_sdl	iw2;
 
+	printf("next_sector\n");
 	iw2 = *iw;
 	iw2.p.x += iw->walls[left->wall->nextsector_wall].x - left->wall->next->x;
 	iw2.p.y += iw->walls[left->wall->nextsector_wall].y - left->wall->next->y;
 	iw2.d.cs = left->wall->nextsector;
 	draw_between_sectors_walls(&iw2, left, right, len);
+	fill_portal(iw, left, right, &iw2);
 	get_direction(&iw2);
 	get_screen_line(&iw2);
 	get_left_right_lines_points(&iw2);
@@ -859,7 +857,7 @@ void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	get_left_right_visible_walls(&iw2);
 	iw2.d.prev_sector = iw->d.cs;
 	draw_start(&iw2);
-	fill_portal(iw, left, right);
+	fill_portal(iw, left, right, &iw2);
 	/*iw->d.top = iw2.d.top;
 	iw->d.bottom = iw2.d.bottom;*/
 }
@@ -925,34 +923,56 @@ void	add_pair(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	}
 }
 
-void	sort_pairs(t_sdl *iw)
+t_save_wall_pairs	*get_closest_between_pair(t_save_wall_pairs	*pair)
+{
+	t_save_wall_pairs	*save;
+	t_save_wall_pairs	*tmp;
+
+	save = 0;
+	tmp = pair->next;
+	while (tmp != 0)
+	{
+		if (tmp != pair)
+			if ((tmp->left->x >= pair->left->x && tmp->left->x < pair->right->x &&
+				(tmp->left->len < pair->left->len || tmp->left->len < pair->right->len)) ||
+				(tmp->right->x > pair->left->x && tmp->right->x <= pair->right->x &&
+				(tmp->right->len < pair->left->len || tmp->right->len < pair->right->len)))
+				save = tmp;
+		tmp = tmp->next;
+	}
+	return (save);
+}
+
+void	new_sort_pairs(t_sdl *iw)
 {
 	t_save_wall_pairs	start;
 	t_save_wall_pairs	*tmp;
 	t_save_wall_pairs	*tmp2;
-	int					f;
+	t_save_wall_pairs	*after;
 
-	if (iw->d.vwp == 0)
-		return ;
 	start.next = iw->d.vwp;
-	f = 1;
-	while (f)
+	tmp = &start;
+	while (tmp->next != 0)
 	{
-		tmp = &start;
-		f = 0;
-		while (tmp->next->next != 0)
+		if ((after = get_closest_between_pair(tmp->next)) != 0)
 		{
-			if (tmp->next->right->x >= tmp->next->next->left->x && tmp->next->right->len > tmp->next->next->left->len
-				&& tmp->next->left->x <= tmp->next->next->left->x)
-			{
-				tmp2 = tmp->next;
-				tmp->next = tmp->next->next;
-				tmp2->next = tmp->next->next;
-				tmp->next->next = tmp2;
-				f = 1;
-			}
-			tmp = tmp->next;
+			tmp2 = tmp->next;
+			tmp->next = tmp->next->next;
+			tmp2->next = after->next;
+			after->next = tmp2;
 		}
+		else
+			tmp = tmp->next;
+		//////
+		/*t_save_wall_pairs *ttt;
+		ttt = iw->d.vwp;
+		while (ttt != 0)
+		{
+			printf("left: x %d len %f; right: x %d len %f\n", ttt->left->x, ttt->left->len, ttt->right->x, ttt->right->len);
+			ttt = ttt->next;
+		}
+		printf("\n\n");*/
+		/////
 	}
 	iw->d.vwp = start.next;
 }
@@ -976,27 +996,27 @@ void	draw_start(t_sdl *iw)
 	}
 
 	//////
-	t_save_wall_pairs *ttt;
+	/*t_save_wall_pairs *ttt;
 	ttt = iw->d.vwp;
 	while (ttt != 0)
 	{
 		printf("left: x %d len %f; right: x %d len %f\n", ttt->left->x, ttt->left->len, ttt->right->x, ttt->right->len);
 		ttt = ttt->next;
 	}
-	printf("\n\n");
+	printf("\n\n");*/
 	/////
 
-	sort_pairs(iw);
+	new_sort_pairs(iw);
 
 	//////
-	printf("sorted:\n");
+	/*printf("sorted:\n");
 	ttt = iw->d.vwp;
 	while (ttt != 0)
 	{
 		printf("left: x %d len %f; right: x %d len %f\n", ttt->left->x, ttt->left->len, ttt->right->x, ttt->right->len);
 		ttt = ttt->next;
 	}
-	printf("\n\n");
+	printf("\n\n");*/
 	/////
 
 	tmp = iw->d.vwp;
@@ -1026,7 +1046,7 @@ void	draw(t_sdl *iw)
 	get_left_right_visible_walls(iw);
 
 	//////////
-	t_save_wall *tmp;
+	/*t_save_wall *tmp;
 	tmp = iw->d.vw;
 	while (tmp != 0)
 	{
@@ -1035,8 +1055,7 @@ void	draw(t_sdl *iw)
 			tmp->zd, tmp->plen);
 		tmp = tmp->next;
 	}
-	printf("\n\n");
-
+	printf("\n\n");*/
 	////////////
 	iw->d.prev_sector = -1;
 	draw_start(iw);
@@ -1059,10 +1078,10 @@ void	read_textures(t_sdl *iw)
 
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 220;
-	iw->p.y = 700;
-	iw->p.z = 240;
-	iw->p.introt = 345;
+	iw->p.x = 8740;
+	iw->p.y = 4240;
+	iw->p.z = 560;
+	iw->p.introt = 153;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;
