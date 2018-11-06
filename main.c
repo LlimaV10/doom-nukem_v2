@@ -712,6 +712,70 @@ void	draw_floor(t_sdl *iw, t_save_wall *left, int len)
 	}
 }
 
+void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
+{
+	int		i;
+	int		j;
+	float	curr_dist;
+	float	wall_dist;
+	float	weight;
+	t_point2d	floor;
+	t_point2d	r;
+	t_draw_wall_tex	d;
+
+
+	d.lv.x = (float)(left->p.x - iw->p.x);
+	d.lv.y = (float)(left->p.y - iw->p.y);
+	d.rv.x = (float)(right->p.x - iw->p.x);
+	d.rv.y = (float)(right->p.y - iw->p.y);
+	d.ang = acosf((d.lv.x * d.rv.x + d.lv.y * d.rv.y) / (sqrtf(d.lv.x * d.lv.x + d.lv.y * d.lv.y) * sqrtf(d.rv.x * d.rv.x + d.rv.y * d.rv.y)));
+	d.dang = d.ang / (float)len;
+	d.ang = 0.0f;
+	d.rv.x = (float)(-right->p.x + left->p.x);
+	d.rv.y = (float)(-right->p.y + left->p.y);
+	d.sing = G180 - acosf((d.lv.x * d.rv.x + d.lv.y * d.rv.y) / (sqrtf(d.lv.x * d.lv.x + d.lv.y * d.lv.y) * sqrtf(d.rv.x * d.rv.x + d.rv.y * d.rv.y)));
+	d.lenpl = sqrtf(powf(iw->p.x - left->p.x, 2.0f) + powf(iw->p.y - left->p.y, 2.0f));
+	d.len_lr = sqrtf(powf(left->p.x - right->p.x, 2.0f) + powf(left->p.y - right->p.y, 2.0f));
+	d.rv.x = (float)(right->p.x - left->p.x) / d.len_lr;
+	d.rv.y = (float)(right->p.y - left->p.y) / d.len_lr;
+
+	j = -1;
+	while (++j < len)
+	{
+		if (iw->d.wallBot[j] >= iw->d.bottom[left->x + j] ||
+			iw->d.top[left->x + j] >= iw->d.bottom[left->x + j])
+		{
+			d.ang += d.dang;
+			continue;
+		}
+		d.left_len = sinf(d.ang) * d.lenpl / sin(d.sing - d.ang);
+		r.x = (float)left->p.x + d.rv.x * d.left_len;
+		r.y = (float)left->p.y + d.rv.y * d.left_len;
+		//printf("rx %f ry %f\n", r.x, r.y);
+		wall_dist = sqrtf(powf((float)iw->p.x - r.x, 2.0f) + powf((float)iw->p.y - r.y, 2.0f));
+		if (iw->d.wallBot[j] < iw->d.top[left->x + j])
+			i = iw->d.top[left->x + j] - 1;
+		else
+			i = iw->d.wallBot[j] - 1;
+		while (++i < iw->d.bottom[left->x + j])
+		{
+			/*curr_dist = (float)WINDOW_H / (float)(iw->d.wallBot[j]
+				- iw->d.wallTop[j] + 2 * (i - iw->d.wallBot[j]));*/
+			curr_dist = (float)WINDOW_H / (float)(2.0f * i - (float)WINDOW_H);
+			weight = curr_dist / wall_dist;
+			floor.x = weight * r.x + (1.0f - weight) * (float)iw->p.x;
+			floor.y = weight * r.y + (1.0f - weight) * (float)iw->p.y;
+			/*printf("flx %f fly %f\n", floor.x, floor.y);*/
+			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[iw->sectors[iw->d.cs].fr.t],
+				((int)floor.x * iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w,
+				((int)floor.y * iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h));
+		}
+		if (iw->d.wallBot[j] < iw->d.bottom[left->x + j])
+			iw->d.bottom[left->x + j] = iw->d.wallBot[j];
+		d.ang += d.dang;
+	}
+}
+
 void	draw_ceil(t_sdl *iw, t_save_wall *left, int len)
 {
 	int		i;
@@ -864,7 +928,7 @@ void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 
 void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 {
-	draw_floor(iw, left, len);
+	draw_floor_tex(iw, left, right, len);
 	draw_ceil(iw, left, len);
 	if (left->wall->nextsector == -1)
 	{

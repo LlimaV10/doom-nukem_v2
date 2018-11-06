@@ -50,6 +50,8 @@ typedef struct	s_sector_fc
 	int		z;
 	// Normal vector (null if no slope)
 	t_vector	*n;
+	// Texture
+	int		t;
 }				t_sector_fc;
 
 typedef struct	s_sector

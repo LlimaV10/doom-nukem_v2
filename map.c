@@ -23,6 +23,7 @@ void	get_map(t_sdl *iw)
 	iw->sectors[0].fr.x = 5000;
 	iw->sectors[0].fr.y = 0;
 	iw->sectors[0].fr.z = 0;
+	iw->sectors[0].fr.t = 0;
 	iw->sectors[0].cl.n = (t_sector_fc *)malloc(sizeof(t_sector_fc));
 	iw->sectors[0].cl.n->a = 1;
 	iw->sectors[0].cl.n->b = 0;
@@ -30,6 +31,7 @@ void	get_map(t_sdl *iw)
 	iw->sectors[0].cl.x = 5000;
 	iw->sectors[0].cl.y = 0;
 	iw->sectors[0].cl.z = 1000;
+	iw->sectors[0].cl.t = 0;
 
 	iw->sectors[1].sw = 14;///////
 	iw->sectors[1].nw = 8 + 4;
@@ -37,10 +39,12 @@ void	get_map(t_sdl *iw)
 	iw->sectors[1].fr.x = 5000;
 	iw->sectors[1].fr.y = 0;
 	iw->sectors[1].fr.z = 200;
+	iw->sectors[1].fr.t = 1;
 	iw->sectors[1].cl.n = 0;
 	iw->sectors[1].cl.x = 5000;
 	iw->sectors[1].cl.y = 0;
 	iw->sectors[1].cl.z = 1200;
+	iw->sectors[1].cl.t = 0;
 
 	iw->sectors[2].sw = 26;///////
 	iw->sectors[2].nw = 4;
@@ -51,10 +55,12 @@ void	get_map(t_sdl *iw)
 	iw->sectors[2].fr.x = 8000;
 	iw->sectors[2].fr.y = 4000;
 	iw->sectors[2].fr.z = 350;
+	iw->sectors[2].fr.t = 2;
 	iw->sectors[2].cl.n = 0;
 	iw->sectors[2].cl.x = 5000;
 	iw->sectors[2].cl.y = 0;
 	iw->sectors[2].cl.z = 600;
+	iw->sectors[2].cl.t = 0;
 
 	iw->walls = (t_wall *)malloc((iw->sectors[0].nw + iw->sectors[1].nw + iw->sectors[2].nw) * sizeof(t_wall));
 	int i = 0;
