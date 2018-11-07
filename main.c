@@ -723,7 +723,6 @@ void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	t_point2d	r;
 	t_draw_wall_tex	d;
 
-
 	d.lv.x = (float)(left->p.x - iw->p.x);
 	d.lv.y = (float)(left->p.y - iw->p.y);
 	d.rv.x = (float)(right->p.x - iw->p.x);
@@ -753,6 +752,7 @@ void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		r.y = (float)left->p.y + d.rv.y * d.left_len;
 		//printf("rx %f ry %f\n", r.x, r.y);
 		wall_dist = sqrtf(powf((float)iw->p.x - r.x, 2.0f) + powf((float)iw->p.y - r.y, 2.0f));
+		//printf("wall_dist %f\n", wall_dist);
 		if (iw->d.wallBot[j] < iw->d.top[left->x + j])
 			i = iw->d.top[left->x + j] - 1;
 		else
@@ -761,11 +761,13 @@ void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		{
 			/*curr_dist = (float)WINDOW_H / (float)(iw->d.wallBot[j]
 				- iw->d.wallTop[j] + 2 * (i - iw->d.wallBot[j]));*/
-			curr_dist = (float)WINDOW_H / (float)(2.0f * i - (float)WINDOW_H);
+			curr_dist = (float)WINDOW_H / (float)(2 * i - WINDOW_H);
+			//printf("curr_d %f\n", curr_dist);
 			weight = curr_dist / wall_dist;
 			floor.x = weight * r.x + (1.0f - weight) * (float)iw->p.x;
 			floor.y = weight * r.y + (1.0f - weight) * (float)iw->p.y;
-			/*printf("flx %f fly %f\n", floor.x, floor.y);*/
+			//printf("flx %f fly %f\n", floor.x, floor.y);
+			//printf("x %d y %d\n", (int)floor.x * iw->t[iw->sectors[iw->d.cs].fr.t]->w, (int)floor.y);
 			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[iw->sectors[iw->d.cs].fr.t],
 				((int)floor.x * iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w,
 				((int)floor.y * iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h));
@@ -961,8 +963,8 @@ void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	brez_line(iw->d.wallTop, l);
 	draw_all(iw, left, right, right->x - left->x + 1);
 	//printf("draw lpx %d lpy %d rpx %d rpy %d lplen %f lx %d rx %d\n", left->wall->x, left->wall->y, right->wall->x, right->wall->y, left->plen, left->x, right->x);
-	/*SDL_UpdateWindowSurface(iw->win);
-	system("PAUSE");*/
+	SDL_UpdateWindowSurface(iw->win);
+	system("PAUSE");
 	free(iw->d.wallBot);
 	free(iw->d.wallTop);
 }
