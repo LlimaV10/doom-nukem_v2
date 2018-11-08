@@ -750,21 +750,21 @@ void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		d.left_len = sinf(d.ang) * d.lenpl / sin(d.sing - d.ang);
 		r.x = (float)left->p.x + d.rv.x * d.left_len;
 		r.y = (float)left->p.y + d.rv.y * d.left_len;
-		//printf("rx %f ry %f\n", r.x, r.y);
 		wall_dist = sqrtf(powf((float)iw->p.x - r.x, 2.0f) + powf((float)iw->p.y - r.y, 2.0f));
-		//printf("wall_dist %f\n", wall_dist);
 		if (iw->d.wallBot[j] < iw->d.top[left->x + j])
 			i = iw->d.top[left->x + j] - 1;
 		else
 			i = iw->d.wallBot[j] - 1;
 		float		k;
-		k = iw->d.wallBot[j] - iw->d.wallTop[j] + 2 * (i + 1 - iw->d.wallBot[j]);
+		float		pl = 2.0f;
+		k = (float)(iw->d.wallBot[j] - iw->d.wallTop[j]) + pl * (float)(i + 1 - iw->d.wallBot[j]);
 		while (++i < iw->d.bottom[left->x + j])
 		{
 			/*curr_dist = (float)WINDOW_H / (float)(iw->d.wallBot[j]
 				- iw->d.wallTop[j] + 2 * (i - iw->d.wallBot[j]));*/
 			curr_dist = (float)WINDOW_H / k;
-			k += 2.484f;
+			/*k += 2.484f;*/
+			k += pl;
 			/*curr_dist = (float)WINDOW_H / (float)(2 * i - WINDOW_H);*/
 			//printf("curr_d %f\n", curr_dist);
 			weight = (curr_dist) / (wall_dist);
@@ -1151,7 +1151,7 @@ void	get_def(t_sdl *iw)
 {
 	iw->p.x = 8740;
 	iw->p.y = 4240;
-	iw->p.z = 600;
+	iw->p.z = 700;
 	iw->p.introt = 153;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f;
