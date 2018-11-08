@@ -24,10 +24,10 @@ void	get_map(t_sdl *iw)
 	iw->sectors[0].fr.y = 0;
 	iw->sectors[0].fr.z = 0;
 	iw->sectors[0].fr.t = 0;
-	iw->sectors[0].cl.n = (t_sector_fc *)malloc(sizeof(t_sector_fc));
-	iw->sectors[0].cl.n->a = 1;
-	iw->sectors[0].cl.n->b = 0;
-	iw->sectors[0].cl.n->c = -15;
+	iw->sectors[0].cl.n = 0;// (t_sector_fc *)malloc(sizeof(t_sector_fc));
+	//iw->sectors[0].cl.n->a = 1;
+	//iw->sectors[0].cl.n->b = 0;
+	//iw->sectors[0].cl.n->c = -15;
 	iw->sectors[0].cl.x = 5000;
 	iw->sectors[0].cl.y = 0;
 	iw->sectors[0].cl.z = 1000;
@@ -39,7 +39,7 @@ void	get_map(t_sdl *iw)
 	iw->sectors[1].fr.x = 5000;
 	iw->sectors[1].fr.y = 0;
 	iw->sectors[1].fr.z = 200;
-	iw->sectors[1].fr.t = 1;
+	iw->sectors[1].fr.t = 0;
 	iw->sectors[1].cl.n = 0;
 	iw->sectors[1].cl.x = 5000;
 	iw->sectors[1].cl.y = 0;
