@@ -756,7 +756,9 @@ void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		else
 			i = iw->d.wallBot[j] - 1;
 		float		k;
-		float		pl = 2.0f;
+		float		pl = (float)(iw->sectors[iw->d.cs].cl.z - iw->p.z) /
+			(float)(iw->sectors[iw->d.cs].cl.z - iw->sectors[iw->d.cs].fr.z);//2.0f;
+		pl = tanf(1.62914866f * pl) + 1.0f;
 		k = (float)(iw->d.wallBot[j] - iw->d.wallTop[j]) + pl * (float)(i + 1 - iw->d.wallBot[j]);
 		while (++i < iw->d.bottom[left->x + j])
 		{
@@ -1149,10 +1151,10 @@ void	read_textures(t_sdl *iw)
 
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 8740;
-	iw->p.y = 4240;
-	iw->p.z = 700;
-	iw->p.introt = 153;
+	iw->p.x = 9820;
+	iw->p.y = 1960;
+	iw->p.z = 760;
+	iw->p.introt = 221;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;
