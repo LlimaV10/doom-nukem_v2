@@ -712,16 +712,33 @@ void	draw_floor(t_sdl *iw, t_save_wall *left, int len)
 	}
 }
 
+float	get_floor_coef(t_sdl *iw, float pl)
+{
+	int		i;
+
+	if (pl < 0.0f)
+		return (iw->c_floor[0]);
+	else if (pl > 0.9f)
+		return (iw->c_floor[9]);
+	i = (int)(pl * 10.0f);
+	return (iw->c_floor[i] + (iw->c_floor[i + 1] - iw->c_floor[i]) * (pl - (float)i / 10.0f) / 0.1f);
+	/*else if (pl < 0.1f)
+		return (iw->c_floor[0] + (iw->c_floor[1] - iw->c_floor[0]) * pl / 0.1f);
+	else if (pl < 0.2f)
+		return (iw->c_floor[1] + (iw->c_floor[2] - iw->c_floor[1]) * pl / 0.1f);*/
+}
+
 void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 {
 	int		i;
 	int		j;
-	float	curr_dist;
 	float	wall_dist;
 	float	weight;
 	t_point2d	floor;
 	t_point2d	r;
 	t_draw_wall_tex	d;
+	float		k;
+	float		pl;
 
 	d.lv.x = (float)(left->p.x - iw->p.x);
 	d.lv.y = (float)(left->p.y - iw->p.y);
@@ -737,6 +754,10 @@ void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	d.len_lr = sqrtf(powf(left->p.x - right->p.x, 2.0f) + powf(left->p.y - right->p.y, 2.0f));
 	d.rv.x = (float)(right->p.x - left->p.x) / d.len_lr;
 	d.rv.y = (float)(right->p.y - left->p.y) / d.len_lr;
+	d.zu = get_ceil_z(iw, iw->p.x, iw->p.y);
+	d.zd = get_floor_z(iw, iw->p.x, iw->p.y);
+	pl = (float)(d.zu - iw->p.z) / (float)(d.zu - d.zd);
+	pl = tanf(get_floor_coef(iw, pl) * pl) + 1.0f;
 
 	j = -1;
 	while (++j < len)
@@ -750,34 +771,24 @@ void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		d.left_len = sinf(d.ang) * d.lenpl / sin(d.sing - d.ang);
 		r.x = (float)left->p.x + d.rv.x * d.left_len;
 		r.y = (float)left->p.y + d.rv.y * d.left_len;
-		wall_dist = sqrtf(powf((float)iw->p.x - r.x, 2.0f) + powf((float)iw->p.y - r.y, 2.0f));
+		wall_dist = fabsf(iw->d.screen.a * r.x + iw->d.screen.b * r.y + iw->d.screen.c) /
+			sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
 		if (iw->d.wallBot[j] < iw->d.top[left->x + j])
 			i = iw->d.top[left->x + j] - 1;
 		else
 			i = iw->d.wallBot[j] - 1;
-		float		k;
-		float		pl = (float)(iw->sectors[iw->d.cs].cl.z - iw->p.z) /
-			(float)(iw->sectors[iw->d.cs].cl.z - iw->sectors[iw->d.cs].fr.z);//2.0f;
-		pl = tanf(1.62914866f * pl) + 1.0f;
 		k = (float)(iw->d.wallBot[j] - iw->d.wallTop[j]) + pl * (float)(i + 1 - iw->d.wallBot[j]);
 		while (++i < iw->d.bottom[left->x + j])
 		{
-			/*curr_dist = (float)WINDOW_H / (float)(iw->d.wallBot[j]
-				- iw->d.wallTop[j] + 2 * (i - iw->d.wallBot[j]));*/
-			curr_dist = (float)WINDOW_H / k;
-			/*k += 2.484f;*/
+			weight = (float)WINDOW_H / k / wall_dist;
 			k += pl;
-			/*curr_dist = (float)WINDOW_H / (float)(2 * i - WINDOW_H);*/
-			//printf("curr_d %f\n", curr_dist);
-			weight = (curr_dist) / (wall_dist);
 			floor.x = weight * r.x + (1.0f - weight) * (float)iw->p.x;
 			floor.y = weight * r.y + (1.0f - weight) * (float)iw->p.y;
-			//printf("flx %f fly %f\n", floor.x, floor.y);
-			/*printf("x %d y %d\n", ((int)floor.x * iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w,
-				(int)(floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h);*/
 			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[iw->sectors[iw->d.cs].fr.t],
-				(int)(floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w,
-				(int)(floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h));
+				(int)(floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w + (float)(iw->p.x % 1250) *
+				(float)iw->t[iw->sectors[iw->d.cs].fr.t]->w / 1250.0f) % iw->t[iw->sectors[iw->d.cs].fr.t]->w,
+				(int)(floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h + (float)(iw->p.y % 1250) *
+				(float)iw->t[iw->sectors[iw->d.cs].fr.t]->h / 1250.0f) % iw->t[iw->sectors[iw->d.cs].fr.t]->h));
 		}
 		if (iw->d.wallBot[j] < iw->d.bottom[left->x + j])
 			iw->d.bottom[left->x + j] = iw->d.wallBot[j];
@@ -1149,16 +1160,31 @@ void	read_textures(t_sdl *iw)
 	//printf("%d\n", read_pixel((iw->t)[0], 2, 0));
 }
 
+void	fill_floor_coefficients(t_sdl *iw)
+{
+	iw->c_floor[0] = 1.0f;
+	iw->c_floor[1] = 1.09559527f;
+	iw->c_floor[2] = 1.22489332f;
+	iw->c_floor[3] = 1.36770052f;
+	iw->c_floor[4] = 1.47576687f;
+	iw->c_floor[5] = 1.57079633f;
+	iw->c_floor[6] = 1.62972344f;
+	iw->c_floor[7] = 1.66705219f;
+	iw->c_floor[8] = 1.65579454f;
+	iw->c_floor[9] = 1.62237678f;
+}
+
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 9820;
-	iw->p.y = 1960;
-	iw->p.z = 760;
-	iw->p.introt = 221;
+	iw->p.x = 1240;
+	iw->p.y = 2260;
+	iw->p.z = 100;
+	iw->p.introt = 93;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;
 	iw->v.angle = 0.698132f;
+	fill_floor_coefficients(iw);
 }
 
 int		main(void)

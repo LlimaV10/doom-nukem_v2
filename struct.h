@@ -192,8 +192,12 @@ typedef struct	s_sdl
 	t_player	p;
 	t_variables	v;
 	t_draw		d;
-	SDL_Surface *(t)[TEXTURES_COUNT]; // textures
-	float		tsz[TEXTURES_COUNT]; // textures compression
+	// textures
+	SDL_Surface *(t)[TEXTURES_COUNT];
+	// textures compression
+	float		tsz[TEXTURES_COUNT];
+	// Floor coefficient
+	float		c_floor[10];
 }				t_sdl;
 
 #endif
