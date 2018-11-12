@@ -786,8 +786,8 @@ void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[iw->sectors[iw->d.cs].fr.t],
 				(int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w + (float)(iw->p.x % 1250) *
 				(float)iw->t[iw->sectors[iw->d.cs].fr.t]->w / 1250.0f) % iw->t[iw->sectors[iw->d.cs].fr.t]->w,
-					(int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h + (float)(iw->p.y % 500) *
-				(float)iw->t[iw->sectors[iw->d.cs].fr.t]->h / 500.0f) % iw->t[iw->sectors[iw->d.cs].fr.t]->h));
+					(int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h + (float)(iw->p.y % 1250) *
+				(float)iw->t[iw->sectors[iw->d.cs].fr.t]->h / 1250.0f) % iw->t[iw->sectors[iw->d.cs].fr.t]->h));
 		}
 		if (iw->d.wallBot[j] < iw->d.bottom[left->x + j])
 			iw->d.bottom[left->x + j] = iw->d.wallBot[j];
