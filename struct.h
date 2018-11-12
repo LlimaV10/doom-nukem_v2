@@ -138,6 +138,29 @@ typedef struct	s_draw_wall_tex
 	float	len_lr;
 }				t_draw_wall_tex;
 
+typedef struct	s_draw_floor_tex
+{
+	float	sing;
+	float	ang;
+	float	dang;
+	float	lenpl;
+	t_point2d	lv;
+	t_point2d	rv;
+	float	zu;
+	float	zd;
+	float	left_len;
+	float	len_lr;
+
+	float	wall_dist;
+	float	weight;
+	float		k;
+	float		pl;
+	t_point2d	floor;
+	t_point2d	r;
+	float xcoordpl;
+	float ycoordpl;
+}				t_draw_floor_tex;
+
 typedef struct	s_save_wall
 {
 	int		x;
