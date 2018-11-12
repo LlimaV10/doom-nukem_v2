@@ -157,8 +157,8 @@ typedef struct	s_draw_floor_tex
 	float		pl;
 	t_point2d	floor;
 	t_point2d	r;
-	float xcoordpl;
-	float ycoordpl;
+	//float	zudiff;
+	//float	zddiff;
 }				t_draw_floor_tex;
 
 typedef struct	s_save_wall
