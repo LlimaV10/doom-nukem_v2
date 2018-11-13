@@ -16,7 +16,7 @@ Uint32	get_pixel(SDL_Surface *sur, const int x, const int y)
 	int		bpp;
 
 	if (x < 0 || x >= sur->w || y < 0 || y >= sur->h)
-		return ;
+		return (0);
 	bpp = sur->format->BytesPerPixel;
 	v = (uint8_t *)sur->pixels + y * sur->pitch + x * bpp;
 	/*printf("bpp %d\n", bpp);
@@ -754,7 +754,8 @@ void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	d.pl = tanf(get_floor_coef(iw, d.pl) * d.pl) + 1.0f;
 	//d.zudiff = (right->zu - left->zu) / d.len_lr;
 	//d.zddiff = (right->zd - left->zd) / d.len_lr;
-	float	coef = d.zu - d.zd;
+	float	coefx = 1000.0f;
+	float	coefy = 3000.0f;
 	j = -1;
 	while (++j < len)
 	{
@@ -787,16 +788,26 @@ void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 			d.floor.y = fabsf(d.floor.y - (float)iw->sectors[iw->d.cs].fr.y);*/
 			//printf("fx %f fy %f\n", d.floor.x, d.floor.y);
 			while (d.floor.x <= 0.0f)
-				d.floor.x += coef;
+				d.floor.x += coefx;
 			while (d.floor.y <= 0.0f)
-				d.floor.y += coef;
+				d.floor.y += coefy;
+			d.tx = d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w
+			+ (float)(iw->p.x % (int)coefx) *
+				(float)iw->t[iw->sectors[iw->d.cs].fr.t]->w / coefx;
+			d.ty = d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h
+			+ (float)(iw->p.y % (int)coefy) *
+				(float)iw->t[iw->sectors[iw->d.cs].fr.t]->h / coefy;
+			
+			// if (iw->sectors[iw->d.cs].fr.n != 0)
+			// {
+			// 	d.tx *= cosf(45.0f * G1);
+			// 	d.ty *= powf(cosf(45.0f * G1), 2.0f);
+			// }
 			/*if (d.floor.x < 0.0f)
 				d.floor.x = (d.floor.x)*/
 			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[iw->sectors[iw->d.cs].fr.t],
-				(int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w + (float)(iw->p.x % (int)coef) *
-				(float)iw->t[iw->sectors[iw->d.cs].fr.t]->w / coef) % iw->t[iw->sectors[iw->d.cs].fr.t]->w,
-					(int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h + (float)(iw->p.y % (int)coef) *
-				(float)iw->t[iw->sectors[iw->d.cs].fr.t]->h / coef) % iw->t[iw->sectors[iw->d.cs].fr.t]->h));
+				(int)d.tx % iw->t[iw->sectors[iw->d.cs].fr.t]->w,
+					(int)d.ty % iw->t[iw->sectors[iw->d.cs].fr.t]->h));
 		}
 		//system("PAUSE");
 		if (iw->d.wallBot[j] < iw->d.bottom[left->x + j])
@@ -1025,16 +1036,57 @@ t_save_wall_pairs	*get_closest_between_pair(t_save_wall_pairs	*pair)
 	tmp = pair->next;
 	while (tmp != 0)
 	{
+		//(bx-ax)*(py-ay)-(by-ay)*(px-ax)
 		if (tmp != pair)
 			if ((tmp->left->x >= pair->left->x && tmp->left->x < pair->right->x &&
-				(tmp->left->len < pair->left->len || tmp->left->len < pair->right->len)) ||
+				((pair->left->wall->x - pair->right->wall->x) * (tmp->left->p.y - pair->right->wall->y) -
+					(pair->left->wall->y - pair->right->wall->y) * (tmp->left->p.x - pair->right->wall->x) > 0)) ||
 				(tmp->right->x > pair->left->x && tmp->right->x <= pair->right->x &&
-				(tmp->right->len < pair->left->len || tmp->right->len < pair->right->len)))
+				((pair->left->wall->x - pair->right->wall->x) * (tmp->right->p.y - pair->right->wall->y) -
+					(pair->left->wall->y - pair->right->wall->y) * (tmp->right->p.x - pair->right->wall->x) > 0)))
 				save = tmp;
 		tmp = tmp->next;
 	}
 	return (save);
 }
+
+// t_save_wall_pairs	*get_closest_between_pair(t_save_wall_pairs	*pair)
+// {
+// 	t_save_wall_pairs_closest	save;
+// 	t_save_wall_pairs	*tmp;
+
+// 	save.tmp = 0;
+// 	save.lr = -1;
+// 	tmp = pair->next;
+// 	while (tmp != 0)
+// 	{
+// 		//(bx-ax)*(py-ay)-(by-ay)*(px-ax)
+// 		if (tmp != pair)
+// 			if (tmp->left->x >= pair->left->x && tmp->left->x < pair->right->x &&
+// 				((pair->left->wall->x - pair->right->wall->x) * (tmp->left->p.y - pair->right->wall->y) -
+// 					(pair->left->wall->y - pair->right->wall->y) * (tmp->left->p.x - pair->right->wall->x) > 0))
+// 			{
+// 				if (save.lr == -1 || (save.lr == 0 && save.tmp->left->len < tmp->left->len) ||
+// 						(save.lr == 1 && save.tmp->right->len < tmp->left->len))
+// 				{
+// 					save.lr = 0;
+// 					save.tmp = tmp;
+// 				}
+
+// 			}
+// 			else if(tmp->right->x > pair->left->x && tmp->right->x <= pair->right->x &&
+// 				((pair->left->wall->x - pair->right->wall->x) * (tmp->right->p.y - pair->right->wall->y) -
+// 					(pair->left->wall->y - pair->right->wall->y) * (tmp->right->p.x - pair->right->wall->x) > 0))
+// 				if (save.lr == -1 || (save.lr == 0 && save.tmp->left->len < tmp->right->len) ||
+// 						(save.lr == 1 && save.tmp->right->len < tmp->right->len))
+// 				{
+// 					save.lr = 0;
+// 					save.tmp = tmp;
+// 				}
+// 		tmp = tmp->next;
+// 	}
+// 	return (save.tmp);
+// }
 
 void	new_sort_pairs(t_sdl *iw)
 {
@@ -1185,10 +1237,10 @@ void	fill_floor_coefficients(t_sdl *iw)
 
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 8860;
-	iw->p.y = 760; //-2360
-	iw->p.z = 797;
-	iw->p.introt = 261;
+	iw->p.x = 8200;
+	iw->p.y = 4180; //-2360
+	iw->p.z = 437;
+	iw->p.introt = 101;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;

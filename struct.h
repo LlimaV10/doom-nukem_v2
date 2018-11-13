@@ -159,6 +159,8 @@ typedef struct	s_draw_floor_tex
 	t_point2d	r;
 	//float	zudiff;
 	//float	zddiff;
+	float		tx;
+	float		ty;
 }				t_draw_floor_tex;
 
 typedef struct	s_save_wall
@@ -180,6 +182,13 @@ typedef struct	s_save_wall_pairs
 	t_save_wall		*right;
 	struct	s_save_wall_pairs *next;
 }				t_save_wall_pairs;
+
+// typedef struct	s_save_wall_pairs_closest
+// {
+// 	t_save_wall_pairs	*tmp;
+// 	// 0 - left, 1 - right
+// 	int		lr;
+// }				t_save_wall_pairs_closest;
 
 typedef struct	s_draw
 {
