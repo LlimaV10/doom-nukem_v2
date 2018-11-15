@@ -754,8 +754,6 @@ void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	d.pl = tanf(get_floor_coef(iw, d.pl) * d.pl) + 1.0f;
 	//d.zudiff = (right->zu - left->zu) / d.len_lr;
 	//d.zddiff = (right->zd - left->zd) / d.len_lr;
-	float	coefx = 1000.0f;
-	float	coefy = 3000.0f;
 	j = -1;
 	while (++j < len)
 	{
@@ -771,32 +769,37 @@ void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		
 		d.r.x = (float)left->p.x + d.rv.x * d.left_len;
 		d.r.y = (float)left->p.y + d.rv.y * d.left_len;
+		float coef = get_ceil_z(iw, d.r.x, d.r.y) - get_floor_z(iw, d.r.x, d.r.y);
 		d.wall_dist = fabsf(iw->d.screen.a * d.r.x + iw->d.screen.b * d.r.y + iw->d.screen.c) /
 			sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
 		if (iw->d.wallBot[j] < iw->d.top[left->x + j])
 			i = iw->d.top[left->x + j] - 1;
 		else
 			i = iw->d.wallBot[j] - 1;
+		//float coef_pl = (d.zu - (float)iw->p.z - coef) / (float)(iw->d.bottom[left->x + j] - i - 1);
 		d.k = (float)(iw->d.wallBot[j] - iw->d.wallTop[j]) + d.pl * (float)(i + 1 - iw->d.wallBot[j]);
 		while (++i < iw->d.bottom[left->x + j])
 		{
-			d.weight = (float)WINDOW_H / d.k / d.wall_dist;
+			d.weight = (float)WINDOW_H / d.k / (d.wall_dist / coef);
 			d.k += d.pl;
-			d.floor.x = d.weight * d.r.x + (1.0f - d.weight) * (float)iw->p.x;
-			d.floor.y = d.weight * d.r.y + (1.0f - d.weight) * (float)iw->p.y;
+			d.floor.x = d.weight * (d.r.x / 1000.0f) + (1.0f - d.weight) * ((float)iw->p.x / 1000.0f);
+			d.floor.y = d.weight * (d.r.y / 1000.0f) + (1.0f - d.weight) * ((float)iw->p.y / 1000.0f);
+			//coef += coef_pl;
+			coef = (get_ceil_z(iw, d.floor.x * 1000.0f, d.floor.y * 1000.0f) -
+				get_floor_z(iw, d.floor.x * 1000.0f, d.floor.y * 1000.0f) + coef) / 2.0f;
 			/*d.floor.x = fabsf(d.floor.x - (float)iw->sectors[iw->d.cs].fr.x);
 			d.floor.y = fabsf(d.floor.y - (float)iw->sectors[iw->d.cs].fr.y);*/
 			//printf("fx %f fy %f\n", d.floor.x, d.floor.y);
 			while (d.floor.x <= 0.0f)
-				d.floor.x += coefx;
+				d.floor.x += 1000.0f;
 			while (d.floor.y <= 0.0f)
-				d.floor.y += coefy;
-			d.tx = d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w
-			+ (float)(iw->p.x % (int)coefx) *
-				(float)iw->t[iw->sectors[iw->d.cs].fr.t]->w / coefx;
-			d.ty = d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h
-			+ (float)(iw->p.y % (int)coefy) *
-				(float)iw->t[iw->sectors[iw->d.cs].fr.t]->h / coefy;
+				d.floor.y += 1000.0f;
+			d.tx = d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w;
+			/*+ (float)(iw->p.x % (int)coefx) *
+				(float)iw->t[iw->sectors[iw->d.cs].fr.t]->w / coefx;*/
+			d.ty = d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h;
+			/*+ (float)(iw->p.y % (int)coefy) *
+				(float)iw->t[iw->sectors[iw->d.cs].fr.t]->h / coefy;*/
 			
 			// if (iw->sectors[iw->d.cs].fr.n != 0)
 			// {
@@ -1237,10 +1240,10 @@ void	fill_floor_coefficients(t_sdl *iw)
 
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 8200;
-	iw->p.y = 4180; //-2360
-	iw->p.z = 437;
-	iw->p.introt = 101;
+	iw->p.x = 880;
+	iw->p.y = 3220; //-2360
+	iw->p.z = -763;
+	iw->p.introt = 21;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;

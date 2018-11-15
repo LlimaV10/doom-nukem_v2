@@ -51,7 +51,7 @@ void	get_map(t_sdl *iw)
 	iw->sectors[2].fr.n = (t_sector_fc *)malloc(sizeof(t_sector_fc));
 	iw->sectors[2].fr.n->a = 0;
 	iw->sectors[2].fr.n->b = 1;
-	iw->sectors[2].fr.n->c = 1;
+	iw->sectors[2].fr.n->c = 2;
 	iw->sectors[2].fr.x = 8000;
 	iw->sectors[2].fr.y = 4000;
 	iw->sectors[2].fr.z = 350;

@@ -1,8 +1,8 @@
 #ifndef __DEFINES_H
 # define __DEFINES_H
 
-# define WINDOW_W 1000
-# define WINDOW_H 550
+# define WINDOW_W 500
+# define WINDOW_H 275
 # define TEXTURES_COUNT 4
 # define THREADS 4
 # define SCREEN_DISTANCE 1.0f
