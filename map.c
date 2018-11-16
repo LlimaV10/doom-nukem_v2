@@ -7,7 +7,7 @@ void	new_wall(t_wall *w, int x, int y, int ns, int nsw)
 	w->y = y;
 	w->nextsector = ns;
 	w->nextsector_wall = nsw;
-	w->t = 2;
+	w->t = 7;
 }
 
 void	get_map(t_sdl *iw)
@@ -55,7 +55,7 @@ void	get_map(t_sdl *iw)
 	iw->sectors[2].fr.x = 8000;
 	iw->sectors[2].fr.y = 4000;
 	iw->sectors[2].fr.z = 350;
-	iw->sectors[2].fr.t = 2;
+	iw->sectors[2].fr.t = 4;
 	iw->sectors[2].cl.n = 0;
 	iw->sectors[2].cl.x = 5000;
 	iw->sectors[2].cl.y = 0;

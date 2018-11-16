@@ -728,7 +728,7 @@ float	get_floor_coef(t_sdl *iw, float pl)
 		return (iw->c_floor[1] + (iw->c_floor[2] - iw->c_floor[1]) * pl / 0.1f);*/
 }
 
-void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
+void	draw_inclined_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 {
 	int		i;
 	int		j;
@@ -752,6 +752,9 @@ void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	d.zd = get_floor_z(iw, iw->p.x, iw->p.y);
 	d.pl = (float)(d.zu - iw->p.z) / (float)(d.zu - d.zd);
 	d.pl = tanf(get_floor_coef(iw, d.pl) * d.pl) + 1.0f;
+	d.px = (float)iw->p.x / 1000.0f;
+	d.py = (float)iw->p.y / 1000.0f;
+
 	j = -1;
 	while (++j < len)
 	{
@@ -765,12 +768,10 @@ void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		d.r.x = (float)left->p.x + d.rv.x * d.left_len;
 		d.r.y = (float)left->p.y + d.rv.y * d.left_len;
 		d.coef = get_ceil_z(iw, d.r.x, d.r.y) - get_floor_z(iw, d.r.x, d.r.y);
-		d.wall_dist = fabsf(iw->d.screen.a * d.r.x + iw->d.screen.b * d.r.y + iw->d.screen.c) /
-			sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
+		d.wall_dist = (float)WINDOW_H / (fabsf(iw->d.screen.a * d.r.x + iw->d.screen.b * d.r.y + iw->d.screen.c) /
+			sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b));
 		d.r.x /= 1000.0f;
 		d.r.y /= 1000.0f;
-		d.px = (float)iw->p.x / 1000.0f;
-		d.py = (float)iw->p.y / 1000.0f;
 		if (iw->d.wallBot[j] < iw->d.top[left->x + j])
 			i = iw->d.top[left->x + j] - 1;
 		else
@@ -778,7 +779,7 @@ void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		d.k = (float)(iw->d.wallBot[j] - iw->d.wallTop[j]) + d.pl * (float)(i + 1 - iw->d.wallBot[j]);
 		while (++i < iw->d.bottom[left->x + j])
 		{
-			d.weight = (float)WINDOW_H / d.k / (d.wall_dist / d.coef);
+			d.weight = d.wall_dist * d.coef / d.k;
 			d.k += d.pl;
 			d.floor.x = d.weight * d.r.x + (1.0f - d.weight) * d.px;
 			d.floor.y = d.weight * d.r.y + (1.0f - d.weight) * d.py;
@@ -791,6 +792,75 @@ void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[iw->sectors[iw->d.cs].fr.t],
 				(int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w,
 					(int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h));
+		}
+		if (iw->d.wallBot[j] < iw->d.bottom[left->x + j])
+			iw->d.bottom[left->x + j] = iw->d.wallBot[j];
+		d.ang += d.dang;
+	}
+}
+
+void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
+{
+	int		i;
+	int		j;
+	t_draw_floor_tex	d;
+
+	d.lv.x = (float)(left->p.x - iw->p.x);
+	d.lv.y = (float)(left->p.y - iw->p.y);
+	d.rv.x = (float)(right->p.x - iw->p.x);
+	d.rv.y = (float)(right->p.y - iw->p.y);
+	d.ang = acosf((d.lv.x * d.rv.x + d.lv.y * d.rv.y) / (sqrtf(d.lv.x * d.lv.x + d.lv.y * d.lv.y) * sqrtf(d.rv.x * d.rv.x + d.rv.y * d.rv.y)));
+	d.dang = d.ang / (float)len;
+	d.ang = 0.0f;
+	d.rv.x = (float)(-right->p.x + left->p.x);
+	d.rv.y = (float)(-right->p.y + left->p.y);
+	d.sing = G180 - acosf((d.lv.x * d.rv.x + d.lv.y * d.rv.y) / (sqrtf(d.lv.x * d.lv.x + d.lv.y * d.lv.y) * sqrtf(d.rv.x * d.rv.x + d.rv.y * d.rv.y)));
+	d.lenpl = sqrtf(powf(iw->p.x - left->p.x, 2.0f) + powf(iw->p.y - left->p.y, 2.0f));
+	d.len_lr = sqrtf(powf(left->p.x - right->p.x, 2.0f) + powf(left->p.y - right->p.y, 2.0f));
+	d.rv.x = (float)(right->p.x - left->p.x) / d.len_lr;
+	d.rv.y = (float)(right->p.y - left->p.y) / d.len_lr;
+	d.zu = get_ceil_z(iw, 0, 0);
+	d.zd = get_floor_z(iw, 0, 0);
+	d.coef = d.zu - d.zd;
+	d.pl = (float)(d.zu - iw->p.z) / d.coef;
+	d.pl = tanf(get_floor_coef(iw, d.pl) * d.pl) + 1.0f;
+	d.px = (float)iw->p.x / 1000.0f;
+	d.py = (float)iw->p.y / 1000.0f;
+
+	j = -1;
+	while (++j < len)
+	{
+		if (iw->d.wallBot[j] >= iw->d.bottom[left->x + j] ||
+			iw->d.top[left->x + j] >= iw->d.bottom[left->x + j])
+		{
+			d.ang += d.dang;
+			continue;
+		}
+		d.left_len = sinf(d.ang) * d.lenpl / sin(d.sing - d.ang);
+		d.r.x = (float)left->p.x + d.rv.x * d.left_len;
+		d.r.y = (float)left->p.y + d.rv.y * d.left_len;
+		d.wall_dist = (float)WINDOW_H / (fabsf(iw->d.screen.a * d.r.x + iw->d.screen.b * d.r.y + iw->d.screen.c) /
+			sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b) / d.coef);
+		d.r.x /= 1000.0f;
+		d.r.y /= 1000.0f;
+		if (iw->d.wallBot[j] < iw->d.top[left->x + j])
+			i = iw->d.top[left->x + j] - 1;
+		else
+			i = iw->d.wallBot[j] - 1;
+		d.k = (float)(iw->d.wallBot[j] - iw->d.wallTop[j]) + d.pl * (float)(i + 1 - iw->d.wallBot[j]);
+		while (++i < iw->d.bottom[left->x + j])
+		{
+			d.weight = d.wall_dist / d.k;
+			d.k += d.pl;
+			d.floor.x = d.weight * d.r.x + (1.0f - d.weight) * d.px;
+			d.floor.y = d.weight * d.r.y + (1.0f - d.weight) * d.py;
+			while (d.floor.x <= 0.0f)
+				d.floor.x += 1000.0f;
+			while (d.floor.y <= 0.0f)
+				d.floor.y += 1000.0f;
+			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[iw->sectors[iw->d.cs].fr.t],
+				(int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w,
+				(int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h));
 		}
 		if (iw->d.wallBot[j] < iw->d.bottom[left->x + j])
 			iw->d.bottom[left->x + j] = iw->d.wallBot[j];
@@ -924,6 +994,69 @@ void	draw_between_sectors_top(t_sdl *iw, t_save_wall *left, int len, int *tmp)
 	}
 }
 
+void	draw_between_sectors_top_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int *tmp)
+{
+	int		i;
+	int		j;
+	t_draw_wall_tex	d;
+
+	d.lv.x = (float)(left->p.x - iw->p.x);
+	d.lv.y = (float)(left->p.y - iw->p.y);
+	d.rv.x = (float)(right->p.x - iw->p.x);
+	d.rv.y = (float)(right->p.y - iw->p.y);
+	d.ang = acosf((d.lv.x * d.rv.x + d.lv.y * d.rv.y) / (sqrtf(d.lv.x * d.lv.x + d.lv.y * d.lv.y) * sqrtf(d.rv.x * d.rv.x + d.rv.y * d.rv.y)));
+	d.dang = d.ang / (float)(right->x - left->x);
+	d.ang = 0.0f;
+	d.rv.x = (float)(-right->p.x + left->p.x);
+	d.rv.y = (float)(-right->p.y + left->p.y);
+	d.sing = G180 - acosf((d.lv.x * d.rv.x + d.lv.y * d.rv.y) / (sqrtf(d.lv.x * d.lv.x + d.lv.y * d.lv.y) * sqrtf(d.rv.x * d.rv.x + d.rv.y * d.rv.y)));
+	d.lenpl = sqrtf(powf(iw->p.x - left->p.x, 2.0f) + powf(iw->p.y - left->p.y, 2.0f));
+	d.len_lr = sqrtf(powf(left->p.x - right->p.x, 2.0f) + powf(left->p.y - right->p.y, 2.0f));
+	d.zudiff = (right->zu - left->zu) / d.len_lr;
+	d.zddiff = (right->zd - left->zd) / d.len_lr;
+
+	d.left_len = 0.0f;
+	d.tx = left->olen * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
+	while (d.tx >= (float)iw->t[left->wall->t]->w)
+		d.tx -= (float)iw->t[left->wall->t]->w;
+
+	j = -1;
+	while (++j < right->x - left->x)
+	{
+		if (iw->d.top[left->x + j] >= iw->d.bottom[left->x + j] ||
+			iw->d.top[left->x + j] >= tmp[j])
+		{
+			d.ang += d.dang;
+			continue;
+		}
+		d.zu = (float)left->zu + d.left_len * d.zudiff;
+		d.zd = (float)left->zd + d.left_len * d.zddiff;
+		if (iw->d.wallTop[j] < tmp[j])
+			d.ty = d.zu + (d.zu - d.zd) * (float)(iw->d.top[left->x + j] - iw->d.wallTop[j]) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
+		else
+			d.ty = d.zu;
+		d.ty = d.ty * (float)iw->t[left->wall->t]->h / 1000.0f;
+		d.dty = ((d.zu - d.zd) * (float)iw->t[left->wall->t]->h / 1000.0f) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
+		while (d.ty > (float)iw->t[left->wall->t]->h)
+			d.ty -= (float)iw->t[left->wall->t]->h;
+		/*i = tmp[j] - 1;*/
+		i = iw->d.top[left->x + j] - 1;
+		while (++i < tmp[j] && i < iw->d.bottom[left->x + j])
+		{
+			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[left->wall->t], (int)d.tx, (int)d.ty));
+			d.ty += d.dty;
+			while (d.ty >= (float)iw->t[left->wall->t]->h)
+				d.ty -= (float)iw->t[left->wall->t]->h;
+		}
+		iw->d.top[left->x + j] = tmp[j];
+		d.ang += d.dang;
+		d.left_len = sinf(d.ang) * d.lenpl / sin(d.sing - d.ang);
+		d.tx = (left->olen + d.left_len) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
+		while (d.tx > (float)iw->t[left->wall->t]->w)
+			d.tx -= (float)iw->t[left->wall->t]->w;
+	}
+}
+
 void	draw_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 {
 	t_draw_line		l;
@@ -950,7 +1083,7 @@ void	draw_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right
 	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen;
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen;
 	brez_line(tmp, l);
-	draw_between_sectors_top(iw, left, right->x - left->x + 1, tmp);
+	draw_between_sectors_top_tex(iw, left, right, tmp);
 	free(tmp);
 }
 
@@ -1012,8 +1145,16 @@ void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 
 void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 {
-	draw_floor_tex(iw, left, right, len);
-	draw_ceil(iw, left, len);
+	if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
+	{
+		draw_floor_tex(iw, left, right, len);
+		draw_ceil(iw, left, len);
+	}
+	else
+	{
+		draw_inclined_floor_tex(iw, left, right, len);
+		draw_ceil(iw, left, len);
+	}
 	if (left->wall->nextsector == -1)
 	{
 		draw_wall_tex(iw, left, right, len);
@@ -1266,6 +1407,8 @@ void	read_textures(t_sdl *iw)
 	iw->tsz[5] = 1.0f;
 	iw->t[6] = SDL_LoadBMP("textures/7.bmp");
 	iw->tsz[6] = 1.0f;
+	iw->t[7] = SDL_LoadBMP("textures/8.bmp");
+	iw->tsz[7] = 1.0f;
 	//Uint8 *target_pixel = (Uint8 *)(iw->t)[0]->pixels;
 	//set_pixel((iw->t)[0], 0, 0, 0xFF0000);
 	//printf("%d\n", read_pixel((iw->t)[0], 2, 0));
@@ -1287,10 +1430,10 @@ void	fill_floor_coefficients(t_sdl *iw)
 
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 880;
-	iw->p.y = 3220; //-2360
-	iw->p.z = -763;
-	iw->p.introt = 21;
+	iw->p.x = 9040;
+	iw->p.y = 2920; //-2360
+	iw->p.z = 557;
+	iw->p.introt = 173;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;
