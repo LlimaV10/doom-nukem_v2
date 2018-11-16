@@ -208,6 +208,7 @@ typedef struct	s_draw
 	int			*wallTop;
 	int			*wallBot;
 	int			prev_sector;
+	t_wall		*prev_sector_wall;
 	int			screen_left;
 	int			screen_right;
 }				t_draw;
@@ -228,7 +229,7 @@ typedef struct	s_sdl
 	// textures compression
 	float		tsz[TEXTURES_COUNT];
 	// Floor coefficient
-	float		c_floor[10];
+	// float		c_floor[10];
 }				t_sdl;
 
 #endif
