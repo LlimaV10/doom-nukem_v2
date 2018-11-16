@@ -665,11 +665,11 @@ void	draw_wall_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		d.zu = (float)left->zu + d.left_len * d.zudiff;
 		d.zd = (float)left->zd + d.left_len * d.zddiff;
 		if (iw->d.wallTop[j] < iw->d.top[j + left->x])
-			d.ty = d.zu + (d.zu - d.zd) * (float)(iw->d.top[j + left->x] - iw->d.wallTop[j]) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
+			d.ty = d.zu + iw->tsz[left->wall->t] * (d.zu - d.zd) * (float)(iw->d.top[j + left->x] - iw->d.wallTop[j]) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
 		else
 			d.ty = d.zu;
 		d.ty = d.ty * (float)iw->t[left->wall->t]->h / 1000.0f;
-		d.dty = ((d.zu - d.zd) * (float)iw->t[left->wall->t]->h / 1000.0f) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
+		d.dty = ((d.zu - d.zd) * (float)iw->t[left->wall->t]->h / 1000.0f) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]) * iw->tsz[left->wall->t];
 		while (d.ty > (float)iw->t[left->wall->t]->h)
 			d.ty -= (float)iw->t[left->wall->t]->h;
 		i = iw->d.top[left->x + j] - 1;
@@ -716,16 +716,12 @@ float	get_floor_coef(t_sdl *iw, float pl)
 {
 	int		i;
 
-	if (pl < 0.0f)
+	if (pl <= 0.0f)
 		return (iw->c_floor[0]);
-	else if (pl > 0.9f)
+	else if (pl >= 0.9f)
 		return (iw->c_floor[9]);
 	i = (int)(pl * 10.0f);
 	return (iw->c_floor[i] + (iw->c_floor[i + 1] - iw->c_floor[i]) * (pl - (float)i / 10.0f) / 0.1f);
-	/*else if (pl < 0.1f)
-		return (iw->c_floor[0] + (iw->c_floor[1] - iw->c_floor[0]) * pl / 0.1f);
-	else if (pl < 0.2f)
-		return (iw->c_floor[1] + (iw->c_floor[2] - iw->c_floor[1]) * pl / 0.1f);*/
 }
 
 void	draw_inclined_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
@@ -751,6 +747,10 @@ void	draw_inclined_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, i
 	d.zu = get_ceil_z(iw, iw->p.x, iw->p.y);
 	d.zd = get_floor_z(iw, iw->p.x, iw->p.y);
 	d.pl = (float)(d.zu - iw->p.z) / (float)(d.zu - d.zd);
+	if (d.pl > 0.9f)
+		d.pl = 0.9f;
+	else if (d.pl < 0.0f)
+		d.pl = 0.0f;
 	d.pl = tanf(get_floor_coef(iw, d.pl) * d.pl) + 1.0f;
 	d.px = (float)iw->p.x / 1000.0f;
 	d.py = (float)iw->p.y / 1000.0f;
@@ -823,6 +823,10 @@ void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	d.zd = get_floor_z(iw, 0, 0);
 	d.coef = d.zu - d.zd;
 	d.pl = (float)(d.zu - iw->p.z) / d.coef;
+	if (d.pl > 0.9f)
+		d.pl = 0.9f;
+	else if (d.pl < 0.0f)
+		d.pl = 0.0f;
 	d.pl = tanf(get_floor_coef(iw, d.pl) * d.pl) + 1.0f;
 	d.px = (float)iw->p.x / 1000.0f;
 	d.py = (float)iw->p.y / 1000.0f;
@@ -884,6 +888,82 @@ void	draw_ceil(t_sdl *iw, t_save_wall *left, int len)
 			set_pixel(iw->sur, left->x + j, i, 0x00FFFF);
 		if (iw->d.wallTop[j] > iw->d.top[left->x + j])
 			iw->d.top[left->x + j] = iw->d.wallTop[j];
+	}
+}
+
+void	draw_ceil_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
+{
+	int		i;
+	int		j;
+	t_draw_floor_tex	d;
+
+	d.lv.x = (float)(left->p.x - iw->p.x);
+	d.lv.y = (float)(left->p.y - iw->p.y);
+	d.rv.x = (float)(right->p.x - iw->p.x);
+	d.rv.y = (float)(right->p.y - iw->p.y);
+	d.ang = acosf((d.lv.x * d.rv.x + d.lv.y * d.rv.y) / (sqrtf(d.lv.x * d.lv.x + d.lv.y * d.lv.y) * sqrtf(d.rv.x * d.rv.x + d.rv.y * d.rv.y)));
+	d.dang = d.ang / (float)len;
+	d.ang = 0.0f;
+	d.rv.x = (float)(-right->p.x + left->p.x);
+	d.rv.y = (float)(-right->p.y + left->p.y);
+	d.sing = G180 - acosf((d.lv.x * d.rv.x + d.lv.y * d.rv.y) / (sqrtf(d.lv.x * d.lv.x + d.lv.y * d.lv.y) * sqrtf(d.rv.x * d.rv.x + d.rv.y * d.rv.y)));
+	d.lenpl = sqrtf(powf(iw->p.x - left->p.x, 2.0f) + powf(iw->p.y - left->p.y, 2.0f));
+	d.len_lr = sqrtf(powf(left->p.x - right->p.x, 2.0f) + powf(left->p.y - right->p.y, 2.0f));
+	d.rv.x = (float)(right->p.x - left->p.x) / d.len_lr;
+	d.rv.y = (float)(right->p.y - left->p.y) / d.len_lr;
+	d.zu = get_ceil_z(iw, iw->p.x, iw->p.y);
+	d.zd = get_floor_z(iw, iw->p.x, iw->p.y);
+	// d.pl = (float)(iw->p.z - d.zd) / (float)(d.zu - d.zd);
+	// if (d.pl > 0.9f)
+	// 	d.pl = 0.9f;
+	// else if (d.pl < 0.0f)
+	// 	d.pl = 0.0f;
+	// d.pl = tanf(get_floor_coef(iw, d.pl) * d.pl) + 1.0f;
+	d.pl = 0.78;
+	d.px = (float)iw->p.x / 1000.0f;
+	d.py = (float)iw->p.y / 1000.0f;
+
+	j = -1;
+	while (++j < len)
+	{
+		if (iw->d.wallTop[j] <= iw->d.top[left->x + j] ||
+			iw->d.top[left->x + j] >= iw->d.bottom[left->x + j])
+		{
+			d.ang += d.dang;
+			continue;
+		}
+		d.left_len = sinf(d.ang) * d.lenpl / sin(d.sing - d.ang);
+		d.r.x = (float)left->p.x + d.rv.x * d.left_len;
+		d.r.y = (float)left->p.y + d.rv.y * d.left_len;
+		d.coef = get_ceil_z(iw, d.r.x, d.r.y) - get_floor_z(iw, d.r.x, d.r.y);
+		d.wall_dist = (float)WINDOW_H / (fabsf(iw->d.screen.a * d.r.x + iw->d.screen.b * d.r.y + iw->d.screen.c) /
+			sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b));
+		d.r.x /= 1000.0f;
+		d.r.y /= 1000.0f;
+		if (iw->d.wallTop[j] < iw->d.bottom[left->x + j])
+			i = iw->d.wallTop[j] + 1;
+		else
+			i = iw->d.bottom[left->x + j] + 1;
+		d.k = (float)(iw->d.wallBot[j] - iw->d.wallTop[j]) + d.pl * (float)(iw->d.wallTop[j] - i + 1);
+		while (--i >= iw->d.top[left->x + j])
+		{
+			d.weight = d.wall_dist * d.coef / d.k;
+			d.k += d.pl;
+			d.floor.x = d.weight * d.r.x + (1.0f - d.weight) * d.px;
+			d.floor.y = d.weight * d.r.y + (1.0f - d.weight) * d.py;
+			d.coef = (get_ceil_z(iw, d.floor.x * 1000.0f, d.floor.y * 1000.0f) -
+				get_floor_z(iw, d.floor.x * 1000.0f, d.floor.y * 1000.0f) + d.coef) / 2.0f;
+			while (d.floor.x <= 0.0f)
+				d.floor.x += 1000.0f;
+			while (d.floor.y <= 0.0f)
+				d.floor.y += 1000.0f;
+			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[iw->sectors[iw->d.cs].cl.t],
+				(int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].cl.t]->w) % iw->t[iw->sectors[iw->d.cs].cl.t]->w,
+					(int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].cl.t]->h) % iw->t[iw->sectors[iw->d.cs].cl.t]->h));
+		}
+		if (iw->d.wallTop[j] > iw->d.top[left->x + j])
+			iw->d.top[left->x + j] = iw->d.wallTop[j];
+		d.ang += d.dang;
 	}
 }
 
@@ -952,11 +1032,11 @@ void	draw_between_sectors_bot_tex(t_sdl *iw, t_save_wall *left, t_save_wall *rig
 		d.zu = (float)left->zu + d.left_len * d.zudiff;
 		d.zd = (float)left->zd + d.left_len * d.zddiff;
 		if (iw->d.wallTop[j] < tmp[j])
-			d.ty = d.zu + (d.zu - d.zd) * (float)(tmp[j] - iw->d.wallTop[j]) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
+			d.ty = d.zu + iw->tsz[left->wall->t] * (d.zu - d.zd) * (float)(tmp[j] - iw->d.wallTop[j]) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
 		else
 			d.ty = d.zu;
 		d.ty = d.ty * (float)iw->t[left->wall->t]->h / 1000.0f;
-		d.dty = ((d.zu - d.zd) * (float)iw->t[left->wall->t]->h / 1000.0f) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
+		d.dty = ((d.zu - d.zd) * (float)iw->t[left->wall->t]->h / 1000.0f) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]) * iw->tsz[left->wall->t];
 		while (d.ty > (float)iw->t[left->wall->t]->h)
 			d.ty -= (float)iw->t[left->wall->t]->h;
 		i = tmp[j] - 1;
@@ -1032,11 +1112,11 @@ void	draw_between_sectors_top_tex(t_sdl *iw, t_save_wall *left, t_save_wall *rig
 		d.zu = (float)left->zu + d.left_len * d.zudiff;
 		d.zd = (float)left->zd + d.left_len * d.zddiff;
 		if (iw->d.wallTop[j] < tmp[j])
-			d.ty = d.zu + (d.zu - d.zd) * (float)(iw->d.top[left->x + j] - iw->d.wallTop[j]) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
+			d.ty = d.zu + iw->tsz[left->wall->t] * (d.zu - d.zd) * (float)(iw->d.top[left->x + j] - iw->d.wallTop[j]) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
 		else
 			d.ty = d.zu;
 		d.ty = d.ty * (float)iw->t[left->wall->t]->h / 1000.0f;
-		d.dty = ((d.zu - d.zd) * (float)iw->t[left->wall->t]->h / 1000.0f) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
+		d.dty = ((d.zu - d.zd) * (float)iw->t[left->wall->t]->h / 1000.0f) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]) * iw->tsz[left->wall->t];
 		while (d.ty > (float)iw->t[left->wall->t]->h)
 			d.ty -= (float)iw->t[left->wall->t]->h;
 		/*i = tmp[j] - 1;*/
@@ -1148,12 +1228,12 @@ void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
 	{
 		draw_floor_tex(iw, left, right, len);
-		draw_ceil(iw, left, len);
+		draw_ceil_tex(iw, left, right, len);
 	}
 	else
 	{
 		draw_inclined_floor_tex(iw, left, right, len);
-		draw_ceil(iw, left, len);
+		draw_ceil_tex(iw, left, right, len);
 	}
 	if (left->wall->nextsector == -1)
 	{
@@ -1430,10 +1510,10 @@ void	fill_floor_coefficients(t_sdl *iw)
 
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 9040;
-	iw->p.y = 2920; //-2360
-	iw->p.z = 557;
-	iw->p.introt = 173;
+	iw->p.x = 3640;
+	iw->p.y = 3220; //-2360
+	iw->p.z = -100;
+	iw->p.introt = 21;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f;
 	iw->v.ls = 0;
