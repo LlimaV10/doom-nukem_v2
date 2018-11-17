@@ -73,7 +73,7 @@ typedef struct	s_player
 	int		z;
 	float	rot;
 	int		introt;
-	float	rotup;
+	int		rotup;
 }				t_player;
 
 typedef struct	s_variables

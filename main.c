@@ -110,7 +110,17 @@ void	key_down(int code, t_sdl *iw)
 		iw->p.z -= 60;
 		update(iw);
 	}
-	printf("rot = %d px %d py %d pz %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z);
+	else if (code == 82 && iw->p.rotup < 2 * WINDOW_H)
+	{
+		iw->p.rotup += 2 * WINDOW_H / 11;
+		update(iw);
+	}
+	else if (code == 81 && iw->p.rotup > -2 * WINDOW_H)
+	{
+		iw->p.rotup -= 2 * WINDOW_H / 11;
+		update(iw);
+	}
+	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
 }
 
 void	main_loop(t_sdl *iw)
@@ -913,17 +923,22 @@ void	draw_ceil_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	d.len_lr = sqrtf(powf(left->p.x - right->p.x, 2.0f) + powf(left->p.y - right->p.y, 2.0f));
 	d.rv.x = (float)(right->p.x - left->p.x) / d.len_lr;
 	d.rv.y = (float)(right->p.y - left->p.y) / d.len_lr;
-	if (1)
-	{
+	/*if (iw->d.prev_sector == -1)
+	{*/
 		d.zu = get_ceil_z(iw, iw->p.x, iw->p.y);
 		d.zd = get_floor_z(iw, iw->p.x, iw->p.y);
-	}
-	else
+	/*if (d.zd > d.zu)
 	{
-
+		d.px = d.zd;
+		d.zd = d.zu;
+		d.zu = d.px;
+	}*/
+	//}
+	/*else
+	{
 		d.zu = get_ceil_z(iw, iw->d.prev_sector_wall->x, iw->d.prev_sector_wall->y);
 		d.zd = get_floor_z(iw, iw->d.prev_sector_wall->x, iw->d.prev_sector_wall->y);
-	}
+	}*/
 	d.pl = (float)(d.zu - d.zd) / (float)(d.zu - iw->p.z);
 	// d.pl = (float)(iw->p.z - d.zd) / (float)(d.zu - d.zd);
 	/*if (d.pl > 0.9f)
@@ -1163,8 +1178,8 @@ void	draw_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right
 	rz = get_floor_z(iw, right->wall->x, right->wall->y);*/
 	lz = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
 	rz = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
-	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen;
-	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen;
+	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen + iw->p.rotup;
+	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen + iw->p.rotup;
 	brez_line(tmp, l);
 	draw_between_sectors_bot_tex(iw, left, right, tmp);
 
@@ -1172,8 +1187,8 @@ void	draw_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right
 	rz = get_ceil_z(iw, right->wall->x, right->wall->y);*/
 	lz = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
 	rz = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
-	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen;
-	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen;
+	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen + iw->p.rotup;
+	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen + iw->p.rotup;
 	brez_line(tmp, l);
 	draw_between_sectors_top_tex(iw, left, right, tmp);
 	free(tmp);
@@ -1271,11 +1286,11 @@ void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 		return;
 	l.x0 = left->x;
 	l.x1 = right->x;
-	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - left->zd) / (int)left->plen;
-	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - right->zd) / (int)right->plen;
+	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - left->zd) / (int)left->plen + iw->p.rotup;
+	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - right->zd) / (int)right->plen + iw->p.rotup;
 	brez_line(iw->d.wallBot, l);
-	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - left->zu) / (int)left->plen;
-	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - right->zu) / (int)right->plen;
+	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - left->zu) / (int)left->plen + iw->p.rotup;
+	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - right->zu) / (int)right->plen + iw->p.rotup;
 	brez_line(iw->d.wallTop, l);
 	draw_all(iw, left, right, right->x - left->x + 1);
 	//printf("draw lpx %d lpy %d rpx %d rpy %d lplen %f lx %d rx %d\n", left->wall->x, left->wall->y, right->wall->x, right->wall->y, left->plen, left->x, right->x);
@@ -1529,7 +1544,7 @@ void	get_def(t_sdl *iw)
 	iw->p.z = 681;
 	iw->p.introt = 169;
 	iw->p.rot = (float)iw->p.introt * G1;
-	iw->p.rotup = 0.0f;
+	iw->p.rotup = 0.0f; //550
 	iw->v.ls = 0;
 	iw->v.angle = 0.698132f;
 	//fill_floor_coefficients(iw);
