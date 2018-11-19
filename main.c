@@ -7,7 +7,7 @@ void	set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 	{
 		Uint8 *target_pixel = (Uint8 *)surface->pixels + y * surface->pitch + x * 4;
 		*(Uint32 *)target_pixel = pixel;
-	}
+	} 
 }
 
 Uint32	get_pixel(SDL_Surface *sur, const int x, const int y)
@@ -674,8 +674,6 @@ void	draw_wall_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		}
 		d.left_len = sinf(d.ang) * d.lenpl / sin(d.sing - d.ang);
 		d.tx = (left->olen + d.left_len) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
-		while (d.tx > (float)iw->t[left->wall->t]->w)
-			d.tx -= (float)iw->t[left->wall->t]->w;
 		d.zu = (float)left->zu + d.left_len * d.zudiff;
 		d.zd = (float)left->zd + d.left_len * d.zddiff;
 		if (iw->d.wallTop[j] < iw->d.top[j + left->x])
@@ -684,20 +682,15 @@ void	draw_wall_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 			d.ty = d.zu;
 		d.ty = d.ty * (float)iw->t[left->wall->t]->h / 1000.0f;
 		d.dty = ((d.zu - d.zd) * (float)iw->t[left->wall->t]->h / 1000.0f) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]) * iw->tsz[left->wall->t];
-		while (d.ty > (float)iw->t[left->wall->t]->h)
-			d.ty -= (float)iw->t[left->wall->t]->h;
 		i = iw->d.top[left->x + j] - 1;
 		while (++i < iw->d.bottom[left->x + j])
 		{
-			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[left->wall->t], (int)d.tx, (int)d.ty));
+			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[left->wall->t], (int)d.tx % iw->t[left->wall->t]->w, (int)d.ty % iw->t[left->wall->t]->h));
 			d.ty += d.dty;
-			while (d.ty >= (float)iw->t[left->wall->t]->h)
-				d.ty -= (float)iw->t[left->wall->t]->h;
 		}
 		iw->d.top[left->x + j] = iw->d.bottom[left->x + j];
 		d.ang += d.dang;
 	}
-
 }
 
 void	draw_floor(t_sdl *iw, t_save_wall *left, int len)
@@ -796,13 +789,12 @@ void	draw_inclined_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, i
 			d.floor.y = d.weight * d.r.y + (1.0f - d.weight) * d.py;
 			d.coef = (get_ceil_z(iw, d.floor.x * 1000.0f, d.floor.y * 1000.0f) -
 				get_floor_z(iw, d.floor.x * 1000.0f, d.floor.y * 1000.0f) + d.coef) / 2.0f;
-			while (d.floor.x <= 0.0f)
-				d.floor.x += 1000.0f;
-			while (d.floor.y <= 0.0f)
-				d.floor.y += 1000.0f;
 			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[iw->sectors[iw->d.cs].fr.t],
-				(int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w,
-					(int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h));
+				((d.floor.x < 0) ? (((int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w) + iw->t[iw->sectors[iw->d.cs].fr.t]->w) :
+					((int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w)),
+				((d.floor.y < 0) ? (((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h) + iw->t[iw->sectors[iw->d.cs].fr.t]->h) :
+					((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h))
+			));
 		}
 		if (iw->d.wallBot[j] < iw->d.bottom[left->x + j])
 			iw->d.bottom[left->x + j] = iw->d.wallBot[j];
@@ -870,13 +862,16 @@ void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 			d.k += d.pl;
 			d.floor.x = d.weight * d.r.x + (1.0f - d.weight) * d.px;
 			d.floor.y = d.weight * d.r.y + (1.0f - d.weight) * d.py;
-			while (d.floor.x <= 0.0f)
-				d.floor.x += 1000.0f;
-			while (d.floor.y <= 0.0f)
-				d.floor.y += 1000.0f;
 			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[iw->sectors[iw->d.cs].fr.t],
-				(int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w,
-				(int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h));
+				((d.floor.x < 0) ? (((int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w) + iw->t[iw->sectors[iw->d.cs].fr.t]->w) :
+					((int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w)),
+				((d.floor.y < 0) ? (((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h) + iw->t[iw->sectors[iw->d.cs].fr.t]->h) :
+					((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h))
+			));
+				/*(((int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) %
+					iw->t[iw->sectors[iw->d.cs].fr.t]->w) + iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w,
+				(((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) %
+					iw->t[iw->sectors[iw->d.cs].fr.t]->h) + iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h));*/
 		}
 		if (iw->d.wallBot[j] < iw->d.bottom[left->x + j])
 			iw->d.bottom[left->x + j] = iw->d.wallBot[j];
@@ -980,13 +975,12 @@ void	draw_ceil_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 			d.floor.y = d.weight * d.r.y + (1.0f - d.weight) * d.py;
 			d.coef = (get_ceil_z(iw, d.floor.x * 1000.0f, d.floor.y * 1000.0f) -
 				get_floor_z(iw, d.floor.x * 1000.0f, d.floor.y * 1000.0f) + d.coef) / 2.0f;
-			while (d.floor.x <= 0.0f)
-				d.floor.x += 1000.0f;
-			while (d.floor.y <= 0.0f)
-				d.floor.y += 1000.0f;
 			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[iw->sectors[iw->d.cs].cl.t],
-				(int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].cl.t]->w) % iw->t[iw->sectors[iw->d.cs].cl.t]->w,
-					(int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].cl.t]->h) % iw->t[iw->sectors[iw->d.cs].cl.t]->h));
+				((d.floor.x < 0) ? (((int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w) + iw->t[iw->sectors[iw->d.cs].fr.t]->w) :
+					((int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w)),
+				((d.floor.y < 0) ? (((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h) + iw->t[iw->sectors[iw->d.cs].fr.t]->h) :
+					((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h))
+			));
 		}
 		if (iw->d.wallTop[j] > iw->d.top[left->x + j])
 			iw->d.top[left->x + j] = iw->d.wallTop[j];
@@ -1265,7 +1259,8 @@ void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	}
 	if (left->wall->nextsector == -1)
 	{
-		draw_wall_tex(iw, left, right, len);
+		draw_wall_tex_kernel2(iw, left, right, len);
+		//draw_wall_tex(iw, left, right, len);
 		//draw_useless_lines(iw, left, len);
 	}
 	else if (left->wall->nextsector != iw->d.prev_sector)
@@ -1547,6 +1542,7 @@ void	get_def(t_sdl *iw)
 	iw->p.rotup = 0.0f; //550
 	iw->v.ls = 0;
 	iw->v.angle = 0.698132f;
+	load_kernel(&iw->k);
 	//fill_floor_coefficients(iw);
 }
 

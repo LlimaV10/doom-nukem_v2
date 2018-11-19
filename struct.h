@@ -138,6 +138,19 @@ typedef struct	s_draw_wall_tex
 	float	len_lr;
 }				t_draw_wall_tex;
 
+typedef struct	s_draw_wall_tex_kernel
+{
+	/*float	tx;
+	float	ty;
+	float	dty;*/
+	t_point2d	lv;
+	t_point2d	rv;
+	/*float	zu;
+	float	zd;
+	float	left_len;*/
+	float	len_lr;
+}				t_draw_wall_tex_kernel;
+
 typedef struct	s_draw_floor_tex
 {
 	float	sing;
@@ -224,6 +237,8 @@ typedef struct	s_kernel
 	cl_platform_id	*platforms;
 	cl_int	ret;
 	cl_command_queue command_queue;
+	cl_program program;
+	cl_kernel kernel;
 }				t_kernel;
 
 typedef struct	s_sdl
@@ -241,6 +256,7 @@ typedef struct	s_sdl
 	SDL_Surface *(t)[TEXTURES_COUNT];
 	// textures compression
 	float		tsz[TEXTURES_COUNT];
+	t_kernel	k;
 	// Floor coefficient
 	// float		c_floor[10];
 }				t_sdl;

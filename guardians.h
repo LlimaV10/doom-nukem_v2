@@ -23,5 +23,8 @@
 # include "struct.h"
 
 void	get_map(t_sdl *iw);
+void	load_kernel(t_kernel *k);
+void	draw_wall_tex_kernel2(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len);
+
 
 #endif
