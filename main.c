@@ -672,6 +672,10 @@ void	draw_wall_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 			d.ang += d.dang;
 			continue;
 		}
+		d.left_len = sinf(d.ang) * d.lenpl / sin(d.sing - d.ang);
+		d.tx = (left->olen + d.left_len) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
+		while (d.tx > (float)iw->t[left->wall->t]->w)
+			d.tx -= (float)iw->t[left->wall->t]->w;
 		d.zu = (float)left->zu + d.left_len * d.zudiff;
 		d.zd = (float)left->zd + d.left_len * d.zddiff;
 		if (iw->d.wallTop[j] < iw->d.top[j + left->x])
@@ -692,10 +696,6 @@ void	draw_wall_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		}
 		iw->d.top[left->x + j] = iw->d.bottom[left->x + j];
 		d.ang += d.dang;
-		d.left_len = sinf(d.ang) * d.lenpl / sin(d.sing - d.ang);
-		d.tx = (left->olen + d.left_len) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
-		while (d.tx > (float)iw->t[left->wall->t]->w)
-			d.tx -= (float)iw->t[left->wall->t]->w;
 	}
 
 }
@@ -1225,7 +1225,7 @@ void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 {
 	t_sdl	iw2;
 
-	printf("next_sector\n");
+	//printf("next_sector\n");
 	iw2 = *iw;
 	iw2.p.x += iw->walls[left->wall->nextsector_wall].x - left->wall->next->x;
 	iw2.p.y += iw->walls[left->wall->nextsector_wall].y - left->wall->next->y;

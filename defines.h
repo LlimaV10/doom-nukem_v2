@@ -3,6 +3,7 @@
 
 # define WINDOW_W 1000
 # define WINDOW_H 550
+# define MAX_SOURCE_SIZE 0x100000
 # define TEXTURES_COUNT 8
 // # define THREADS 4
 // # define SCREEN_DISTANCE 1.0f

@@ -213,6 +213,19 @@ typedef struct	s_draw
 	int			screen_right;
 }				t_draw;
 
+typedef struct	s_kernel
+{
+	char	*source_str;
+	size_t	source_size;
+	cl_context context;
+	cl_device_id device_id;
+	cl_uint	ret_num_devices;
+	cl_uint	ret_num_platforms;
+	cl_platform_id	*platforms;
+	cl_int	ret;
+	cl_command_queue command_queue;
+}				t_kernel;
+
 typedef struct	s_sdl
 {
 	SDL_Window	*win;
