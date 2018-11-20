@@ -1247,7 +1247,7 @@ void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 
 void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 {
-	if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
+	/*if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
 	{
 		draw_floor_tex(iw, left, right, len);
 		draw_ceil_tex(iw, left, right, len);
@@ -1256,11 +1256,15 @@ void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	{
 		draw_inclined_floor_tex(iw, left, right, len);
 		draw_ceil_tex(iw, left, right, len);
-	}
+	}*/
+	draw_floor(iw, left, len);
+	draw_ceil(iw, left, len);
 	if (left->wall->nextsector == -1)
 	{
-		draw_wall_tex_kernel2(iw, left, right, len);
-		//draw_wall_tex(iw, left, right, len);
+		if (len > 200)
+			draw_wall_tex_kernel2(iw, left, right, len);
+		else
+			draw_wall_tex(iw, left, right, len);
 		//draw_useless_lines(iw, left, len);
 	}
 	else if (left->wall->nextsector != iw->d.prev_sector)

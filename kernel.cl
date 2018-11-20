@@ -61,8 +61,8 @@ __kernel void get_wall_tx_zu_zd2(
 	j = get_global_id(0);
 	if (top[cint[1] + j] >= bottom[cint[1] + j])
 		return;
-	nang = cfloat[0] + cfloat[1] * (float)j;
-	left_len = sin(nang) * cfloat[2] / sin(cfloat[3] - cfloat[0]);
+	nang = cfloat[1] * (float)j;
+	left_len = sin(nang) * cfloat[2] / sin(cfloat[3] - nang);
 	tx = (cfloat[4] + left_len) * (float)cint[0] * cfloat[5] / 1000.0f;
 	zu = (float)cint[2] + left_len * cfloat[6];
 	zd = (float)cint[3] + left_len * cfloat[7];
@@ -71,13 +71,13 @@ __kernel void get_wall_tx_zu_zd2(
 		(float)(wallBot[j] - wallTop[j]);
 	else
 		ty = zu;
-	ty *= (float)cint[5] / 1000.0f;
+	ty = ty * (float)cint[5] / 1000.0f;
 	dty = ((zu - zd) * (float)cint[5] / 1000.0f) /
 		(float)(wallBot[j] - wallTop[j]) * cfloat[5];
 	i = top[cint[1] + j] - 1;
 	while (++i < bottom[cint[1] + j])
 	{
-		tp = ((int)tx % cint[0]) * 4 + ((int)ty % cint[5]) * 4 * cint[0];
+		tp = ((int)tx % cint[0]) * 3 + ((int)ty % cint[5]) * 3 * cint[0];
 		wpixels[cint[1] + j + i * cint[4]] = (int)(tpixels[tp] | tpixels[tp + 1] << 8 | tpixels[tp + 2] << 16);
 		ty += dty;
 	}
