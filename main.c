@@ -365,22 +365,22 @@ void	add_wall(t_sdl *iw, t_save_wall *tmp)
 	}
 }
 
-float	get_floor_z(t_sdl *iw, float x, float y)
+int		get_floor_z(t_sdl *iw, int x, int y)
 {
 	if (iw->sectors[iw->d.cs].fr.n == 0)
 		return (iw->sectors[iw->d.cs].fr.z);
 	else
-		return ((iw->sectors[iw->d.cs].fr.n->a * x + iw->sectors[iw->d.cs].fr.n->b *
-			y + iw->sectors[iw->d.cs].fr.n->d) / (-iw->sectors[iw->d.cs].fr.n->c));
+		return ((iw->sectors[iw->d.cs].fr.n->a * (float)x + iw->sectors[iw->d.cs].fr.n->b *
+		(float)y + iw->sectors[iw->d.cs].fr.n->d) / (-iw->sectors[iw->d.cs].fr.n->c));
 }
 
-float		get_ceil_z(t_sdl *iw, float x, float y)
+int		get_ceil_z(t_sdl *iw, int x, int y)
 {
 	if (iw->sectors[iw->d.cs].cl.n == 0)
 		return (iw->sectors[iw->d.cs].cl.z);
 	else
-		return ((iw->sectors[iw->d.cs].cl.n->a * x + iw->sectors[iw->d.cs].cl.n->b *
-			y + iw->sectors[iw->d.cs].cl.n->d) / (-iw->sectors[iw->d.cs].cl.n->c));
+		return ((iw->sectors[iw->d.cs].cl.n->a * (float)x + iw->sectors[iw->d.cs].cl.n->b *
+		(float)y + iw->sectors[iw->d.cs].cl.n->d) / (-iw->sectors[iw->d.cs].cl.n->c));
 }
 
 float	get_vectors_angle(float x1, float y1, float x2, float y2)
@@ -780,13 +780,13 @@ void	draw_inclined_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, i
 			d.k += d.pl;
 			d.floor.x = d.weight * d.r.x + (1.0f - d.weight) * d.px;
 			d.floor.y = d.weight * d.r.y + (1.0f - d.weight) * d.py;
-			d.coef = get_ceil_z(iw, d.floor.x * 1000.0f, d.floor.y * 1000.0f) -
-				get_floor_z(iw, d.floor.x * 1000.0f, d.floor.y * 1000.0f);
+			d.coef = (get_ceil_z(iw, d.floor.x * 1000.0f, d.floor.y * 1000.0f) -
+				get_floor_z(iw, d.floor.x * 1000.0f, d.floor.y * 1000.0f) + d.coef) / 2.0f;
 			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[iw->sectors[iw->d.cs].fr.t],
 				((d.floor.x < 0) ? (((int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w) + iw->t[iw->sectors[iw->d.cs].fr.t]->w - 1) :
-					((int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w)),
-				((d.floor.y < 0) ? (((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h) + iw->t[iw->sectors[iw->d.cs].fr.t]->h - 1) :
-					((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h))
+				((int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w)),
+					((d.floor.y < 0) ? (((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h) + iw->t[iw->sectors[iw->d.cs].fr.t]->h - 1) :
+				((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h))
 			));
 		}
 		if (iw->d.wallBot[j] < iw->d.bottom[left->x + j])
@@ -1283,7 +1283,7 @@ void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	}
 	else
 	{
-		draw_inclined_floor_tex(iw, left, right, len);
+		draw_inclined_floor_tex_kernel(iw, left, right, len);
 		draw_inclined_ceil_tex(iw, left, right, len);
 	}
 	// draw_floor(iw, left, len);

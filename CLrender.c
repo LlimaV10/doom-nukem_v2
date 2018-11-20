@@ -344,7 +344,7 @@ void	draw_inclined_floor_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *r
 	m_top = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, (WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
 	m_bottom = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE, (WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
 	m_wpixels = clCreateBuffer(iw->k.context, CL_MEM_WRITE_ONLY, WINDOW_W * WINDOW_H * sizeof(int), NULL, &iw->k.ret);
-	m_tpixels = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, iw->t[left->wall->t]->w * iw->t[left->wall->t]->h
+	m_tpixels = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, iw->t[iw->sectors[iw->d.cs].fr.t]->w * iw->t[iw->sectors[iw->d.cs].fr.t]->h
 		* sizeof(int), NULL, &iw->k.ret);
 	m_wallTop = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, len * sizeof(int), NULL, &iw->k.ret);
 	m_wallBot = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, len * sizeof(int), NULL, &iw->k.ret);
@@ -354,8 +354,8 @@ void	draw_inclined_floor_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *r
 	clEnqueueWriteBuffer(iw->k.command_queue, m_top, CL_TRUE, 0, (WINDOW_W + 1) * sizeof(int), iw->d.top, 0, NULL, NULL);
 	clEnqueueWriteBuffer(iw->k.command_queue, m_bottom, CL_TRUE, 0, (WINDOW_W + 1) * sizeof(int), iw->d.bottom, 0, NULL, NULL);
 	clEnqueueWriteBuffer(iw->k.command_queue, m_wpixels, CL_TRUE, 0, WINDOW_W * WINDOW_H * sizeof(int), iw->sur->pixels, 0, NULL, NULL);
-	clEnqueueWriteBuffer(iw->k.command_queue, m_tpixels, CL_TRUE, 0, iw->t[left->wall->t]->w * iw->t[left->wall->t]->h
-		* sizeof(int), iw->t[left->wall->t]->pixels, 0, NULL, NULL);
+	clEnqueueWriteBuffer(iw->k.command_queue, m_tpixels, CL_TRUE, 0, iw->t[iw->sectors[iw->d.cs].fr.t]->w * iw->t[iw->sectors[iw->d.cs].fr.t]->h
+		* sizeof(int), iw->t[iw->sectors[iw->d.cs].fr.t]->pixels, 0, NULL, NULL);
 	clEnqueueWriteBuffer(iw->k.command_queue, m_wallTop, CL_TRUE, 0, len * sizeof(int), iw->d.wallTop, 0, NULL, NULL);
 	clEnqueueWriteBuffer(iw->k.command_queue, m_wallBot, CL_TRUE, 0, len * sizeof(int), iw->d.wallBot, 0, NULL, NULL);
 	clEnqueueWriteBuffer(iw->k.command_queue, m_cint, CL_TRUE, 0, 7 * sizeof(int), cint, 0, NULL, NULL);
