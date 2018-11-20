@@ -13,6 +13,7 @@
 NAME = doom-nukem
 
 SRC =	main.c \
+		CLrender.c \
 		map.c
 
 OBJ = $(SRC:.c=.o)
@@ -21,7 +22,7 @@ INC =	-I SDL2/SDL2.framework/Headers\
 
 ERRFL = -Wall -Wextra -g # -Werror
 
-FL = -F SDL2/ -framework SDL2
+FL = -F SDL2/ -framework SDL2 -framework OpenCL
 
 PRINT = yes
 

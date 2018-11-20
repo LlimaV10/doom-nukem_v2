@@ -175,6 +175,16 @@ typedef struct	s_draw_floor_tex
 	float		py;
 }				t_draw_floor_tex;
 
+typedef struct	s_draw_floor_tex_kernel
+{
+	float	ang;
+	t_point2d	lv;
+	t_point2d	rv;
+	float	zu;
+	float	zd;
+	float	len_lr;
+}				t_draw_floor_tex_kernel;
+
 typedef struct	s_save_wall
 {
 	int		x;
