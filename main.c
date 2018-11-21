@@ -370,8 +370,8 @@ int		get_floor_z(t_sdl *iw, int x, int y)
 	if (iw->sectors[iw->d.cs].fr.n == 0)
 		return (iw->sectors[iw->d.cs].fr.z);
 	else
-		return ((iw->sectors[iw->d.cs].fr.n->a * (float)x + iw->sectors[iw->d.cs].fr.n->b *
-		(float)y + iw->sectors[iw->d.cs].fr.n->d) / (-iw->sectors[iw->d.cs].fr.n->c));
+		return ((iw->sectors[iw->d.cs].fr.n->a * x + iw->sectors[iw->d.cs].fr.n->b *
+		y + iw->sectors[iw->d.cs].fr.n->d) / (-iw->sectors[iw->d.cs].fr.n->c));
 }
 
 int		get_ceil_z(t_sdl *iw, int x, int y)
@@ -379,8 +379,8 @@ int		get_ceil_z(t_sdl *iw, int x, int y)
 	if (iw->sectors[iw->d.cs].cl.n == 0)
 		return (iw->sectors[iw->d.cs].cl.z);
 	else
-		return ((iw->sectors[iw->d.cs].cl.n->a * (float)x + iw->sectors[iw->d.cs].cl.n->b *
-		(float)y + iw->sectors[iw->d.cs].cl.n->d) / (-iw->sectors[iw->d.cs].cl.n->c));
+		return ((iw->sectors[iw->d.cs].cl.n->a * x + iw->sectors[iw->d.cs].cl.n->b *
+		y + iw->sectors[iw->d.cs].cl.n->d) / (-iw->sectors[iw->d.cs].cl.n->c));
 }
 
 float	get_vectors_angle(float x1, float y1, float x2, float y2)
@@ -1278,13 +1278,16 @@ void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 {
 	if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
 	{
-		draw_floor_tex(iw, left, right, len);
-		draw_ceil_tex(iw, left, right, len);
+		draw_floor(iw, left, len);
+		draw_ceil(iw, left, len);
 	}
 	else
 	{
-		draw_inclined_floor_tex_kernel(iw, left, right, len);
-		draw_inclined_ceil_tex(iw, left, right, len);
+		if (len > 100)
+			draw_inclined_floor_tex_kernel(iw, left, right, len);
+		else
+			draw_inclined_floor_tex(iw, left, right, len);
+		draw_ceil(iw, left, len);
 	}
 	// draw_floor(iw, left, len);
 	// draw_ceil(iw, left, len);
@@ -1567,10 +1570,10 @@ void	read_textures(t_sdl *iw)
 
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 6400;
-	iw->p.y = 2740; //-2360
-	iw->p.z = 681;
-	iw->p.introt = 169;
+	iw->p.x = 2500;
+	iw->p.y = 2500; //-2360
+	iw->p.z = 481;
+	iw->p.introt = 1;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f; //550
 	iw->v.ls = 0;

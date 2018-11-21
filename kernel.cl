@@ -93,27 +93,28 @@ __kernel void draw_wall_tex(
 //5 - theight
 //6 - WINDOW_W
 
+//5 - floorA 7
+//6 - floorB 8
+//7 - floorC 9
+//8 - floorD 10
+//9  - ceilA 11
+//10 - ceilB 12
+//11 - ceilC 13
+//12 - ceilD 14
+
 //float
 //0 - dang
 //1 - lenpl
 //2 - sing
 //3 - rv.x
 //4 - rv.y
-//5 - floorA
-//6 - floorB
-//7 - floorC
-//8 - floorD
-//9  - ceilA
-//10 - ceilB
-//11 - ceilC
-//12 - ceilD
-//13 - screenA
-//14 - screenB
-//15 - screenC
-//16 - screen_equaton
-//17 - pl
-//18 - px
-//19 - py
+//5 - screenA
+//6 - screenB
+//7 - screenC
+//8 - screen_equaton
+//9 - pl
+//10 - px
+//11 - py
 
 __kernel void draw_inclined_floor_tex(
 	__global const int *top, __global int *bottom,
@@ -138,15 +139,15 @@ __kernel void draw_inclined_floor_tex(
 
 	j = get_global_id(0);
 	if (wallBot[j] >= bottom[cint[0] + j] ||
-			top[cint[0] + j] >= bottom[cint[0] + j])
+		top[cint[0] + j] >= bottom[cint[0] + j])
 		return;
 	nang = cfloat[0] * (float)j;
 	left_len = sin(nang) * cfloat[1] / sin(cfloat[2] - nang);
 	rx = (float)cint[1] + cfloat[3] * left_len;
 	ry = (float)cint[2] + cfloat[4] * left_len;
-	coef = (cfloat[9] * rx + cfloat[10] * ry + cfloat[12]) / (-cfloat[11]) -
-		(cfloat[5] * rx + cfloat[6] * ry + cfloat[8]) / (-cfloat[7]);
-	wall_dist = (float)cint[3] / ((cfloat[13] * rx + cfloat[14] * ry + cfloat[15]) / cfloat[16]);
+	coef = (cint[11] * (int)rx + cint[12] * (int)ry + cint[14]) / cint[13] * -1 -
+		(cint[7] * (int)rx + cint[8] * (int)ry + cint[10]) / cint[9] * -1;
+	wall_dist = (float)cint[3] / ((cfloat[5] * rx + cfloat[6] * ry + cfloat[7]) / cfloat[8]);
 	if (wall_dist < 0)
 		wall_dist = -wall_dist;
 	rx /= 1000.0f;
@@ -155,18 +156,17 @@ __kernel void draw_inclined_floor_tex(
 		i = top[cint[0] + j] - 1;
 	else
 		i = wallBot[j] - 1;
-	k = (float)(wallBot[j] - wallTop[j]) + cfloat[17] * (float)(i + 1 - wallBot[j]);
+	k = (float)(wallBot[j] - wallTop[j]) + cfloat[9] * (float)(i + 1 - wallBot[j]);
 	while (++i < bottom[cint[0] + j])
 	{
 		weight = wall_dist * coef / k;
-		k += cfloat[17];
-		floorx = weight * rx + (1.0f - weight) * cfloat[18];
-		floory = weight * ry + (1.0f - weight) * cfloat[19];
-		coef = (cfloat[9] * floorx * 1000.0f + cfloat[10] * floory * 1000.0f + cfloat[12]) / (-cfloat[11]) -
-			(cfloat[5] * floorx * 1000.0f + cfloat[6] * floory * 1000.0f + cfloat[8]) / (-cfloat[7]);
-		
-		tp = ((floorx < 0) ? (((int)(floorx * (float)cint[4]) % cint[4]) + cint[4] - 1) : ((int)(floorx * (float)cint[4]) % cint[4])) * 3
-			+ ((floory < 0) ? (((int)(floory * (float)cint[5]) % cint[5]) + cint[5] - 1) : ((int)(floory * (float)cint[5]) % cint[5])) * 3 * cint[4];
+		k += cfloat[9];
+		floorx = weight * rx + (1.0f - weight) * cfloat[10];
+		floory = weight * ry + (1.0f - weight) * cfloat[11];
+		coef = ((cint[11] * (int)(floorx * 1000.0f) + cint[12] * (int)(floory * 1000.0f) + cint[14]) / cint[13] * -1 -
+			(cint[7] * (int)(floorx * 1000.0f) + cint[8] * (int)(floory * 1000.0f) + cint[10]) / cint[9] * -1 + coef) / 2.0f;
+		tp = ((floorx < 0.0f) ? (((int)(floorx * (float)cint[4]) % cint[4]) + cint[4] - 1) : ((int)(floorx * (float)cint[4]) % cint[4])) * 3
+			+ ((floory < 0.0f) ? (((int)(floory * (float)cint[5]) % cint[5]) + cint[5] - 1) : ((int)(floory * (float)cint[5]) % cint[5])) * 3 * cint[4];
 		wpixels[cint[0] + j + i * cint[6]] = (int)(tpixels[tp] | tpixels[tp + 1] << 8 | tpixels[tp + 2] << 16);
 	}
 	if (wallBot[j] < bottom[cint[0] + j])

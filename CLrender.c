@@ -270,8 +270,8 @@ void	draw_inclined_floor_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *r
 	int		i;
 	int		j;
 	t_draw_floor_tex_kernel	d;
-	int		cint[7];
-	float	cfloat[20];
+	int		cint[15];
+	float	cfloat[12];
 	cl_mem	m_top;
 	cl_mem	m_bottom;
 	cl_mem	m_wpixels;
@@ -285,42 +285,42 @@ void	draw_inclined_floor_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *r
 	cint[1] = left->p.x;
 	cint[2] = left->p.y;
 	cint[3] = WINDOW_H;
-	cint[4] = iw->t[left->wall->t]->w;
-	cint[5] = iw->t[left->wall->t]->h;
+	cint[4] = iw->t[iw->sectors[iw->d.cs].fr.t]->w;
+	cint[5] = iw->t[iw->sectors[iw->d.cs].fr.t]->h;
 	cint[6] = WINDOW_W;
 
 	if (iw->sectors[iw->d.cs].fr.n == 0)
 	{
-		cfloat[5] = 0.0f;
-		cfloat[6] = 0.0f;
-		cfloat[7] = 1.0f;
-		cfloat[8] = (float)iw->sectors[iw->d.cs].fr.z;
+		cint[7] = 0;
+		cint[8] = 0;
+		cint[9] = -1;
+		cint[10] = iw->sectors[iw->d.cs].fr.z;
 	}
 	else
 	{
-		cfloat[5] = iw->sectors[iw->d.cs].fr.n->a;
-		cfloat[6] = iw->sectors[iw->d.cs].fr.n->b;
-		cfloat[7] = iw->sectors[iw->d.cs].fr.n->c;
-		cfloat[8] = iw->sectors[iw->d.cs].fr.n->d;
+		cint[7] = iw->sectors[iw->d.cs].fr.n->a;
+		cint[8] = iw->sectors[iw->d.cs].fr.n->b;
+		cint[9] = iw->sectors[iw->d.cs].fr.n->c;
+		cint[10] = iw->sectors[iw->d.cs].fr.n->d;
 	}
 	if (iw->sectors[iw->d.cs].cl.n == 0)
 	{
-		cfloat[9] = 0.0f;
-		cfloat[10] = 0.0f;
-		cfloat[11] = 1.0f;
-		cfloat[12] = (float)iw->sectors[iw->d.cs].cl.z;
+		cint[11] = 0;
+		cint[12] = 0;
+		cint[13] = -1;
+		cint[14] = iw->sectors[iw->d.cs].cl.z;
 	}
 	else
 	{
-		cfloat[9] = iw->sectors[iw->d.cs].cl.n->a;
-		cfloat[10] = iw->sectors[iw->d.cs].cl.n->b;
-		cfloat[11] = iw->sectors[iw->d.cs].cl.n->c;
-		cfloat[12] = iw->sectors[iw->d.cs].cl.n->d;
+		cint[11] = iw->sectors[iw->d.cs].cl.n->a;
+		cint[12] = iw->sectors[iw->d.cs].cl.n->b;
+		cint[13] = iw->sectors[iw->d.cs].cl.n->c;
+		cint[14] = iw->sectors[iw->d.cs].cl.n->d;
 	}
-	cfloat[13] = iw->d.screen.a;
-	cfloat[14] = iw->d.screen.b;
-	cfloat[15] = iw->d.screen.c;
-	cfloat[16] = sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
+	cfloat[5] = iw->d.screen.a;
+	cfloat[6] = iw->d.screen.b;
+	cfloat[7] = iw->d.screen.c;
+	cfloat[8] = sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
 
 	d.lv.x = (float)(left->p.x - iw->p.x);
 	d.lv.y = (float)(left->p.y - iw->p.y);
@@ -328,6 +328,7 @@ void	draw_inclined_floor_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *r
 	d.rv.y = (float)(right->p.y - iw->p.y);
 	d.ang = acosf((d.lv.x * d.rv.x + d.lv.y * d.rv.y) / (sqrtf(d.lv.x * d.lv.x + d.lv.y * d.lv.y) * sqrtf(d.rv.x * d.rv.x + d.rv.y * d.rv.y)));
 	cfloat[0] = d.ang / (float)len;
+	d.ang = 0.0f;
 	d.rv.x = (float)(-right->p.x + left->p.x);
 	d.rv.y = (float)(-right->p.y + left->p.y);
 	cfloat[2] = G180 - acosf((d.lv.x * d.rv.x + d.lv.y * d.rv.y) / (sqrtf(d.lv.x * d.lv.x + d.lv.y * d.lv.y) * sqrtf(d.rv.x * d.rv.x + d.rv.y * d.rv.y)));
@@ -337,9 +338,9 @@ void	draw_inclined_floor_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *r
 	cfloat[4] = (float)(right->p.y - left->p.y) / d.len_lr;
 	d.zu = get_ceil_z(iw, iw->p.x, iw->p.y);
 	d.zd = get_floor_z(iw, iw->p.x, iw->p.y);
-	cfloat[17] = (float)(d.zu - d.zd) / (float)(iw->p.z - d.zd);
-	cfloat[18] = (float)iw->p.x / 1000.0f;
-	cfloat[19] = (float)iw->p.y / 1000.0f;
+	cfloat[9] = (float)(d.zu - d.zd) / (float)(iw->p.z - d.zd);
+	cfloat[10] = (float)iw->p.x / 1000.0f;
+	cfloat[11] = (float)iw->p.y / 1000.0f;
 
 	m_top = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, (WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
 	m_bottom = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE, (WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
@@ -348,8 +349,8 @@ void	draw_inclined_floor_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *r
 		* sizeof(int), NULL, &iw->k.ret);
 	m_wallTop = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, len * sizeof(int), NULL, &iw->k.ret);
 	m_wallBot = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, len * sizeof(int), NULL, &iw->k.ret);
-	m_cint = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, 7 * sizeof(int), NULL, &iw->k.ret);
-	m_cfloat = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, 20 * sizeof(float), NULL, &iw->k.ret);
+	m_cint = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, 15 * sizeof(int), NULL, &iw->k.ret);
+	m_cfloat = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, 12 * sizeof(float), NULL, &iw->k.ret);
 
 	clEnqueueWriteBuffer(iw->k.command_queue, m_top, CL_TRUE, 0, (WINDOW_W + 1) * sizeof(int), iw->d.top, 0, NULL, NULL);
 	clEnqueueWriteBuffer(iw->k.command_queue, m_bottom, CL_TRUE, 0, (WINDOW_W + 1) * sizeof(int), iw->d.bottom, 0, NULL, NULL);
@@ -358,8 +359,8 @@ void	draw_inclined_floor_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *r
 		* sizeof(int), iw->t[iw->sectors[iw->d.cs].fr.t]->pixels, 0, NULL, NULL);
 	clEnqueueWriteBuffer(iw->k.command_queue, m_wallTop, CL_TRUE, 0, len * sizeof(int), iw->d.wallTop, 0, NULL, NULL);
 	clEnqueueWriteBuffer(iw->k.command_queue, m_wallBot, CL_TRUE, 0, len * sizeof(int), iw->d.wallBot, 0, NULL, NULL);
-	clEnqueueWriteBuffer(iw->k.command_queue, m_cint, CL_TRUE, 0, 7 * sizeof(int), cint, 0, NULL, NULL);
-	clEnqueueWriteBuffer(iw->k.command_queue, m_cfloat, CL_TRUE, 0, 20 * sizeof(float), cfloat, 0, NULL, NULL);
+	clEnqueueWriteBuffer(iw->k.command_queue, m_cint, CL_TRUE, 0, 15 * sizeof(int), cint, 0, NULL, NULL);
+	clEnqueueWriteBuffer(iw->k.command_queue, m_cfloat, CL_TRUE, 0, 12 * sizeof(float), cfloat, 0, NULL, NULL);
 
 	iw->k.kernel = clCreateKernel(iw->k.program, "draw_inclined_floor_tex", &iw->k.ret);
 	printf("Create_kernel_floor_ret %d\n", iw->k.ret);
