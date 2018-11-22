@@ -399,3 +399,8 @@ void	draw_inclined_floor_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *r
 	clReleaseMemObject(m_cint);
 	clReleaseMemObject(m_cfloat);
 }
+
+void	draw_inclined_wall_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
+{
+
+}

@@ -117,7 +117,7 @@ __kernel void draw_wall_tex(
 //11 - py
 
 __kernel void draw_inclined_floor_tex(
-	__global const int *top, __global int *bottom,
+	__global int *top, __global int *bottom,
 	__global int *wpixels, __global const uchar *tpixels,
 	__global const int *wallTop, __global const int *wallBot,
 	__global const int *cint, __global const float *cfloat
@@ -171,4 +171,69 @@ __kernel void draw_inclined_floor_tex(
 	}
 	if (wallBot[j] < bottom[cint[0] + j])
 		bottom[cint[0] + j] = wallBot[j];
+}
+
+//int
+//0 - wall_width
+//1 - wall_height
+//2 - floor_width
+//3 - floor_height
+//4 - ceil_width
+//5 - ceil_height
+//6 - WINDOW_W
+//7 - WINDOW_H
+//8 - left_x
+//9 - left_px
+//10 - left_py
+//11 - floorA
+//12 - floorB
+//13 - floorC
+//14 - floorD
+//15 - ceilA
+//16 - ceilB
+//17 - ceilC
+//18 - ceilD
+
+//float
+//0 - dang
+//1 - lenpl
+//2 - sing
+//3 - d.rv.x
+//4 - d.rv.y
+//5 - screenA
+//6 - screenB
+//7 - screenC
+//8 - screen_len
+
+__kernel void draw_inclined_wall_floor_ceil_tex_kernel(
+	__global const int *top, __global int *bottom,
+	__global int *wpixels, __global const uchar *wallpixels,
+	__global const uchar *floorpixels, __global const uchar *ceilpixels,
+	__global const int *wallTop, __global const int *wallBot,
+	__global const int *cint, __global const float *cfloat
+)
+{
+	int		j;
+	float	left_len;
+	float	nang;
+	float	rx;
+	float	ry;
+	int	frcoef;
+	int	clcoef;
+	float	wall_dist;
+
+	j = get_global_id(0);
+	if (top[cint[8] + j] >= bottom[cint[8] + j])
+		return;
+	nang = cfloat[0] * (float)j;
+	left_len = sin(nang) * cfloat[1] / sin(cfloat[2] - nang);
+	rx = (float)cint[9] + cfloat[3] * left_len;
+	ry = (float)cint[10] + cfloat[4] * left_len;
+	frcoef = (cint[15] * (int)rx + cint[16] * (int)ry + cint[18]) / cint[17] * -1 -
+		(cint[11] * (int)rx + cint[12] * (int)ry + cint[14]) / cint[13] * -1;
+	clcoef = frcoef;
+	wall_dist = (float)cint[7] / (cfloat[5] * rx + cfloat[6] * ry + cfloat[7])
+		/ cfloat[8];
+	rx /= 1000.0f;
+	ry /= 1000.0f;
 }

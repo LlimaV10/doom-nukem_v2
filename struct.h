@@ -195,8 +195,8 @@ typedef struct	s_draw_wall_floor_ceil_tex
 	float		clpl;
 	t_point2d	floor;
 	t_point2d	r;
-	float		frcoef;
-	float		clcoef;
+	int		frcoef;
+	int		clcoef;
 	float		px;
 	float		py;
 	float		zudiff;
