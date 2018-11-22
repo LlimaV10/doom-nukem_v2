@@ -175,6 +175,37 @@ typedef struct	s_draw_floor_tex
 	float		py;
 }				t_draw_floor_tex;
 
+typedef struct	s_draw_wall_floor_ceil_tex
+{
+	float	sing;
+	float	ang;
+	float	dang;
+	float	lenpl;
+	t_point2d	lv;
+	t_point2d	rv;
+	float	zu;
+	float	zd;
+	float	left_len;
+	float	len_lr;
+
+	float		wall_dist;
+	float		weight;
+	float		k;
+	float		frpl;
+	float		clpl;
+	t_point2d	floor;
+	t_point2d	r;
+	float		frcoef;
+	float		clcoef;
+	float		px;
+	float		py;
+	float		zudiff;
+	float		zddiff;
+	float		tx;
+	float		ty;
+	float		dty;
+}				t_draw_wall_floor_ceil_tex;
+
 typedef struct	s_draw_floor_tex_kernel
 {
 	float	ang;
@@ -218,6 +249,7 @@ typedef struct	s_draw
 	int			bottom[WINDOW_W + 1];
 	t_intpoint2d	view_dir;
 	t_line2d	screen;
+	float		screen_len;
 	t_line2d	left_line;
 	t_line2d	right_line;
 	t_point2d	left_point;
