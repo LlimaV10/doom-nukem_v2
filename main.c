@@ -1710,7 +1710,7 @@ void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
 			draw_wall_floor_ceil_tex(iw, left, right, len);
 		else
-			draw_inclined_wall_floor_ceil_tex(iw, left, right, len);
+			draw_inclined_wall_floor_ceil_tex_kernel(iw, left, right, len);
 	}
 	else
 	{

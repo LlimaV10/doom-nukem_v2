@@ -206,6 +206,16 @@ typedef struct	s_draw_wall_floor_ceil_tex
 	float		dty;
 }				t_draw_wall_floor_ceil_tex;
 
+typedef struct	s_draw_wall_floor_ceil_tex_kernel
+{
+	float	ang;
+	t_point2d	lv;
+	t_point2d	rv;
+	float	len_lr;
+	int		zu;
+	int		zd;
+}				t_draw_wall_floor_ceil_tex_kernel;
+
 typedef struct	s_draw_floor_tex_kernel
 {
 	float	ang;
