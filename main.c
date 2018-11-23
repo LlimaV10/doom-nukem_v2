@@ -1707,7 +1707,7 @@ void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		draw_inclined_floor_tex_kernel(iw, left, right, len);
 		draw_wall_tex_kernel(iw, left, right, len);*/
 		if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
-			draw_wall_floor_ceil_tex(iw, left, right, len);
+			draw_wall_floor_ceil_tex_kernel(iw, left, right, len);
 		else
 			draw_inclined_wall_floor_ceil_tex_kernel(iw, left, right, len);
 	}
@@ -1716,7 +1716,7 @@ void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
 			draw_floor_ceil_tex(iw, left, right, len);
 		else
-			draw_inclined_floor_ceil_tex(iw, left, right, len);
+			draw_inclined_floor_ceil_tex_kernel(iw, left, right, len);
 		if (left->wall->nextsector != iw->d.prev_sector)
 			draw_next_sector(iw, left, right);
 	}
@@ -1952,21 +1952,21 @@ void	draw(t_sdl *iw)
 
 void	read_textures(t_sdl *iw)
 {
-	iw->t[0] = SDL_LoadBMP("textures/1.bmp");
+	iw->t[0] = SDL_LoadBMP("textures/0.bmp");
 	iw->tsz[0] = 1.0f;
-	iw->t[1] = SDL_LoadBMP("textures/2.bmp");
+	iw->t[1] = SDL_LoadBMP("textures/1.bmp");
 	iw->tsz[1] = 1.0f;
-	iw->t[2] = SDL_LoadBMP("textures/3.bmp");
+	iw->t[2] = SDL_LoadBMP("textures/2.bmp");
 	iw->tsz[2] = 1.0f;
-	iw->t[3] = SDL_LoadBMP("textures/4.bmp");
+	iw->t[3] = SDL_LoadBMP("textures/3.bmp");
 	iw->tsz[3] = 1.0f;
-	iw->t[4] = SDL_LoadBMP("textures/5.bmp");
+	iw->t[4] = SDL_LoadBMP("textures/4.bmp");
 	iw->tsz[4] = 1.0f;
-	iw->t[5] = SDL_LoadBMP("textures/6.bmp");
+	iw->t[5] = SDL_LoadBMP("textures/5.bmp");
 	iw->tsz[5] = 1.0f;
-	iw->t[6] = SDL_LoadBMP("textures/7.bmp");
+	iw->t[6] = SDL_LoadBMP("textures/6.bmp");
 	iw->tsz[6] = 1.0f;
-	iw->t[7] = SDL_LoadBMP("textures/8.bmp");
+	iw->t[7] = SDL_LoadBMP("textures/7.bmp");
 	iw->tsz[7] = 1.0f;
 	//Uint8 *target_pixel = (Uint8 *)(iw->t)[0]->pixels;
 	//set_pixel((iw->t)[0], 0, 0, 0xFF0000);
@@ -1991,7 +1991,7 @@ void	get_def(t_sdl *iw)
 {
 	iw->p.x = 2500;
 	iw->p.y = 2500; //-2360
-	iw->p.z = 481;
+	iw->p.z = 200;
 	iw->p.introt = 1;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f; //550
@@ -2014,7 +2014,7 @@ int		main(void)
 		WINDOW_W, WINDOW_H, SDL_WINDOW_SHOWN);
 	iw.sur = SDL_GetWindowSurface(iw.win);
 	// draw
-	get_map(&iw);
+	get_map2(&iw);
 	create_map(&iw);
 	draw(&iw);
 	SDL_UpdateWindowSurface(iw.win);
