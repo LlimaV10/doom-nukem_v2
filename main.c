@@ -405,6 +405,8 @@ void	get_visible_walls2(t_sdl *iw, int wall, float lang)
 	w->len = sqrtf(powf((float)(iw->p.x - iw->walls[wall].x), 2.0f) +  powf((float)(iw->p.y - iw->walls[wall].y), 2.0f));
 	w->plen = fabsf(iw->d.screen.a * (float)iw->walls[wall].x + iw->d.screen.b * (float)iw->walls[wall].y + iw->d.screen.c) /
 				sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
+	if ((int)w->plen == 0)
+		w->plen = 1.0f;
 	w->olen = 0.0f;
 	w->p.x = iw->walls[wall].x;
 	w->p.y = iw->walls[wall].y;
@@ -519,6 +521,8 @@ void	add_lr_wall(t_sdl *iw, t_intpoint2d *p, t_wall *wall, int x)
 	tmp->len = sqrtf(powf((float)(iw->p.x - p->x), 2.0f) + powf((float)(iw->p.y - p->y), 2.0f));
 	tmp->plen = fabsf(iw->d.screen.a * (float)p->x + iw->d.screen.b * (float)p->y + iw->d.screen.c) /
 				sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
+	if ((int)tmp->plen == 0)
+		tmp->plen = 1.0f;
 	tmp->olen = sqrtf(powf(p->x - wall->x, 2.0f) + powf(p->y - wall->y, 2.0f));
 	tmp->p = *p;
 	tmp->zd = get_floor_z(iw, p->x, p->y);
@@ -1714,7 +1718,7 @@ void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	else
 	{
 		if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
-			draw_floor_ceil_tex(iw, left, right, len);
+			draw_floor_ceil_tex_kernel(iw, left, right, len);
 		else
 			draw_inclined_floor_ceil_tex_kernel(iw, left, right, len);
 		if (left->wall->nextsector != iw->d.prev_sector)
@@ -1989,8 +1993,8 @@ void	read_textures(t_sdl *iw)
 
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 2500;
-	iw->p.y = 2500; //-2360
+	iw->p.x = 2501;
+	iw->p.y = 2501; //-2360
 	iw->p.z = 200;
 	iw->p.introt = 1;
 	iw->p.rot = (float)iw->p.introt * G1;
