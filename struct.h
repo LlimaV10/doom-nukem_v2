@@ -76,16 +76,6 @@ typedef struct	s_player
 	int		rotup;
 }				t_player;
 
-typedef struct	s_variables
-{
-	// Sectors Count
-	int		sc;
-	// Last Sector
-	int		ls;
-	// FOV angle / 2
-	float	angle;
-}				t_variables;
-
 typedef struct	s_point2d
 {
 	float	x;
@@ -276,6 +266,8 @@ typedef struct	s_draw
 	t_wall		*prev_sector_wall;
 	int			screen_left;
 	int			screen_right;
+	int			*save_bot_betw;
+	int			*save_top_betw;
 }				t_draw;
 
 typedef struct	s_kernel
@@ -291,7 +283,23 @@ typedef struct	s_kernel
 	cl_command_queue command_queue;
 	cl_program program;
 	cl_kernel kernel;
+	cl_mem		m_sur;
+	cl_mem		m_t[TEXTURES_COUNT];
+	cl_mem		m_top;
+	cl_mem		m_bottom;
 }				t_kernel;
+
+typedef struct	s_variables
+{
+	// Sectors Count
+	int		sc;
+	// Last Sector
+	int		ls;
+	// FOV angle / 2
+	float	angle;
+	// 1 - kernel-ON
+	int		kernel;
+}				t_variables;
 
 typedef struct	s_sdl
 {

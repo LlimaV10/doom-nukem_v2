@@ -57,6 +57,7 @@ void	update(t_sdl *iw)
 	draw(iw);
 	//printf("Update\n");
 	SDL_UpdateWindowSurface(iw->win);
+	//printf("update ret %d\n", ret);
 }
 
 void	key_down(int code, t_sdl *iw)
@@ -1059,12 +1060,16 @@ void	draw_between_sectors_bot_tex(t_sdl *iw, t_save_wall *left, t_save_wall *rig
 	d.lv.y = (float)(left->p.y - iw->p.y);
 	d.rv.x = (float)(right->p.x - iw->p.x);
 	d.rv.y = (float)(right->p.y - iw->p.y);
-	d.ang = acosf((d.lv.x * d.rv.x + d.lv.y * d.rv.y) / (sqrtf(d.lv.x * d.lv.x + d.lv.y * d.lv.y) * sqrtf(d.rv.x * d.rv.x + d.rv.y * d.rv.y)));
+	d.ang = acosf((d.lv.x * d.rv.x + d.lv.y * d.rv.y) /
+		(sqrtf(d.lv.x * d.lv.x + d.lv.y * d.lv.y) *
+			sqrtf(d.rv.x * d.rv.x + d.rv.y * d.rv.y)));
 	d.dang = d.ang / (float)(right->x - left->x);
 	d.ang = 0.0f;
 	d.rv.x = (float)(-right->p.x + left->p.x);
 	d.rv.y = (float)(-right->p.y + left->p.y);
-	d.sing = G180 - acosf((d.lv.x * d.rv.x + d.lv.y * d.rv.y) / (sqrtf(d.lv.x * d.lv.x + d.lv.y * d.lv.y) * sqrtf(d.rv.x * d.rv.x + d.rv.y * d.rv.y)));
+	d.sing = G180 - acosf((d.lv.x * d.rv.x + d.lv.y * d.rv.y) /
+		(sqrtf(d.lv.x * d.lv.x + d.lv.y * d.lv.y) *
+			sqrtf(d.rv.x * d.rv.x + d.rv.y * d.rv.y)));
 	d.lenpl = sqrtf(powf(iw->p.x - left->p.x, 2.0f) + powf(iw->p.y - left->p.y, 2.0f));
 	d.len_lr = sqrtf(powf(left->p.x - right->p.x, 2.0f) + powf(left->p.y - right->p.y, 2.0f));
 	d.zudiff = (right->zu - left->zu) / d.len_lr;
@@ -1087,11 +1092,14 @@ void	draw_between_sectors_bot_tex(t_sdl *iw, t_save_wall *left, t_save_wall *rig
 		d.zu = (float)left->zu + d.left_len * d.zudiff;
 		d.zd = (float)left->zd + d.left_len * d.zddiff;
 		if (iw->d.wallTop[j] < tmp[j])
-			d.ty = d.zu + iw->tsz[left->wall->t] * (d.zu - d.zd) * (float)(tmp[j] - iw->d.wallTop[j]) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
+			d.ty = d.zu + iw->tsz[left->wall->t] * 
+			(d.zu - d.zd) * (float)(tmp[j] - iw->d.wallTop[j]) /
+			(float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
 		else
 			d.ty = d.zu;
 		d.ty = d.ty * (float)iw->t[left->wall->t]->h / 1000.0f;
-		d.dty = ((d.zu - d.zd) * (float)iw->t[left->wall->t]->h / 1000.0f) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]) * iw->tsz[left->wall->t];
+		d.dty = ((d.zu - d.zd) * (float)iw->t[left->wall->t]->h / 1000.0f) /
+			(float)(iw->d.wallBot[j] - iw->d.wallTop[j]) * iw->tsz[left->wall->t];
 		while (d.ty > (float)iw->t[left->wall->t]->h)
 			d.ty -= (float)iw->t[left->wall->t]->h;
 		i = tmp[j] - 1;
@@ -1646,6 +1654,37 @@ void	draw_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right
 	free(tmp);
 }
 
+int		*get_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right, int **top)
+{
+	t_draw_line		l;
+	int				lz;
+	int				rz;
+	int				*bottom;
+
+	bottom = (int *)malloc((right->x - left->x + 1) * sizeof(int));
+	*top = (int *)malloc((right->x - left->x + 1) * sizeof(int));
+	l.x0 = left->x;
+	l.x1 = right->x;
+	/*lz = get_floor_z(iw, left->wall->x, left->wall->y);
+	rz = get_floor_z(iw, right->wall->x, right->wall->y);*/
+	lz = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
+	rz = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
+	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen + iw->p.rotup;
+	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen + iw->p.rotup;
+	brez_line(bottom, l);
+	/*draw_between_sectors_bot_tex(iw, left, right, tmp);*/
+
+	/*lz = get_ceil_z(iw, left->wall->x, left->wall->y);
+	rz = get_ceil_z(iw, right->wall->x, right->wall->y);*/
+	lz = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
+	rz = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
+	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen + iw->p.rotup;
+	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen + iw->p.rotup;
+	brez_line(*top, l);
+	/*draw_between_sectors_top_tex(iw, left, right, tmp);*/
+	return (bottom);
+}
+
 void	fill_portal(t_sdl *iw, t_save_wall *left, t_save_wall *right, t_sdl *iw2)
 {
 	int		j;
@@ -1657,6 +1696,18 @@ void	fill_portal(t_sdl *iw, t_save_wall *left, t_save_wall *right, t_sdl *iw2)
 			iw->d.top[j] = iw2->d.top[j];
 		if (iw2->d.bottom[j] < iw->d.bottom[j])
 			iw->d.bottom[j] = iw2->d.bottom[j];
+	}
+}
+
+void	fill_portal_rev(t_sdl *iw, t_save_wall *left, t_save_wall *right, t_sdl *iw2)
+{
+	int		j;
+
+	j = -1;
+	while (++j <= WINDOW_W)
+	{
+		iw2->d.top[j] = iw->d.top[j];
+		iw2->d.bottom[j] = iw->d.bottom[j];
 	}
 }
 
@@ -1703,6 +1754,40 @@ void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	iw->d.bottom = iw2.d.bottom;*/
 }
 
+void	draw_next_sector_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
+{
+	t_sdl	iw2;
+
+	iw2 = *iw;
+	iw2.p.x += iw->walls[left->wall->nextsector_wall].x - left->wall->next->x;
+	iw2.p.y += iw->walls[left->wall->nextsector_wall].y - left->wall->next->y;
+	iw2.d.cs = left->wall->nextsector;
+	iw->d.save_bot_betw = get_between_sectors_walls(&iw2, left, right, &iw->d.save_top_betw);
+	if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
+		draw_floor_ceil_betw_tex_kernel(iw, left, right, len);
+	else
+		draw_inclined_floor_ceil_betw_tex_kernel(iw, left, right, len);
+	free(iw->d.save_bot_betw);
+	free(iw->d.save_top_betw);
+	/*fill_portal_rev(iw, left, right, &iw2);*/
+	get_direction(&iw2);
+	get_screen_line(&iw2);
+	get_left_right_lines_points(&iw2);
+	iw2.d.vw = 0;
+	iw2.d.vwp = 0;
+	if (left->x > iw2.d.screen_left)
+		iw2.d.screen_left = left->x;
+	if (right->x < iw2.d.screen_right)
+		iw2.d.screen_right = right->x;
+	fill_tb_by_slsr(&iw2);
+	get_visible_walls(&iw2);
+	get_left_right_visible_walls(&iw2);
+	iw2.d.prev_sector = iw->d.cs;
+	iw2.d.prev_sector_wall = left->wall;
+	draw_start(&iw2);
+	/*fill_portal(iw, left, right, &iw2);*/
+}
+
 void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 {
 	if (left->wall->nextsector == -1)
@@ -1717,12 +1802,31 @@ void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	}
 	else
 	{
-		if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
+		/*if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
 			draw_floor_ceil_tex_kernel(iw, left, right, len);
 		else
-			draw_inclined_floor_ceil_tex_kernel(iw, left, right, len);
+			draw_inclined_floor_ceil_tex_kernel(iw, left, right, len);*/
 		if (left->wall->nextsector != iw->d.prev_sector)
-			draw_next_sector(iw, left, right);
+			draw_next_sector_kernel(iw, left, right, len);
+	}
+}
+
+void	draw_all_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
+{
+	if (left->wall->nextsector == -1)
+	{
+		/*draw_ceil_tex(iw, left, right, len);
+		draw_inclined_floor_tex_kernel(iw, left, right, len);
+		draw_wall_tex_kernel(iw, left, right, len);*/
+		if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
+			draw_wall_floor_ceil_tex_kernel(iw, left, right, len);
+		else
+			draw_inclined_wall_floor_ceil_tex_kernel(iw, left, right, len);
+	}
+	else
+	{
+		if (left->wall->nextsector != iw->d.prev_sector)
+			draw_next_sector_kernel(iw, left, right, len);
 	}
 }
 
@@ -1746,7 +1850,8 @@ void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - left->zu) / (int)left->plen + iw->p.rotup;
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - right->zu) / (int)right->plen + iw->p.rotup;
 	brez_line(iw->d.wallTop, l);
-	draw_all(iw, left, right, right->x - left->x + 1);
+	if (iw->v.kernel)
+		draw_all_kernel(iw, left, right, right->x - left->x + 1);
 	//printf("draw lpx %d lpy %d rpx %d rpy %d lplen %f lx %d rx %d\n", left->wall->x, left->wall->y, right->wall->x, right->wall->y, left->plen, left->x, right->x);
 	/*SDL_UpdateWindowSurface(iw->win);
 	system("PAUSE");*/
@@ -1916,6 +2021,10 @@ void	draw_start(t_sdl *iw)
 	{
 		draw_left_right(iw, tmp->left, tmp->right);
 		tmp = tmp->next;
+		/*iw->k.ret = clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_sur, CL_TRUE, 0,
+			WINDOW_W * WINDOW_H * sizeof(int), iw->sur->pixels, 0, NULL, NULL);
+		SDL_UpdateWindowSurface(iw->win);
+		system("PAUSE");*/
 	}
 	free_walls(iw);
 	free_pairs(iw);
@@ -1951,7 +2060,18 @@ void	draw(t_sdl *iw)
 	////////////
 	iw->d.prev_sector = -1;
 	iw->d.prev_sector_wall = 0;
+	if (iw->v.kernel)
+	{
+		/*clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_sur, CL_TRUE, 0,
+			WINDOW_W * WINDOW_H * sizeof(int), iw->sur->pixels, 0, NULL, NULL);*/
+		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_top, CL_TRUE, 0,
+			(WINDOW_W + 1) * sizeof(int), iw->d.top, 0, NULL, NULL);
+		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_bottom, CL_TRUE, 0,
+			(WINDOW_W + 1) * sizeof(int), iw->d.bottom, 0, NULL, NULL);
+	}
 	draw_start(iw);
+	iw->k.ret = clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_sur, CL_TRUE, 0,
+		WINDOW_W * WINDOW_H * sizeof(int), iw->sur->pixels, 0, NULL, NULL);
 }
 
 void	read_textures(t_sdl *iw)
@@ -2001,17 +2121,40 @@ void	get_def(t_sdl *iw)
 	iw->p.rotup = 0.0f; //550
 	iw->v.ls = 0;
 	iw->v.angle = 0.698132f;
+	iw->v.kernel = 1;
 	load_kernel(&iw->k);
 	//fill_floor_coefficients(iw);
 }
 
+void	get_kernel_mem(t_sdl *iw)
+{
+	int		i;
+
+	i = -1;
+	while (++i < TEXTURES_COUNT)
+	{
+		if (i != 1)
+		{
+			iw->k.m_t[i] = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
+				iw->t[i]->w * iw->t[i]->h * 4, NULL, &iw->k.ret);
+			clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t[i], CL_TRUE, 0,
+				iw->t[i]->w * iw->t[i]->h * 4, iw->t[i]->pixels, 0, NULL, NULL);
+		}
+	}
+	iw->k.m_top = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE,
+		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
+	iw->k.m_bottom = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE,
+		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
+	iw->k.m_sur = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE,
+		WINDOW_W * WINDOW_H * sizeof(int), NULL, &iw->k.ret);
+}
 int		main(void)
 {
 	t_sdl	iw;
 
-	printf("aaaaa %d\n", -2300 % 1000);
 	get_def(&iw);
 	read_textures(&iw);
+	get_kernel_mem(&iw);
 	SDL_Init(SDL_INIT_EVERYTHING);
 	SDL_SetRelativeMouseMode(0);
 	iw.win = SDL_CreateWindow("SDL", 10/* SDL_WINDOWPOS_CENTERED*/, SDL_WINDOWPOS_CENTERED,
