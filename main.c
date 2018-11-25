@@ -1827,6 +1827,10 @@ void	draw_all_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	{
 		if (left->wall->nextsector != iw->d.prev_sector)
 			draw_next_sector_kernel(iw, left, right, len);
+		else if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
+			draw_floor_ceil_tex_kernel(iw, left, right, len);
+		else
+			draw_inclined_floor_ceil_tex_kernel(iw, left, right, len);
 	}
 }
 
@@ -2120,7 +2124,7 @@ void	get_def(t_sdl *iw)
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f; //550
 	iw->v.ls = 0;
-	iw->v.angle = 0.698132f;
+	iw->v.angle = (float)WINDOW_W / (float)WINDOW_H * 25.0f * G1;// 0.698132f;
 	iw->v.kernel = 1;
 	load_kernel(&iw->k);
 	//fill_floor_coefficients(iw);
@@ -2133,13 +2137,13 @@ void	get_kernel_mem(t_sdl *iw)
 	i = -1;
 	while (++i < TEXTURES_COUNT)
 	{
-		if (i != 1)
-		{
+		/*if (i != 1)
+		{*/
 			iw->k.m_t[i] = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
-				iw->t[i]->w * iw->t[i]->h * 4, NULL, &iw->k.ret);
+				iw->t[i]->w * iw->t[i]->h * 3, NULL, &iw->k.ret);
 			clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t[i], CL_TRUE, 0,
-				iw->t[i]->w * iw->t[i]->h * 4, iw->t[i]->pixels, 0, NULL, NULL);
-		}
+				iw->t[i]->w * iw->t[i]->h * 3, iw->t[i]->pixels, 0, NULL, NULL);
+		//}
 	}
 	iw->k.m_top = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE,
 		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
@@ -2161,7 +2165,7 @@ int		main(void)
 		WINDOW_W, WINDOW_H, SDL_WINDOW_SHOWN);
 	iw.sur = SDL_GetWindowSurface(iw.win);
 	// draw
-	get_map2(&iw);
+	get_map(&iw);
 	create_map(&iw);
 	draw(&iw);
 	SDL_UpdateWindowSurface(iw.win);
