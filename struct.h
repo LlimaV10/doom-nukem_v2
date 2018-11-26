@@ -299,6 +299,11 @@ typedef struct	s_variables
 	float	angle;
 	// 1 - kernel-ON
 	int		kernel;
+	// move_front
+	int		front;
+	int		back;
+	int		left;
+	int		right;
 }				t_variables;
 
 typedef struct	s_sdl

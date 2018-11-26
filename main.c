@@ -121,7 +121,25 @@ void	key_down(int code, t_sdl *iw)
 		iw->p.rotup -= 2 * WINDOW_H / 11;
 		update(iw);
 	}
+	else if (code == 18)
+	{
+		iw->v.kernel = ((iw->v.kernel == 1) ? 0 : 1);
+		if (iw->v.kernel)
+			printf("OpenCL ON\n");
+		else
+			printf("OpenCL OFF\n");
+	}
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
+}
+
+void	key_up(int code, t_sdl *iw)
+{
+
+}
+
+void	loop(t_sdl *iw)
+{
+
 }
 
 void	main_loop(t_sdl *iw)
@@ -134,13 +152,15 @@ void	main_loop(t_sdl *iw)
 		while (SDL_PollEvent(&e) != 0)
 			if (e.type == SDL_QUIT)
 				iw->quit = 1;
-			else if (e.type == SDL_KEYDOWN)//&& e.key.repeat == 0)
+			else if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
 				key_down(e.key.keysym.scancode, iw);
+			else if (e.type == SDL_KEYUP)
+				key_up(e.key.keysym.scancode, iw);
 			//else if (e.type == SDL_KEYUP)
 			//	key_up(e.key.keysym.scancode, iw);
 		/*else if (e.type == SDL_MOUSEMOTION)
 			mouse_move(e.motion.xrel, e.motion.yrel, iw);*/
-		//loop(iw);
+		loop(iw);
 	}
 }
 
@@ -1796,18 +1816,18 @@ void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		draw_inclined_floor_tex_kernel(iw, left, right, len);
 		draw_wall_tex_kernel(iw, left, right, len);*/
 		if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
-			draw_wall_floor_ceil_tex_kernel(iw, left, right, len);
+			draw_wall_floor_ceil_tex(iw, left, right, len);
 		else
-			draw_inclined_wall_floor_ceil_tex_kernel(iw, left, right, len);
+			draw_inclined_wall_floor_ceil_tex(iw, left, right, len);
 	}
 	else
 	{
-		/*if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
-			draw_floor_ceil_tex_kernel(iw, left, right, len);
+		if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
+			draw_floor_ceil_tex(iw, left, right, len);
 		else
-			draw_inclined_floor_ceil_tex_kernel(iw, left, right, len);*/
+			draw_inclined_floor_ceil_tex(iw, left, right, len);
 		if (left->wall->nextsector != iw->d.prev_sector)
-			draw_next_sector_kernel(iw, left, right, len);
+			draw_next_sector(iw, left, right, len);
 	}
 }
 
@@ -1856,6 +1876,8 @@ void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	brez_line(iw->d.wallTop, l);
 	if (iw->v.kernel)
 		draw_all_kernel(iw, left, right, right->x - left->x + 1);
+	else
+		draw_all(iw, left, right, right->x - left->x + 1);
 	//printf("draw lpx %d lpy %d rpx %d rpy %d lplen %f lx %d rx %d\n", left->wall->x, left->wall->y, right->wall->x, right->wall->y, left->plen, left->x, right->x);
 	/*SDL_UpdateWindowSurface(iw->win);
 	system("PAUSE");*/
@@ -2074,8 +2096,9 @@ void	draw(t_sdl *iw)
 			(WINDOW_W + 1) * sizeof(int), iw->d.bottom, 0, NULL, NULL);
 	}
 	draw_start(iw);
-	iw->k.ret = clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_sur, CL_TRUE, 0,
-		WINDOW_W * WINDOW_H * sizeof(int), iw->sur->pixels, 0, NULL, NULL);
+	if (iw->v.kernel)
+		iw->k.ret = clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_sur, CL_TRUE, 0,
+			WINDOW_W * WINDOW_H * sizeof(int), iw->sur->pixels, 0, NULL, NULL);
 }
 
 void	read_textures(t_sdl *iw)
@@ -2124,10 +2147,14 @@ void	get_def(t_sdl *iw)
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0.0f; //550
 	iw->v.ls = 0;
-	iw->v.angle = (float)WINDOW_W / (float)WINDOW_H * 25.0f * G1;// 0.698132f;
+	iw->v.angle = (float)WINDOW_W / (float)WINDOW_H * 22.0f * G1;// 0.698132f;
 	iw->v.kernel = 1;
 	load_kernel(&iw->k);
 	//fill_floor_coefficients(iw);
+	iw->v.front = 0;
+	iw->v.back = 0;
+	iw->v.left = 0;
+	iw->v.right = 0;
 }
 
 void	get_kernel_mem(t_sdl *iw)
