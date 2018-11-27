@@ -1830,7 +1830,7 @@ void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		else
 			draw_inclined_floor_ceil_tex(iw, left, right, len);
 		if (left->wall->nextsector != iw->d.prev_sector)
-			draw_next_sector(iw, left, right, len);
+			draw_next_sector(iw, left, right);
 	}
 }
 
@@ -2148,7 +2148,7 @@ void	get_def(t_sdl *iw)
 	iw->p.z = 200;
 	iw->p.introt = 1;
 	iw->p.rot = (float)iw->p.introt * G1;
-	iw->p.rotup = -800; //550
+	iw->p.rotup = 900; //550
 	iw->v.ls = 0;
 	iw->v.angle = (float)WINDOW_W / (float)WINDOW_H * 22.0f * G1;// 0.698132f;
 	iw->v.kernel = 1;
@@ -2179,8 +2179,20 @@ void	get_kernel_mem(t_sdl *iw)
 		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
 	iw->k.m_bottom = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE,
 		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
-	iw->k.m_sur = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE,
-		WINDOW_W * WINDOW_H * sizeof(int), NULL, &iw->k.ret);
+	iw->k.m_sur = clCreateBuffer(iw->k.context, CL_MEM_WRITE_ONLY,
+		(WINDOW_W + 1) * (WINDOW_H + 1) * sizeof(int), NULL, &iw->k.ret);
+	iw->k.m_wallTop = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
+		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
+	iw->k.m_wallBot = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
+		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
+	iw->k.m_cint = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
+		23 * sizeof(int), NULL, &iw->k.ret);
+	iw->k.m_cfloat = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
+		17 * sizeof(float), NULL, &iw->k.ret);
+	iw->k.m_top_betw = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
+		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
+	iw->k.m_bot_betw = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
+		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
 }
 int		main(void)
 {

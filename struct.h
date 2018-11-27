@@ -287,6 +287,12 @@ typedef struct	s_kernel
 	cl_mem		m_t[TEXTURES_COUNT];
 	cl_mem		m_top;
 	cl_mem		m_bottom;
+	cl_mem	m_wallTop;
+	cl_mem	m_wallBot;
+	cl_mem	m_cint;
+	cl_mem	m_cfloat;
+	cl_mem	m_top_betw;
+	cl_mem	m_bot_betw;
 }				t_kernel;
 
 typedef struct	s_variables
