@@ -173,6 +173,22 @@ void	key_down(int code, t_sdl *iw)
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
 }
 
+void	mouse_move(int xrel, int yrel, t_sdl *iw)
+{
+	//printf("xrel %d yrel %d\n", xrel, yrel);
+	iw->p.rot += MOUSE_SENSIVITY * (float)xrel;
+	if (iw->p.rot < 0.0f)
+		iw->p.rot += G360;
+	else if (iw->p.rot >= G360)
+		iw->p.rot -= G360;
+	iw->p.introt = (int)(iw->p.rot / G1);
+	iw->p.rotup -= MOUSE_UP_DOWN_SENSIVITY * yrel;
+	if (iw->p.rotup > 2 * WINDOW_H)
+		iw->p.rotup = 2 * WINDOW_H;
+	else if (iw->p.rotup < -2 * WINDOW_H)
+		iw->p.rotup = -2 * WINDOW_H;
+}
+
 void	move(t_sdl *iw, int pl, int time)
 {
 	int		ang;
@@ -215,12 +231,14 @@ void	loop(t_sdl *iw)
 	{
 		iw->p.introt = (iw->p.introt + ROTATION_SPEED_PER_HALF_SEC * (clock() - iw->v.rot_right)
 			/ CLOCKS_PER_SEC * 2) % 360;
+		iw->p.rot = (float)iw->p.introt * G1;
 		iw->v.rot_right = clock();
 	}
 	if (iw->v.rot_left != -1)
 	{
 		iw->p.introt = (iw->p.introt - ROTATION_SPEED_PER_HALF_SEC * (clock() - iw->v.rot_left)
 			/ CLOCKS_PER_SEC * 2 + 360) % 360;
+		iw->p.rot = (float)iw->p.introt * G1;
 		iw->v.rot_left = clock();
 	}
 	if (iw->v.front != -1)
@@ -253,7 +271,6 @@ void	loop(t_sdl *iw)
 		iw->p.rotup -= 2 * WINDOW_H * (clock() - iw->v.rot_down) / CLOCKS_PER_SEC;
 		iw->v.rot_down = clock();
 	}
-	iw->p.rot = (float)iw->p.introt * G1;
 	update(iw);
 }
 
@@ -271,10 +288,11 @@ void	main_loop(t_sdl *iw)
 				key_down(e.key.keysym.scancode, iw);
 			else if (e.type == SDL_KEYUP)
 				key_up(e.key.keysym.scancode, iw);
+			else if (e.type == SDL_MOUSEMOTION)
+				mouse_move(e.motion.xrel, e.motion.yrel, iw);
 			//else if (e.type == SDL_KEYUP)
 			//	key_up(e.key.keysym.scancode, iw);
-		/*else if (e.type == SDL_MOUSEMOTION)
-			mouse_move(e.motion.xrel, e.motion.yrel, iw);*/
+		/**/
 		//pthread_mutex_lock(&iw->mutex);
 		loop(iw);
 		//pthread_mutex_unlock(&iw->mutex);
@@ -2306,7 +2324,7 @@ void	get_def(t_sdl *iw)
 {
 	iw->p.x = 2501;
 	iw->p.y = 2501; //-2360
-	iw->p.z = 200;
+	iw->p.z = 800;
 	iw->p.introt = 1;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 0; //550
@@ -2324,7 +2342,6 @@ void	get_def(t_sdl *iw)
 	iw->v.rot_up = -1;
 	iw->v.rot_down = -1;
 	iw->loop_update_time = clock();
-	iw->loop_control_time = clock();
 }
 
 void	get_kernel_mem(t_sdl *iw)
@@ -2369,7 +2386,7 @@ int		main(void)
 	read_textures(&iw);
 	get_kernel_mem(&iw);
 	SDL_Init(SDL_INIT_EVERYTHING);
-	SDL_SetRelativeMouseMode(0);
+	SDL_SetRelativeMouseMode(1);
 	iw.win = SDL_CreateWindow("SDL", 10/* SDL_WINDOWPOS_CENTERED*/, SDL_WINDOWPOS_CENTERED,
 		WINDOW_W, WINDOW_H, SDL_WINDOW_SHOWN);
 	iw.sur = SDL_GetWindowSurface(iw.win);

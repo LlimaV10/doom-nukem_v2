@@ -334,7 +334,6 @@ typedef struct	s_sdl
 	float		tsz[TEXTURES_COUNT];
 	t_kernel	k;
 	int			loop_update_time;
-	int			loop_control_time;
 }				t_sdl;
 
 #endif

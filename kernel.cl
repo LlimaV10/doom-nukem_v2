@@ -493,7 +493,10 @@ __kernel void draw_inclined_floor_ceil_betw_walls_tex_kernel(
 			ty = zu;
 		ty = ty * (float)cint[1] / 1000.0f;
 		if (bottom_betw[j] < top[j])
+		{
 			i = top[j] - 1;
+			ty += dty * (top[j] - bottom_betw[j]);
+		}
 		else
 			i = bottom_betw[j] - 1;
 		while (++i < bottom[j])
@@ -673,7 +676,10 @@ __kernel void draw_floor_ceil_betw_walls_tex_kernel(
 			ty = cfloat[15];
 		ty = ty * (float)cint[1] / 1000.0f;
 		if (bottom_betw[j] < top[j])
+		{
 			i = top[j] - 1;
+			ty += dty * (top[j] - bottom_betw[j]);
+		}
 		else
 			i = bottom_betw[j] - 1;
 		while (++i < bottom[j])
