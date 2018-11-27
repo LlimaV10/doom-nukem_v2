@@ -66,21 +66,22 @@ void	key_up(int code, t_sdl *iw)
 	if (code == 41)
 		exit_x(iw);
 	else if (code == 79)
-		iw->v.rot_right = 0;
+		iw->v.rot_right = -1;
 	else if (code == 80)
-		iw->v.rot_left = 0;
+		iw->v.rot_left = -1;
 	else if (code == 26)
-		iw->v.front = 0;
+		iw->v.front = -1;
 	else if (code == 22)
-		iw->v.back = 0;
+		iw->v.back = -1;
 	else if (code == 4)
-		iw->v.left = 0;
+		iw->v.left = -1;
 	else if (code == 7)
-		iw->v.right = 0;
+		iw->v.right = -1;
 	else if (code == 82)
-		iw->v.rot_up = 0;
+		iw->v.rot_up = -1;
 	else if (code == 81)
-		iw->v.rot_down = 0;
+		iw->v.rot_down = -1;
+	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
 }
 
 void	key_down(int code, t_sdl *iw)
@@ -89,21 +90,29 @@ void	key_down(int code, t_sdl *iw)
 	if (code == 41)
 		exit_x(iw);
 	else if (code == 79)
-		iw->v.rot_right = 1;
+		iw->v.rot_right = clock();
 	else if (code == 80)
-		iw->v.rot_left = 1;
+		iw->v.rot_left = clock();
 	else if (code == 26)
-		iw->v.front = 1;
+		iw->v.front = clock();
 	else if (code == 22)
-		iw->v.back = 1;
+		iw->v.back = clock();
 	else if (code == 4)
-		iw->v.left = 1;
+		iw->v.left = clock();
 	else if (code == 7)
-		iw->v.right = 1;
+		iw->v.right = clock();
 	else if (code == 82)
-		iw->v.rot_up = 1;
+		iw->v.rot_up = clock();
 	else if (code == 81)
-		iw->v.rot_down = 1;
+		iw->v.rot_down = clock();
+	else if (code == 18)
+	{
+		iw->v.kernel = ((iw->v.kernel == 1) ? 0 : 1);
+		if (iw->v.kernel)
+			printf("OpenCL ON\n");
+		else
+			printf("OpenCL OFF\n");
+	}
 	// else if (code == 79)
 	// {
 	// 	iw->p.introt += 4;
@@ -160,43 +169,38 @@ void	key_down(int code, t_sdl *iw)
 	// 	iw->p.rotup -= 2 * WINDOW_H / 11;
 	// 	update(iw);
 	// }
-	// else if (code == 18)
-	// {
-	// 	iw->v.kernel = ((iw->v.kernel == 1) ? 0 : 1);
-	// 	if (iw->v.kernel)
-	// 		printf("OpenCL ON\n");
-	// 	else
-	// 		printf("OpenCL OFF\n");
-	// }
+	// 
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
 }
 
-void	move(t_sdl *iw, int pl)
+void	move(t_sdl *iw, int pl, int time)
 {
 	int		ang;
 	int		dx;
 	int		dy;
+	float	speed;
 
 	ang = (iw->p.introt + pl) % 360;
+	speed = MOVING_SPEED_PER_HALF_SEC * (float)(clock() - time) / (float)CLOCKS_PER_SEC;
 	if (ang < 90)
 	{
-		dx = (int)(MOVING_SPEED * cosf((float)ang * G1));
-		dy = (int)(-MOVING_SPEED * sinf((float)ang * G1));
+		dx = (int)(speed * cosf((float)ang * G1)) * 2;
+		dy = (int)(-speed * sinf((float)ang * G1)) * 2;
 	}
 	else if (ang < 180)
 	{
-		dx = (int)(-MOVING_SPEED * cosf(G180 - (float)ang * G1));
-		dy = (int)(-MOVING_SPEED * sinf(G180 - (float)ang * G1));
+		dx = (int)(-speed * cosf(G180 - (float)ang * G1)) * 2;
+		dy = (int)(-speed * sinf(G180 - (float)ang * G1)) * 2;
 	}
 	else if (ang < 270)
 	{
-		dx = (int)(MOVING_SPEED * cosf((float)ang * G1) - G180);
-		dy = (int)(-MOVING_SPEED * sinf((float)ang * G1) - G180);
+		dx = (int)(speed * cosf((float)ang * G1) - G180) * 2;
+		dy = (int)(-speed * sinf((float)ang * G1) - G180) * 2;
 	}
 	else
 	{
-		dx = (int)(MOVING_SPEED * cosf(G360 - (float)ang * G1));
-		dy = (int)(MOVING_SPEED * sinf(G360 - (float)ang * G1));
+		dx = (int)(speed * cosf(G360 - (float)ang * G1)) * 2;
+		dy = (int)(speed * sinf(G360 - (float)ang * G1)) * 2;
 	}
 	iw->p.x += dx;
 	iw->p.y += dy;
@@ -204,22 +208,51 @@ void	move(t_sdl *iw, int pl)
 
 void	loop(t_sdl *iw)
 {
-	if (iw->v.rot_right)
-		iw->p.introt = (iw->p.introt + 2) % 360;
-	if (iw->v.rot_left)
-		iw->p.introt = (iw->p.introt + 358) % 360;
-	if (iw->v.front)
-		move(iw, 0);
-	if (iw->v.back)
-		move(iw, 180);
-	if (iw->v.left)
-		move(iw, 270);
-	if (iw->v.right)
-		move(iw, 90);
-	if (iw->v.rot_up && iw->p.rotup < 2 * WINDOW_H)
-		iw->p.rotup += WINDOW_H / 22;
-	if (iw->v.rot_down && iw->p.rotup > -2 * WINDOW_H)
-		iw->p.rotup -= WINDOW_H / 22;
+	if (clock() - iw->loop_update_time < CLOCKS_PER_SEC / MAX_FPS)
+		return;
+	iw->loop_update_time = clock();
+	if (iw->v.rot_right != -1)
+	{
+		iw->p.introt = (iw->p.introt + ROTATION_SPEED_PER_HALF_SEC * (clock() - iw->v.rot_right)
+			/ CLOCKS_PER_SEC * 2) % 360;
+		iw->v.rot_right = clock();
+	}
+	if (iw->v.rot_left != -1)
+	{
+		iw->p.introt = (iw->p.introt - ROTATION_SPEED_PER_HALF_SEC * (clock() - iw->v.rot_left)
+			/ CLOCKS_PER_SEC * 2 + 360) % 360;
+		iw->v.rot_left = clock();
+	}
+	if (iw->v.front != -1)
+	{
+		move(iw, 0, iw->v.front);
+		iw->v.front = clock();
+	}
+	if (iw->v.back != -1)
+	{
+		move(iw, 180, iw->v.back);
+		iw->v.back = clock();
+	}
+	if (iw->v.left != -1)
+	{
+		move(iw, 270, iw->v.left);
+		iw->v.left = clock();
+	}
+	if (iw->v.right != -1)
+	{
+		move(iw, 90, iw->v.right);
+		iw->v.right = clock();
+	}
+	if (iw->v.rot_up != -1 && iw->p.rotup < 2 * WINDOW_H)
+	{
+		iw->p.rotup += 2 * WINDOW_H * (clock() - iw->v.rot_up) / CLOCKS_PER_SEC;
+		iw->v.rot_up = clock();
+	}
+	if (iw->v.rot_down != -1 && iw->p.rotup > -2 * WINDOW_H)
+	{
+		iw->p.rotup -= 2 * WINDOW_H * (clock() - iw->v.rot_down) / CLOCKS_PER_SEC;
+		iw->v.rot_down = clock();
+	}
 	iw->p.rot = (float)iw->p.introt * G1;
 	update(iw);
 }
@@ -242,9 +275,55 @@ void	main_loop(t_sdl *iw)
 			//	key_up(e.key.keysym.scancode, iw);
 		/*else if (e.type == SDL_MOUSEMOTION)
 			mouse_move(e.motion.xrel, e.motion.yrel, iw);*/
+		//pthread_mutex_lock(&iw->mutex);
 		loop(iw);
+		//pthread_mutex_unlock(&iw->mutex);
 	}
 }
+
+//void	loop_control(t_sdl *iw)
+//{
+//	iw->loop_control_time = clock();
+//	while (!iw->quit)
+//	{
+//		if (clock() - iw->loop_control_time < CLOCKS_PER_SEC / 60)
+//			continue;
+//		else
+//			iw->loop_control_time = clock();
+//		pthread_mutex_lock(&iw->mutex);
+//		if (iw->v.rot_right)
+//			iw->p.introt = (iw->p.introt + ROTATION_SPEED) % 360;
+//		if (iw->v.rot_left)
+//			iw->p.introt = (iw->p.introt - ROTATION_SPEED + 360) % 360;
+//		if (iw->v.front)
+//			move(iw, 0);
+//		if (iw->v.back)
+//			move(iw, 180);
+//		if (iw->v.left)
+//			move(iw, 270);
+//		if (iw->v.right)
+//			move(iw, 90);
+//		if (iw->v.rot_up && iw->p.rotup < 2 * WINDOW_H)
+//			iw->p.rotup += WINDOW_H / 22;
+//		if (iw->v.rot_down && iw->p.rotup > -2 * WINDOW_H)
+//			iw->p.rotup -= WINDOW_H / 22;
+//		iw->p.rot = (float)iw->p.introt * G1;
+//		pthread_mutex_unlock(&iw->mutex);
+//	}
+//}
+//
+//void	main_loop_control(t_sdl *iw)
+//{
+//	pthread_t	control;
+//	pthread_t	draw;
+//
+//	pthread_create(&control, NULL,
+//		(void *(*)(void *))loop_control, (void *)iw);
+//	pthread_create(&draw, NULL,
+//		(void *(*)(void *))main_loop, (void *)iw);
+//	//pthread_join(control, (void **)iw);
+//	pthread_join(draw, (void **)iw);
+//}
 
 void	get_wall_line(t_sdl *iw, int wall)
 {
@@ -2236,14 +2315,16 @@ void	get_def(t_sdl *iw)
 	iw->v.kernel = 1;
 	load_kernel(&iw->k);
 	//fill_floor_coefficients(iw);
-	iw->v.front = 0;
-	iw->v.back = 0;
-	iw->v.left = 0;
-	iw->v.right = 0;
-	iw->v.rot_left = 0;
-	iw->v.rot_right = 0;
-	iw->v.rot_up = 0;
-	iw->v.rot_down = 0;
+	iw->v.front = -1;
+	iw->v.back = -1;
+	iw->v.left = -1;
+	iw->v.right = -1;
+	iw->v.rot_left = -1;
+	iw->v.rot_right = -1;
+	iw->v.rot_up = -1;
+	iw->v.rot_down = -1;
+	iw->loop_update_time = clock();
+	iw->loop_control_time = clock();
 }
 
 void	get_kernel_mem(t_sdl *iw)

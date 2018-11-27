@@ -333,8 +333,8 @@ typedef struct	s_sdl
 	// textures compression
 	float		tsz[TEXTURES_COUNT];
 	t_kernel	k;
-	// Floor coefficient
-	// float		c_floor[10];
+	int			loop_update_time;
+	int			loop_control_time;
 }				t_sdl;
 
 #endif
