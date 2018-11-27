@@ -152,7 +152,7 @@ void	main_loop(t_sdl *iw)
 		while (SDL_PollEvent(&e) != 0)
 			if (e.type == SDL_QUIT)
 				iw->quit = 1;
-			else if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
+			else if (e.type == SDL_KEYDOWN/* && e.key.repeat == 0*/)
 				key_down(e.key.keysym.scancode, iw);
 			else if (e.type == SDL_KEYUP)
 				key_up(e.key.keysym.scancode, iw);
@@ -1789,6 +1789,9 @@ void	draw_next_sector_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, i
 		draw_inclined_floor_ceil_betw_tex_kernel(iw, left, right, len);
 	free(iw->d.save_bot_betw);
 	free(iw->d.save_top_betw);
+	if ((iw->d.wallBot[0] < 0 && iw->d.wallBot[len - 1] < 0) ||
+		(iw->d.wallTop[0] >= WINDOW_H && iw->d.wallTop[len - 1] >= WINDOW_H))
+		return;
 	/*fill_portal_rev(iw, left, right, &iw2);*/
 	get_direction(&iw2);
 	get_screen_line(&iw2);
@@ -2145,7 +2148,7 @@ void	get_def(t_sdl *iw)
 	iw->p.z = 200;
 	iw->p.introt = 1;
 	iw->p.rot = (float)iw->p.introt * G1;
-	iw->p.rotup = 0.0f; //550
+	iw->p.rotup = -800; //550
 	iw->v.ls = 0;
 	iw->v.angle = (float)WINDOW_W / (float)WINDOW_H * 22.0f * G1;// 0.698132f;
 	iw->v.kernel = 1;

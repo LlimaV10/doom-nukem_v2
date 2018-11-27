@@ -73,6 +73,7 @@ __kernel void draw_inclined_wall_floor_ceil_tex_kernel(
 	float	zu;
 	float	zd;
 
+	printf("1");
 	j = get_global_id(0);
 	top += cint[8];
 	bottom += cint[8];
@@ -223,6 +224,7 @@ __kernel void draw_wall_floor_ceil_tex_kernel(
 	float	ty;
 	float	dty;
 
+	printf("2");
 	j = get_global_id(0);
 	top += cint[8];
 	bottom += cint[8];
@@ -378,7 +380,9 @@ __kernel void draw_inclined_floor_ceil_betw_walls_tex_kernel(
 	float	zu;
 	float	zd;
 
+	printf("3");
 	j = get_global_id(0);
+	printf("wallBot[%d] %d\n", j, wallTop[j]);
 	top += cint[8];
 	bottom += cint[8];
 	if (top[j] >= bottom[j] || cint[8] + j < cint[21] ||
@@ -475,7 +479,7 @@ __kernel void draw_inclined_floor_ceil_betw_walls_tex_kernel(
 			(float)cint[1] / 1000.0f) /
 			(float)(wallBot[j] - wallTop[j]) * cfloat[14];
 	}
-
+	
 	if (bottom[j] > bottom_betw[j])
 	{
 		if (wallTop[j] < bottom_betw[j])
@@ -486,7 +490,6 @@ __kernel void draw_inclined_floor_ceil_betw_walls_tex_kernel(
 		else
 			ty = zu;
 		ty = ty * (float)cint[1] / 1000.0f;
-
 		i = bottom_betw[j] - 1;
 		while (++i < bottom[j])
 		{
@@ -516,7 +519,7 @@ __kernel void draw_inclined_floor_ceil_betw_walls_tex_kernel(
 		}
 		top[j] = top_betw[j];
 	}
-
+	
 }
 
 //int
@@ -585,6 +588,7 @@ __kernel void draw_floor_ceil_betw_walls_tex_kernel(
 	float	ty;
 	float	dty;
 
+	printf("4");
 	j = get_global_id(0);
 	top += cint[8];
 	bottom += cint[8];
@@ -757,6 +761,7 @@ __kernel void draw_floor_ceil_tex_kernel(
 	//float	ty;
 	//float	dty;
 
+	printf("5");
 	j = get_global_id(0);
 	top += cint[8];
 	bottom += cint[8];
@@ -941,6 +946,7 @@ __kernel void draw_inclined_floor_ceil_tex_kernel(
 	//float	zu;
 	//float	zd;
 
+	printf("6");
 	j = get_global_id(0);
 	top += cint[8];
 	bottom += cint[8];
