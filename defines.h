@@ -11,4 +11,5 @@
 # define G90 1.5707963f
 # define G180 3.1415926f
 # define G360 6.2831852f
+# define MOVING_SPEED 30.0f
 #endif
