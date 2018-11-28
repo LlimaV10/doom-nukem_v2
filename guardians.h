@@ -4,6 +4,7 @@
 # define _CRT_SECURE_NO_WARNINGS
 //# include "SDL2/SDL2.framework/Headers/SDL.h"
 # include <SDL.h>
+# include <SDL_ttf.h>
 // Visual C -------
 # include <CL/cl.h>
 # include <io.h>

@@ -5,8 +5,6 @@
 # define WINDOW_H 550
 # define MAX_SOURCE_SIZE 0x100000
 # define TEXTURES_COUNT 8
-// # define THREADS 4
-// # define SCREEN_DISTANCE 1.0f
 # define G1 0.01745329
 # define G90 1.5707963f
 # define G180 3.1415926f

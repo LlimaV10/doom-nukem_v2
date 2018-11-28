@@ -236,6 +236,15 @@ typedef struct	s_save_wall_pairs
 	struct	s_save_wall_pairs *next;
 }				t_save_wall_pairs;
 
+typedef struct	s_draw_info
+{
+	char	*s;
+	char	*s2;
+	char	*s3;
+	SDL_Surface	*stext;
+	SDL_Color	col;
+}				t_draw_info;
+
 // typedef struct	s_save_wall_pairs_closest
 // {
 // 	t_save_wall_pairs	*tmp;
@@ -328,6 +337,7 @@ typedef struct	s_sdl
 {
 	SDL_Window	*win;
 	SDL_Surface	*sur;
+	SDL_Renderer	*ren;
 	char		quit;
 	t_wall		*walls;
 	t_sector	*sectors;
@@ -341,6 +351,8 @@ typedef struct	s_sdl
 	float		tsz[TEXTURES_COUNT];
 	t_kernel	k;
 	int			loop_update_time;
+	TTF_Font	*arial_font;
+
 }				t_sdl;
 
 #endif

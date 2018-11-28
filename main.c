@@ -105,13 +105,61 @@ void	draw_crosshair(t_sdl *iw)
 		set_pixel(iw->sur, j, i, 0x00FF00);
 }
 
+void	draw_text_to_window_surface(t_sdl *iw, int x, int y, SDL_Surface *t)
+{
+	int		i;
+	int		j;
+	int		pix;
+	char	*pixels;
+	int		color;
+
+	color = ((255 - (int)t->format->palette->colors->r) << 16) +
+		((255 - (int)t->format->palette->colors->g) << 8) +
+		((255 - (int)t->format->palette->colors->b));
+	pixels = (char *)t->pixels;
+	i = -1;
+	while (++i < t->h)
+	{
+		j = -1;
+		while (++j < t->w)
+		{
+			if ((int)(*pixels) == 1)
+				set_pixel(iw->sur, x + j, y + i, color);
+			pixels += 1;
+		}
+		/*pixels += 1;*/
+	}
+}
+
+void	draw_some_info(t_sdl *iw)
+{
+	t_draw_info	d;
+	int		i;
+	int		j;
+
+	d.col.r = 0;
+	d.col.g = 255;
+	d.col.b = 0;
+	d.col.a = 0;
+	d.s = ft_strdup("sector: ");
+	d.s2 = ft_itoa(iw->d.cs);
+	d.s3 = ft_strjoin(d.s, d.s2);
+	free(d.s);
+	free(d.s2);
+	d.stext = TTF_RenderText_Solid(iw->arial_font, d.s3, d.col);
+	free(d.s3);
+	draw_text_to_window_surface(iw, 0, 0, d.stext);
+	SDL_FreeSurface(d.stext);
+}
+
 void	update(t_sdl *iw)
 {
 	SDL_FillRect(iw->sur, NULL, 0x000000);
 	draw(iw);
 	draw_crosshair(iw);
-	//printf("Update\n");
+	draw_some_info(iw);
 	SDL_UpdateWindowSurface(iw->win);
+	//printf("Update\n");
 	//printf("update ret %d\n", ret);
 }
 
@@ -2703,9 +2751,12 @@ int		main(void)
 	read_textures(&iw);
 	get_kernel_mem(&iw);
 	SDL_Init(SDL_INIT_EVERYTHING);
+	TTF_Init();
+	iw.arial_font = TTF_OpenFont("fonts/ARIAL.TTF", 24);
 	SDL_SetRelativeMouseMode(1);
 	iw.win = SDL_CreateWindow("SDL", 10/* SDL_WINDOWPOS_CENTERED*/, SDL_WINDOWPOS_CENTERED,
 		WINDOW_W, WINDOW_H, SDL_WINDOW_SHOWN);
+	iw.ren = SDL_CreateRenderer(iw.win, -1, 0);
 	iw.sur = SDL_GetWindowSurface(iw.win);
 	// draw
 	get_map(&iw);
