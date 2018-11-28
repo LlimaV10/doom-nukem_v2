@@ -318,6 +318,8 @@ typedef struct	s_variables
 	int		fall;
 	// acceleration (meters per second^2)
 	float	accel;
+	int		plrzu;
+	int		plrzd;
 }				t_variables;
 
 typedef struct	s_sdl

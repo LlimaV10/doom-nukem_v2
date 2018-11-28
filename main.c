@@ -49,6 +49,34 @@ void	exit_x(t_sdl *iw)
 	exit(0);
 }
 
+int inside_sector_xy(t_sdl *iw, int sector, int x, int y)
+{
+	long int i, x1, y1, x2, y2;
+	unsigned long int wallCrossed;
+
+	//Quick check if the sector ID is valid.
+
+	wallCrossed = 0;
+	i = iw->sectors[sector].sw - 1;
+	while (++i < iw->sectors[sector].sw + iw->sectors[sector].nw)
+	{
+		y1 = iw->walls[i].y - y;
+		y2 = iw->walls[i].next->y - y;
+		// y2 = iw->walls[iw->walls[i].nextwall].y - iw->p.y;
+		if ((y1 ^ y2) < 0)
+		{
+			x1 = iw->walls[i].x - x;
+			x2 = iw->walls[i].next->x - x;
+			//x2 = iw->walls[iw->walls[i].nextwall].x - iw->p.x;
+			if ((x1 ^ x2) >= 0)
+				wallCrossed ^= x1;
+			else
+				wallCrossed ^= (x1 * y2 - x2 * y1) ^ y2;
+		}
+	}
+	return (wallCrossed >> 31);
+}
+
 void	draw(t_sdl *iw);
 
 void	update(t_sdl *iw)
@@ -189,12 +217,108 @@ void	mouse_move(int xrel, int yrel, t_sdl *iw)
 		iw->p.rotup = -2 * WINDOW_H;
 }
 
+t_wall	*is_wall_portal(t_sdl *iw, int dx, int dy)
+{
+	t_line2d	mv;
+	int			wall;
+	int			side1;
+	int			side2;
+
+	wall = iw->sectors[iw->d.cs].sw - 1;
+	while (++wall < iw->sectors[iw->d.cs].sw + iw->sectors[iw->d.cs].nw)
+	{
+		if (iw->walls[wall].nextsector == -1)
+			continue;
+		if (iw->walls[wall].l.a * (float)iw->p.x +
+			iw->walls[wall].l.b * (float)iw->p.y + iw->walls[wall].l.c > 0)
+			side1 = 1;
+		else
+			side1 = -1;
+		if (iw->walls[wall].l.a * (float)(iw->p.x + dx) +
+			iw->walls[wall].l.b * (float)(iw->p.y + dy) + iw->walls[wall].l.c > 0)
+			side2 = 1;
+		else
+			side2 = -1;
+		if (side1 * side2 < 0)
+		{
+			mv.a = (float)dy;
+			mv.b = (float)(-dx);
+			mv.c = -mv.a * (float)iw->p.x - mv.b * (float)iw->p.y;
+			if (mv.a * (float)iw->walls[wall].x +
+				mv.b * (float)iw->walls[wall].y + mv.c > 0)
+				side1 = 1;
+			else
+				side1 = -1;
+			if (mv.a * (float)iw->walls[wall].next->x +
+				mv.b * (float)iw->walls[wall].next->y + mv.c > 0)
+				side2 = 1;
+			else
+				side2 = -1;
+			if (side1 * side2 < 0)
+				return (&iw->walls[wall]);
+		}
+	}
+	return (0);
+}
+
+void	move_collisions(t_sdl *iw, int dx, int dy)
+{
+	int		dd;
+	int		i;
+
+	if (inside_sector_xy(iw, iw->d.cs, iw->p.x + dx * PL_COL_SZ, iw->p.y) &&
+		inside_sector_xy(iw, iw->d.cs, iw->p.x + dx, iw->p.y))
+	{
+		dd = dy / 10;
+		dy = 0;
+		i = -1;
+		while (++i < 10 &&
+			inside_sector_xy(iw, iw->d.cs, iw->p.x + dx * PL_COL_SZ, iw->p.y + dy * PL_COL_SZ)
+			&& inside_sector_xy(iw, iw->d.cs, iw->p.x + dx, iw->p.y + dy))
+			dy += dd;
+		iw->p.x += dx;
+		iw->p.y += dy - dd;
+	}
+	else if (inside_sector_xy(iw, iw->d.cs, iw->p.x, iw->p.y + dy * PL_COL_SZ) &&
+		inside_sector_xy(iw, iw->d.cs, iw->p.x, iw->p.y + dy))
+	{
+		dd = dx / 10;
+		dx = 0;
+		i = -1;
+		while (++i < 10 &&
+			inside_sector_xy(iw, iw->d.cs, iw->p.x + dx * PL_COL_SZ, iw->p.y + dy * PL_COL_SZ)
+			&& inside_sector_xy(iw, iw->d.cs, iw->p.x + dx, iw->p.y + dy))
+			dx += dd;
+		iw->p.x += dx - dd;
+		iw->p.y += dy;
+	}
+}
+
+void	move_in_portal(t_sdl *iw, int dx, int dy, t_wall *sw)
+{
+	int		nx;
+	int		ny;
+
+	/*iw2.p.x += iw->walls[left->wall->nextsector_wall].x - left->wall->next->x;
+	iw2.p.y += iw->walls[left->wall->nextsector_wall].y - left->wall->next->y;*/
+	nx = iw->p.x + dx + iw->walls[sw->nextsector_wall].x - sw->next->x;
+	ny = iw->p.y + dy + iw->walls[sw->nextsector_wall].y - sw->next->y;
+	if (inside_sector_xy(iw, sw->nextsector, nx, ny))
+	{
+		iw->p.x = nx;
+		iw->p.y = ny;
+	}
+	else
+		move_collisions(iw, dx, dy);
+}
+
 void	move(t_sdl *iw, int pl, int time)
 {
 	int		ang;
 	int		dx;
 	int		dy;
 	float	speed;
+	t_wall	*sw;
 
 	ang = (iw->p.introt + pl) % 360;
 	speed = MOVING_SPEED_PER_HALF_SEC * (float)(clock() - time) / (float)CLOCKS_PER_SEC;
@@ -218,14 +342,32 @@ void	move(t_sdl *iw, int pl, int time)
 		dx = (int)(speed * cosf(G360 - (float)ang * G1)) * 2;
 		dy = (int)(speed * sinf(G360 - (float)ang * G1)) * 2;
 	}
-	iw->p.x += dx;
-	iw->p.y += dy;
+	if (inside_sector_xy(iw, iw->d.cs, iw->p.x + dx, iw->p.y + dy))
+	{
+		if (inside_sector_xy(iw, iw->d.cs, iw->p.x + dx * PL_COL_SZ, iw->p.y + dy * PL_COL_SZ)
+			|| is_wall_portal(iw, dx * PL_COL_SZ, dy * PL_COL_SZ) != 0)
+		{
+			iw->p.x += dx;
+			iw->p.y += dy;
+		}
+		else
+			move_collisions(iw, dx, dy);
+	}
+	else if ((sw = is_wall_portal(iw, dx, dy)) == 0)
+		move_collisions(iw, dx, dy);
+	else
+		move_in_portal(iw, dx, dy, sw);
+	//if (/*inside_sector_xy(iw, iw->d.cs, iw->p.x + dx * PL_COL_SZ, iw->p.y + dy * PL_COL_SZ) &&*/
+	//	inside_sector_xy(iw, iw->d.cs, iw->p.x + dx, iw->p.y + dy))
+	//{
+	//	iw->p.x += dx;
+	//	iw->p.y += dy;
+	//}
+	
 }
 
 void	loop(t_sdl *iw)
 {
-	int		zu;
-	int		zd;
 	int		t;
 
 	if (clock() - iw->loop_update_time < CLOCKS_PER_SEC / MAX_FPS)
@@ -254,26 +396,6 @@ void	loop(t_sdl *iw)
 		/*iw->p.rot = (float)iw->p.introt * G1;*/
 		iw->v.rot_left = clock();
 	}
-	if (iw->v.front != -1)
-	{
-		move(iw, 0, iw->v.front);
-		iw->v.front = clock();
-	}
-	if (iw->v.back != -1)
-	{
-		move(iw, 180, iw->v.back);
-		iw->v.back = clock();
-	}
-	if (iw->v.left != -1)
-	{
-		move(iw, 270, iw->v.left);
-		iw->v.left = clock();
-	}
-	if (iw->v.right != -1)
-	{
-		move(iw, 90, iw->v.right);
-		iw->v.right = clock();
-	}
 	if (iw->v.rot_up != -1 && iw->p.rotup < 2 * WINDOW_H)
 	{
 		iw->p.rotup += 2 * WINDOW_H * (clock() - iw->v.rot_up) / CLOCKS_PER_SEC;
@@ -286,9 +408,29 @@ void	loop(t_sdl *iw)
 	}
 	if (iw->d.cs >= 0)
 	{
-		zu = get_ceil_z(iw, iw->p.x, iw->p.y);
-		zd = get_floor_z(iw, iw->p.x, iw->p.y);
-		if (iw->v.fall == -1 && (iw->p.z - zd) > PLAYER_HEIGHT)
+		iw->v.plrzu = get_ceil_z(iw, iw->p.x, iw->p.y);
+		iw->v.plrzd = get_floor_z(iw, iw->p.x, iw->p.y);
+		if (iw->v.front != -1)
+		{
+			move(iw, 0, iw->v.front);
+			iw->v.front = clock();
+		}
+		if (iw->v.back != -1)
+		{
+			move(iw, 180, iw->v.back);
+			iw->v.back = clock();
+		}
+		if (iw->v.left != -1)
+		{
+			move(iw, 270, iw->v.left);
+			iw->v.left = clock();
+		}
+		if (iw->v.right != -1)
+		{
+			move(iw, 90, iw->v.right);
+			iw->v.right = clock();
+		}
+		if (iw->v.fall == -1 && (iw->p.z - iw->v.plrzd) > PLAYER_HEIGHT)
 			iw->v.fall = clock();
 		if (iw->v.fall != -1)
 		{
@@ -297,11 +439,11 @@ void	loop(t_sdl *iw)
 				(float)CLOCKS_PER_SEC) * 4000.0f *
 				((float)(t - iw->loop_update_time) / (float)CLOCKS_PER_SEC));
 		}
-		if (iw->p.z > zu)
-			iw->p.z = zu;
-		else if (iw->p.z - zd < PLAYER_HEIGHT)
+		if (iw->p.z > iw->v.plrzu)
+			iw->p.z = iw->v.plrzu;
+		else if (iw->p.z - iw->v.plrzd < PLAYER_HEIGHT)
 		{
-			iw->p.z = zd + PLAYER_HEIGHT;
+			iw->p.z = iw->v.plrzd + PLAYER_HEIGHT;
 			iw->v.fall = -1;
 		}
 	}
