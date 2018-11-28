@@ -553,16 +553,17 @@ void	loop(t_sdl *iw)
 		}
 		else if (iw->v.jump_time != -1)
 		{
-			jsz = (float)(clock() - iw->v.jump_time) / (float)CLOCKS_PER_SEC * JUMP_HEIGHT;
-			if (jsz >= iw->v.jump)
+			jsz = (float)(clock() - iw->v.jump_time) / (float)CLOCKS_PER_SEC * (float)JUMP_HEIGHT *
+				iw->v.accel / 10.0f;
+			if ((int)jsz >= iw->v.jump)
 			{
 				iw->p.z += iw->v.jump;
 				iw->v.jump_time = -1;
 			}
 			else
 			{
-				iw->p.z += jsz;
-				iw->v.jump -= jsz;
+				iw->p.z += (int)jsz;
+				iw->v.jump -= (int)jsz;
 			}
 		}
 		if (iw->v.fall == -1 && iw->v.jump_time == -1
