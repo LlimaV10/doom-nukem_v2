@@ -22,7 +22,7 @@ void	get_map(t_sdl *iw)
 	iw->sectors[0].fr.n->c = -2;
 	iw->sectors[0].fr.x = 5000;
 	iw->sectors[0].fr.y = 0;
-	iw->sectors[0].fr.z = 0;
+	iw->sectors[0].fr.z = -400;
 	iw->sectors[0].fr.t = 3;
 	iw->sectors[0].cl.n = 0;// (t_sector_fc *)malloc(sizeof(t_sector_fc));
 	//iw->sectors[0].cl.n->a = 1;
@@ -59,7 +59,7 @@ void	get_map(t_sdl *iw)
 	iw->sectors[2].cl.n = 0;
 	iw->sectors[2].cl.x = 5000;
 	iw->sectors[2].cl.y = 0;
-	iw->sectors[2].cl.z = 1200;
+	iw->sectors[2].cl.z = 1100;
 	iw->sectors[2].cl.t = 0;
 
 	iw->walls = (t_wall *)malloc((iw->sectors[0].nw + iw->sectors[1].nw + iw->sectors[2].nw) * sizeof(t_wall));
@@ -100,7 +100,7 @@ void	get_map(t_sdl *iw)
 
 
 	i++;
-	new_wall(&(iw->walls[i]), 1300, 1000, -1, -1);
+	new_wall(&(iw->walls[i]), 1300, 2000, -1, -1);
 	//iw->walls[i - 1].next = &iw->walls[i];
 	i++;
 	new_wall(&(iw->walls[i]), 1300, 850, -1, -1);
@@ -109,7 +109,7 @@ void	get_map(t_sdl *iw)
 	new_wall(&(iw->walls[i]), 2600, 850, -1, -1);
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
-	new_wall(&(iw->walls[i]), 2600, 1000, -1, -1);
+	new_wall(&(iw->walls[i]), 2600, 2000, -1, -1);
 	iw->walls[i - 1].next = &iw->walls[i];
 
 	iw->walls[i].next = &iw->walls[10];
@@ -135,7 +135,7 @@ void	get_map(t_sdl *iw)
 	new_wall(&(iw->walls[i]), 10000, -1000, -1, -1);
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
-	new_wall(&(iw->walls[i]), 7000, -1000, -1, 3);
+	new_wall(&(iw->walls[i]), 7000, -1000, 0, 3);
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
 	new_wall(&(iw->walls[i]), 7000, 2000, -1, -1);

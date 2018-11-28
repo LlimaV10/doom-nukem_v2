@@ -16,6 +16,9 @@
 # define MOUSE_SENSIVITY 0.002f
 # define MOUSE_UP_DOWN_SENSIVITY 1
 # define PLAYER_HEIGHT 600
+# define PLAYER_HEAD_SIZE 200
+# define MAX_CLIMB_HEIGHT 300
+# define JUMP_HEIGHT 1000
 # define PL_COL_SZ 10
 # define MAX_FPS 120
 #endif

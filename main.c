@@ -79,10 +79,37 @@ int inside_sector_xy(t_sdl *iw, int sector, int x, int y)
 
 void	draw(t_sdl *iw);
 
+void	draw_crosshair(t_sdl *iw)
+{
+	int		i;
+	int		j;
+	int		to;
+
+	j = WINDOW_W / 2;
+	i = WINDOW_H / 2 - 4;
+	to = WINDOW_H / 2 - 15;
+	while (--i > to)
+		set_pixel(iw->sur, j, i, 0x00FF00);
+	i = WINDOW_H / 2 + 4;
+	to = WINDOW_H / 2 + 15;
+	while (++i < to)
+		set_pixel(iw->sur, j, i, 0x00FF00);
+	i = WINDOW_H / 2;
+	j = WINDOW_W / 2 + 4;
+	to = WINDOW_W / 2 + 15;
+	while (++j < to)
+		set_pixel(iw->sur, j, i, 0x00FF00);
+	j = WINDOW_W / 2 - 4;
+	to = WINDOW_W / 2 - 15;
+	while (--j > to)
+		set_pixel(iw->sur, j, i, 0x00FF00);
+}
+
 void	update(t_sdl *iw)
 {
 	SDL_FillRect(iw->sur, NULL, 0x000000);
 	draw(iw);
+	draw_crosshair(iw);
 	//printf("Update\n");
 	SDL_UpdateWindowSurface(iw->win);
 	//printf("update ret %d\n", ret);
@@ -201,6 +228,15 @@ void	key_down(int code, t_sdl *iw)
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
 }
 
+void	key_down_repeat(int code, t_sdl *iw)
+{
+	if (code == 44 && iw->v.jump_time == -1 && iw->v.fall == -1)
+	{
+		iw->v.jump_time = clock();
+		iw->v.jump = JUMP_HEIGHT;
+	}
+}
+
 void	mouse_move(int xrel, int yrel, t_sdl *iw)
 {
 	//printf("xrel %d yrel %d\n", xrel, yrel);
@@ -298,12 +334,22 @@ void	move_in_portal(t_sdl *iw, int dx, int dy, t_wall *sw)
 {
 	int		nx;
 	int		ny;
+	int		savecs;
+	int		nszu;
+	int		nszd;
 
 	/*iw2.p.x += iw->walls[left->wall->nextsector_wall].x - left->wall->next->x;
 	iw2.p.y += iw->walls[left->wall->nextsector_wall].y - left->wall->next->y;*/
 	nx = iw->p.x + dx + iw->walls[sw->nextsector_wall].x - sw->next->x;
 	ny = iw->p.y + dy + iw->walls[sw->nextsector_wall].y - sw->next->y;
-	if (inside_sector_xy(iw, sw->nextsector, nx, ny))
+	savecs = iw->d.cs;
+	iw->d.cs = sw->nextsector;
+	nszu = get_ceil_z(iw, nx, ny);
+	nszd = get_floor_z(iw, nx, ny);
+	iw->d.cs = savecs;
+	if (nszu - nszd >= PLAYER_HEIGHT + PLAYER_HEAD_SIZE
+		&& nszd - iw->p.z + PLAYER_HEIGHT < MAX_CLIMB_HEIGHT
+		&& inside_sector_xy(iw, sw->nextsector, nx, ny))
 	{
 		iw->p.x = nx;
 		iw->p.y = ny;
@@ -366,9 +412,77 @@ void	move(t_sdl *iw, int pl, int time)
 	
 }
 
+//int		get_minwalls_len(t_sdl *iw, int dx, int dy)
+//{
+//	int		min;
+//	int		wall;
+//	int		len;
+//
+//	min = -1;
+//	wall = iw->sectors[iw->d.cs].sw - 1;
+//	while (++wall < iw->sectors[iw->d.cs].sw + iw->sectors[iw->d.cs].nw)
+//	{
+//		len = fabsf(iw->walls[wall].l.a * (float)(iw->p.x + dx) +
+//			iw->walls[wall].l.b * (float)(iw->p.y + dy) + iw->walls[wall].l.c) /
+//			sqrtf(powf(iw->walls[wall].l.a, 2.0f) + powf(iw->walls[wall].l.b, 2.0f));
+//		if (len < min || min == -1)
+//			min = len;
+//	}
+//	return (min);
+//}
+//
+//void	move3(t_sdl *iw, int dx, int dy)
+//{
+//	int		minlen;
+//
+//	if (inside_sector_xy(iw, iw->d.cs, iw->p.x + dx, iw->p.y + dy))
+//	{
+//		minlen = get_minwalls_len(iw, dx, dy);
+//		printf("min %d\n", minlen);
+//		if (minlen > 10)
+//		{
+//			iw->p.x += dx;
+//			iw->p.y += dy;
+//		}
+//	}
+//}
+//
+//void	move2(t_sdl *iw, int pl, int time)
+//{
+//	int		ang;
+//	int		dx;
+//	int		dy;
+//	float	speed;
+//
+//	ang = (iw->p.introt + pl) % 360;
+//	speed = MOVING_SPEED_PER_HALF_SEC * (float)(clock() - time) / (float)CLOCKS_PER_SEC;
+//	if (ang < 90)
+//	{
+//		dx = (int)(speed * cosf((float)ang * G1)) * 2;
+//		dy = (int)(-speed * sinf((float)ang * G1)) * 2;
+//	}
+//	else if (ang < 180)
+//	{
+//		dx = (int)(-speed * cosf(G180 - (float)ang * G1)) * 2;
+//		dy = (int)(-speed * sinf(G180 - (float)ang * G1)) * 2;
+//	}
+//	else if (ang < 270)
+//	{
+//		dx = (int)(speed * cosf((float)ang * G1) - G180) * 2;
+//		dy = (int)(-speed * sinf((float)ang * G1) - G180) * 2;
+//	}
+//	else
+//	{
+//		dx = (int)(speed * cosf(G360 - (float)ang * G1)) * 2;
+//		dy = (int)(speed * sinf(G360 - (float)ang * G1)) * 2;
+//	}
+//	move3(iw, dx, dy);
+//}
+
 void	loop(t_sdl *iw)
 {
 	int		t;
+	float	jsz;
 
 	if (clock() - iw->loop_update_time < CLOCKS_PER_SEC / MAX_FPS)
 		return;
@@ -430,8 +544,6 @@ void	loop(t_sdl *iw)
 			move(iw, 90, iw->v.right);
 			iw->v.right = clock();
 		}
-		if (iw->v.fall == -1 && (iw->p.z - iw->v.plrzd) > PLAYER_HEIGHT)
-			iw->v.fall = clock();
 		if (iw->v.fall != -1)
 		{
 			t = clock();
@@ -439,8 +551,25 @@ void	loop(t_sdl *iw)
 				(float)CLOCKS_PER_SEC) * 4000.0f *
 				((float)(t - iw->loop_update_time) / (float)CLOCKS_PER_SEC));
 		}
-		if (iw->p.z > iw->v.plrzu)
-			iw->p.z = iw->v.plrzu;
+		else if (iw->v.jump_time != -1)
+		{
+			jsz = (float)(clock() - iw->v.jump_time) / (float)CLOCKS_PER_SEC * JUMP_HEIGHT;
+			if (jsz >= iw->v.jump)
+			{
+				iw->p.z += iw->v.jump;
+				iw->v.jump_time = -1;
+			}
+			else
+			{
+				iw->p.z += jsz;
+				iw->v.jump -= jsz;
+			}
+		}
+		if (iw->v.fall == -1 && iw->v.jump_time == -1
+			&& (iw->p.z - iw->v.plrzd) > PLAYER_HEIGHT)
+			iw->v.fall = clock();
+		if (iw->p.z + PLAYER_HEAD_SIZE > iw->v.plrzu)
+			iw->p.z = iw->v.plrzu - PLAYER_HEAD_SIZE;
 		else if (iw->p.z - iw->v.plrzd < PLAYER_HEIGHT)
 		{
 			iw->p.z = iw->v.plrzd + PLAYER_HEIGHT;
@@ -463,8 +592,12 @@ void	main_loop(t_sdl *iw)
 		while (SDL_PollEvent(&e) != 0)
 			if (e.type == SDL_QUIT)
 				iw->quit = 1;
-			else if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
-				key_down(e.key.keysym.scancode, iw);
+			else if (e.type == SDL_KEYDOWN)
+			{
+				key_down_repeat(e.key.keysym.scancode, iw);
+				if (e.key.repeat == 0)
+					key_down(e.key.keysym.scancode, iw);
+			}
 			else if (e.type == SDL_KEYUP)
 				key_up(e.key.keysym.scancode, iw);
 			else if (e.type == SDL_MOUSEMOTION)
@@ -2521,6 +2654,8 @@ void	get_def(t_sdl *iw)
 	iw->v.rot_up = -1;
 	iw->v.rot_down = -1;
 	iw->v.fall = -1;
+	iw->v.jump_time = -1;
+	iw->v.jump = 0;
 	iw->v.accel = 9.81f;
 	iw->loop_update_time = clock();
 }

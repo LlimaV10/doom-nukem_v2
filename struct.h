@@ -320,6 +320,8 @@ typedef struct	s_variables
 	float	accel;
 	int		plrzu;
 	int		plrzd;
+	int		jump;
+	int		jump_time;
 }				t_variables;
 
 typedef struct	s_sdl
