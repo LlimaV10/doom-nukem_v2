@@ -224,21 +224,57 @@ void	move(t_sdl *iw, int pl, int time)
 
 void	loop(t_sdl *iw)
 {
+	int		zu;
+	int		zd;
+	int		t;
+
 	if (clock() - iw->loop_update_time < CLOCKS_PER_SEC / MAX_FPS)
 		return;
-	iw->loop_update_time = clock();
+	if (iw->d.cs >= 0)
+	{
+		zu = get_ceil_z(iw, iw->p.x, iw->p.y);
+		zd = get_floor_z(iw, iw->p.x, iw->p.y);
+		if (iw->v.fall == -1 && (iw->p.z - zd) > PLAYER_HEIGHT)
+			iw->v.fall = clock();
+		if (iw->v.fall != -1)
+		{
+			t = clock();
+			iw->p.z -= (int)(iw->v.accel * ((float)(t - iw->v.fall) /
+				(float)CLOCKS_PER_SEC) * 4000.0f *
+				((float)(t - iw->loop_update_time) / (float)CLOCKS_PER_SEC));
+		}
+		if (iw->p.z > zu)
+			iw->p.z = zu;
+		else if (iw->p.z - zd < PLAYER_HEIGHT)
+		{
+			iw->p.z = zd + PLAYER_HEIGHT;
+			iw->v.fall = -1;
+		}
+	}
+	else
+		iw->v.fall = -1;
 	if (iw->v.rot_right != -1)
 	{
-		iw->p.introt = (iw->p.introt + ROTATION_SPEED_PER_HALF_SEC * (clock() - iw->v.rot_right)
-			/ CLOCKS_PER_SEC * 2) % 360;
-		iw->p.rot = (float)iw->p.introt * G1;
+		/*iw->p.introt = (iw->p.introt + ROTATION_SPEED_PER_HALF_SEC * (clock() - iw->v.rot_right)
+			/ CLOCKS_PER_SEC * 2) % 360;*/
+		iw->p.rot += (ROTATION_SPEED_PER_HALF_SEC * (float)(clock() - iw->v.rot_right)
+			/ (float)CLOCKS_PER_SEC * 2.0f) * G1;
+		while (iw->p.rot >= G360)
+			iw->p.rot -= G360;
+		iw->p.introt = (int)(iw->p.rot / G1);
+		/*iw->p.rot = (float)iw->p.introt * G1;*/
 		iw->v.rot_right = clock();
 	}
 	if (iw->v.rot_left != -1)
 	{
-		iw->p.introt = (iw->p.introt - ROTATION_SPEED_PER_HALF_SEC * (clock() - iw->v.rot_left)
-			/ CLOCKS_PER_SEC * 2 + 360) % 360;
-		iw->p.rot = (float)iw->p.introt * G1;
+		/*iw->p.introt = (iw->p.introt - ROTATION_SPEED_PER_HALF_SEC * (clock() - iw->v.rot_left)
+			/ CLOCKS_PER_SEC * 2 + 360) % 360;*/
+		iw->p.rot -= (ROTATION_SPEED_PER_HALF_SEC * (float)(clock() - iw->v.rot_left)
+			/ (float)CLOCKS_PER_SEC * 2.0f) * G1;
+		while (iw->p.rot < 0.0f)
+			iw->p.rot += G360;
+		iw->p.introt = (int)(iw->p.rot / G1);
+		/*iw->p.rot = (float)iw->p.introt * G1;*/
 		iw->v.rot_left = clock();
 	}
 	if (iw->v.front != -1)
@@ -272,6 +308,7 @@ void	loop(t_sdl *iw)
 		iw->v.rot_down = clock();
 	}
 	update(iw);
+	iw->loop_update_time = clock();
 }
 
 void	main_loop(t_sdl *iw)
@@ -2341,6 +2378,8 @@ void	get_def(t_sdl *iw)
 	iw->v.rot_right = -1;
 	iw->v.rot_up = -1;
 	iw->v.rot_down = -1;
+	iw->v.fall = -1;
+	iw->v.accel = 9.81f;
 	iw->loop_update_time = clock();
 }
 

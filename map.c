@@ -59,7 +59,7 @@ void	get_map(t_sdl *iw)
 	iw->sectors[2].cl.n = 0;
 	iw->sectors[2].cl.x = 5000;
 	iw->sectors[2].cl.y = 0;
-	iw->sectors[2].cl.z = 600;
+	iw->sectors[2].cl.z = 1200;
 	iw->sectors[2].cl.t = 0;
 
 	iw->walls = (t_wall *)malloc((iw->sectors[0].nw + iw->sectors[1].nw + iw->sectors[2].nw) * sizeof(t_wall));

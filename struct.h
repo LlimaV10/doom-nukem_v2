@@ -315,6 +315,9 @@ typedef struct	s_variables
 	int		rot_right;
 	int		rot_up;
 	int		rot_down;
+	int		fall;
+	// acceleration (meters per second^2)
+	float	accel;
 }				t_variables;
 
 typedef struct	s_sdl
