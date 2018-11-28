@@ -230,29 +230,6 @@ void	loop(t_sdl *iw)
 
 	if (clock() - iw->loop_update_time < CLOCKS_PER_SEC / MAX_FPS)
 		return;
-	if (iw->d.cs >= 0)
-	{
-		zu = get_ceil_z(iw, iw->p.x, iw->p.y);
-		zd = get_floor_z(iw, iw->p.x, iw->p.y);
-		if (iw->v.fall == -1 && (iw->p.z - zd) > PLAYER_HEIGHT)
-			iw->v.fall = clock();
-		if (iw->v.fall != -1)
-		{
-			t = clock();
-			iw->p.z -= (int)(iw->v.accel * ((float)(t - iw->v.fall) /
-				(float)CLOCKS_PER_SEC) * 4000.0f *
-				((float)(t - iw->loop_update_time) / (float)CLOCKS_PER_SEC));
-		}
-		if (iw->p.z > zu)
-			iw->p.z = zu;
-		else if (iw->p.z - zd < PLAYER_HEIGHT)
-		{
-			iw->p.z = zd + PLAYER_HEIGHT;
-			iw->v.fall = -1;
-		}
-	}
-	else
-		iw->v.fall = -1;
 	if (iw->v.rot_right != -1)
 	{
 		/*iw->p.introt = (iw->p.introt + ROTATION_SPEED_PER_HALF_SEC * (clock() - iw->v.rot_right)
@@ -307,6 +284,29 @@ void	loop(t_sdl *iw)
 		iw->p.rotup -= 2 * WINDOW_H * (clock() - iw->v.rot_down) / CLOCKS_PER_SEC;
 		iw->v.rot_down = clock();
 	}
+	if (iw->d.cs >= 0)
+	{
+		zu = get_ceil_z(iw, iw->p.x, iw->p.y);
+		zd = get_floor_z(iw, iw->p.x, iw->p.y);
+		if (iw->v.fall == -1 && (iw->p.z - zd) > PLAYER_HEIGHT)
+			iw->v.fall = clock();
+		if (iw->v.fall != -1)
+		{
+			t = clock();
+			iw->p.z -= (int)(iw->v.accel * ((float)(t - iw->v.fall) /
+				(float)CLOCKS_PER_SEC) * 4000.0f *
+				((float)(t - iw->loop_update_time) / (float)CLOCKS_PER_SEC));
+		}
+		if (iw->p.z > zu)
+			iw->p.z = zu;
+		else if (iw->p.z - zd < PLAYER_HEIGHT)
+		{
+			iw->p.z = zd + PLAYER_HEIGHT;
+			iw->v.fall = -1;
+		}
+	}
+	else
+		iw->v.fall = -1;
 	update(iw);
 	iw->loop_update_time = clock();
 }
