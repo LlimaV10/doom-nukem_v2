@@ -337,7 +337,6 @@ typedef struct	s_sdl
 {
 	SDL_Window	*win;
 	SDL_Surface	*sur;
-	SDL_Renderer	*ren;
 	char		quit;
 	t_wall		*walls;
 	t_sector	*sectors;

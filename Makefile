@@ -18,11 +18,12 @@ SRC =	main.c \
 
 OBJ = $(SRC:.c=.o)
 
-INC =	-I SDL2/SDL2.framework/Headers\
+INC =	-I./SDL2/SDL2.framework/Headers\
+		-I./SDL2/SDL2_ttf.framework/Headers\
 
 ERRFL = -Wall -Wextra -g # -Werror
 
-FL = -F SDL2/ -framework SDL2 -framework OpenCL
+FL = -F SDL2/ -framework SDL2 -framework SDL2_ttf -framework OpenCL
 
 PRINT = yes
 

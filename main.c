@@ -109,7 +109,6 @@ void	draw_text_to_window_surface(t_sdl *iw, int x, int y, SDL_Surface *t)
 {
 	int		i;
 	int		j;
-	int		pix;
 	char	*pixels;
 	int		color;
 
@@ -2756,7 +2755,7 @@ int		main(void)
 	SDL_SetRelativeMouseMode(1);
 	iw.win = SDL_CreateWindow("SDL", 10/* SDL_WINDOWPOS_CENTERED*/, SDL_WINDOWPOS_CENTERED,
 		WINDOW_W, WINDOW_H, SDL_WINDOW_SHOWN);
-	iw.ren = SDL_CreateRenderer(iw.win, -1, 0);
+	//iw.ren = SDL_CreateRenderer(iw.win, -1, 0);
 	iw.sur = SDL_GetWindowSurface(iw.win);
 	// draw
 	get_map(&iw);

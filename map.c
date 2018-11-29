@@ -22,7 +22,7 @@ void	get_map(t_sdl *iw)
 	iw->sectors[0].fr.n->c = -2;
 	iw->sectors[0].fr.x = 5000;
 	iw->sectors[0].fr.y = 0;
-	iw->sectors[0].fr.z = -400;
+	iw->sectors[0].fr.z = 0;
 	iw->sectors[0].fr.t = 3;
 	iw->sectors[0].cl.n = 0;// (t_sector_fc *)malloc(sizeof(t_sector_fc));
 	//iw->sectors[0].cl.n->a = 1;
