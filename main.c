@@ -3,7 +3,7 @@
 
 void	set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 {
-	if (x >= 0 && x < WINDOW_W && y >= 0 && y < WINDOW_H)
+	if (x >= 0 && x < WINDOW_W && y >= 0 && y < WINDOW_H + 200)
 	{
 		Uint8 *target_pixel = (Uint8 *)surface->pixels + y * surface->pitch + x * 4;
 		*(Uint32 *)target_pixel = pixel;
@@ -105,29 +105,40 @@ void	draw_crosshair(t_sdl *iw)
 		set_pixel(iw->sur, j, i, 0x00FF00);
 }
 
-void	draw_text_to_window_surface(t_sdl *iw, int x, int y, SDL_Surface *t)
-{
-	int		i;
-	int		j;
-	char	*pixels;
-	int		color;
+//void	draw_text_to_window_surface(t_sdl *iw, int x, int y, SDL_Surface *t)
+//{
+//	int		i;
+//	int		j;
+//	char	*pixels;
+//	int		color;
+//
+//	color = ((255 - (int)t->format->palette->colors->r) << 16) +
+//		((255 - (int)t->format->palette->colors->g) << 8) +
+//		((255 - (int)t->format->palette->colors->b));
+//	pixels = (char *)t->pixels;
+//	i = -1;
+//	while (++i < t->h)
+//	{
+//		j = -1;
+//		while (++j < t->w)
+//		{
+//			if ((int)(*pixels) == 1)
+//				set_pixel(iw->sur, x + j, y + i, color);
+//			pixels += 1;
+//		}
+//		/*pixels += 1;*/
+//	}
+//}
 
-	color = ((255 - (int)t->format->palette->colors->r) << 16) +
-		((255 - (int)t->format->palette->colors->g) << 8) +
-		((255 - (int)t->format->palette->colors->b));
-	pixels = (char *)t->pixels;
-	i = -1;
-	while (++i < t->h)
-	{
-		j = -1;
-		while (++j < t->w)
-		{
-			if ((int)(*pixels) == 1)
-				set_pixel(iw->sur, x + j, y + i, color);
-			pixels += 1;
-		}
-		/*pixels += 1;*/
-	}
+void	draw_text_number(t_sdl *iw, t_draw_info *d, const char *s, int numb)
+{
+	d->s2 = ft_itoa(numb);
+	d->s3 = ft_strjoin(s, d->s2);
+	free(d->s2);
+	d->stext = TTF_RenderText_Solid(iw->arial_font, d->s3, d->col);
+	free(d->s3);
+	SDL_BlitSurface(d->stext, NULL, iw->sur, &d->rect);
+	SDL_FreeSurface(d->stext);
 }
 
 void	draw_some_info(t_sdl *iw)
@@ -140,23 +151,65 @@ void	draw_some_info(t_sdl *iw)
 	d.col.g = 255;
 	d.col.b = 0;
 	d.col.a = 0;
-	d.s = ft_strdup("sector: ");
-	d.s2 = ft_itoa(iw->d.cs);
-	d.s3 = ft_strjoin(d.s, d.s2);
-	free(d.s);
-	free(d.s2);
-	d.stext = TTF_RenderText_Solid(iw->arial_font, d.s3, d.col);
-	free(d.s3);
-	draw_text_to_window_surface(iw, 0, 0, d.stext);
-	SDL_FreeSurface(d.stext);
+	d.rect.x = 0;
+	d.rect.y = 0;
+	d.rect.w = 200;
+	d.rect.h = 100;
+	draw_text_number(iw, &d, "FPS: ", iw->v.fps);
+	d.rect.y = 25;
+	draw_text_number(iw, &d, "Sector: ", iw->d.cs);
+}
+
+void	ft_scaled_blit(SDL_Surface *tex, SDL_Surface *winsur, SDL_Rect *rect)
+{
+	int		i;
+	int		j;
+
+	i = -1;
+	while (++i < rect->h)
+	{
+		j = -1;
+		while (++j < rect->w)
+			set_pixel(winsur, rect->x + j, rect->y + i, get_pixel(tex,
+				tex->w * j / rect->w, tex->h * i / rect->h));
+	}
+}
+
+void	draw_tex_to_select(t_sdl *iw)
+{
+	int		i;
+	SDL_Rect	rect;
+
+	rect.x = 0;
+	rect.y = WINDOW_H;
+	rect.w = 100;
+	rect.h = 100;
+	i = iw->v.scroll_first_tex - 1;
+	while (++i < TEXTURES_COUNT && rect.x < WINDOW_W)
+	{
+		ft_scaled_blit(iw->t[i], iw->sur, &rect);
+		rect.x += 100;
+	}
+}
+
+void	draw_selected_tex(t_sdl *iw)
+{
+	SDL_Rect	rect;
+
+	rect.x = WINDOW_W - 110;
+	rect.y = 10;
+	rect.w = 100;
+	rect.h = 100;
+	ft_scaled_blit(iw->t[iw->v.tex_to_fill], iw->sur, &rect);
 }
 
 void	update(t_sdl *iw)
 {
-	SDL_FillRect(iw->sur, NULL, 0x000000);
+	SDL_FillRect(iw->sur, &iw->winrect, 0x000000);
 	draw(iw);
 	draw_crosshair(iw);
 	draw_some_info(iw);
+	draw_selected_tex(iw);
 	SDL_UpdateWindowSurface(iw->win);
 	//printf("Update\n");
 	//printf("update ret %d\n", ret);
@@ -214,6 +267,11 @@ void	key_down(int code, t_sdl *iw)
 			printf("OpenCL ON\n");
 		else
 			printf("OpenCL OFF\n");
+	}
+	else if (code == 43)
+	{
+		iw->v.mouse_mode = ((iw->v.mouse_mode == 1) ? 0 : 1);
+		SDL_SetRelativeMouseMode(iw->v.mouse_mode);
 	}
 	// else if (code == 79)
 	// {
@@ -286,6 +344,8 @@ void	key_down_repeat(int code, t_sdl *iw)
 
 void	mouse_move(int xrel, int yrel, t_sdl *iw)
 {
+	if (iw->v.mouse_mode == 0)
+		return ;
 	//printf("xrel %d yrel %d\n", xrel, yrel);
 	iw->p.rot += MOUSE_SENSIVITY * (float)xrel;
 	if (iw->p.rot < 0.0f)
@@ -298,6 +358,32 @@ void	mouse_move(int xrel, int yrel, t_sdl *iw)
 		iw->p.rotup = 2 * WINDOW_H;
 	else if (iw->p.rotup < -2 * WINDOW_H)
 		iw->p.rotup = -2 * WINDOW_H;
+}
+
+void	mouse_button_up(int x, int y, t_sdl *iw)
+{
+	int		i;
+
+	if (y > WINDOW_H && iw->v.mouse_mode == 0)
+	{
+		i = x / 100 + iw->v.scroll_first_tex;
+		if (i < TEXTURES_COUNT)
+			iw->v.tex_to_fill = i;
+	}
+}
+
+void	mouse_wheel(SDL_Event *e, t_sdl *iw)
+{
+	if (iw->v.mouse_y > WINDOW_H && iw->v.mouse_mode == 0)
+	{
+		iw->v.scroll_first_tex -= e->wheel.y;
+		if (iw->v.scroll_first_tex < 0)
+			iw->v.scroll_first_tex = 0;
+		if (iw->v.scroll_first_tex >= TEXTURES_COUNT)
+			iw->v.scroll_first_tex = TEXTURES_COUNT - 1;
+		SDL_FillRect(iw->sur, &iw->v.scroll_tex_rect, 0x000000);
+		draw_tex_to_select(iw);
+	}
 }
 
 t_wall	*is_wall_portal(t_sdl *iw, int dx, int dy)
@@ -531,7 +617,7 @@ void	loop(t_sdl *iw)
 	int		t;
 	float	jsz;
 
-	if (clock() - iw->loop_update_time < CLOCKS_PER_SEC / MAX_FPS)
+	if ((float)(clock() - iw->loop_update_time) < (float)CLOCKS_PER_SEC / (float)MAX_FPS)
 		return;
 	if (iw->v.rot_right != -1)
 	{
@@ -595,8 +681,8 @@ void	loop(t_sdl *iw)
 		{
 			t = clock();
 			iw->p.z -= (int)(iw->v.accel * ((float)(t - iw->v.fall) /
-				(float)CLOCKS_PER_SEC) * 4000.0f *
-				((float)(t - iw->loop_update_time) / (float)CLOCKS_PER_SEC));
+				(float)CLOCKS_PER_SEC) * 100.0f/* *
+				((float)(t - iw->loop_update_time) / (float)CLOCKS_PER_SEC)*/);
 		}
 		else if (iw->v.jump_time != -1)
 		{
@@ -627,6 +713,7 @@ void	loop(t_sdl *iw)
 	else
 		iw->v.fall = -1;
 	update(iw);
+	iw->v.fps = CLOCKS_PER_SEC / (clock() - iw->loop_update_time);
 	iw->loop_update_time = clock();
 }
 
@@ -649,7 +736,15 @@ void	main_loop(t_sdl *iw)
 			else if (e.type == SDL_KEYUP)
 				key_up(e.key.keysym.scancode, iw);
 			else if (e.type == SDL_MOUSEMOTION)
+			{
 				mouse_move(e.motion.xrel, e.motion.yrel, iw);
+				iw->v.mouse_x = e.motion.x;
+				iw->v.mouse_y = e.motion.y;
+			}
+			else if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_LEFT)
+				mouse_button_up(e.button.x, e.button.y, iw);
+			else if (e.type == SDL_MOUSEWHEEL && e.wheel.y != 0)
+				mouse_wheel(&e, iw);
 			//else if (e.type == SDL_KEYUP)
 			//	key_up(e.key.keysym.scancode, iw);
 		/**/
@@ -2706,6 +2801,18 @@ void	get_def(t_sdl *iw)
 	iw->v.jump = 0;
 	iw->v.accel = 9.81f;
 	iw->loop_update_time = clock();
+	iw->v.fps = 0;
+	iw->winrect.x = 0;
+	iw->winrect.y = 0;
+	iw->winrect.w = WINDOW_W;
+	iw->winrect.h = WINDOW_H;
+	iw->v.tex_to_fill = 0;
+	iw->v.scroll_first_tex = 0;
+	iw->v.mouse_mode = 1;
+	iw->v.scroll_tex_rect.h = 100;
+	iw->v.scroll_tex_rect.w = WINDOW_W;
+	iw->v.scroll_tex_rect.x = 0;
+	iw->v.scroll_tex_rect.y = WINDOW_H;
 }
 
 void	get_kernel_mem(t_sdl *iw)
@@ -2752,11 +2859,12 @@ int		main(void)
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
 	iw.arial_font = TTF_OpenFont("fonts/ARIAL.TTF", 24);
-	SDL_SetRelativeMouseMode(1);
+	SDL_SetRelativeMouseMode(iw.v.mouse_mode);
 	iw.win = SDL_CreateWindow("SDL", 10/* SDL_WINDOWPOS_CENTERED*/, SDL_WINDOWPOS_CENTERED,
-		WINDOW_W, WINDOW_H, SDL_WINDOW_SHOWN);
+		WINDOW_W, WINDOW_H + 100, SDL_WINDOW_SHOWN);
 	//iw.ren = SDL_CreateRenderer(iw.win, -1, 0);
 	iw.sur = SDL_GetWindowSurface(iw.win);
+	draw_tex_to_select(&iw);
 	// draw
 	get_map(&iw);
 	create_map(&iw);

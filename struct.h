@@ -243,6 +243,7 @@ typedef struct	s_draw_info
 	char	*s3;
 	SDL_Surface	*stext;
 	SDL_Color	col;
+	SDL_Rect	rect;
 }				t_draw_info;
 
 // typedef struct	s_save_wall_pairs_closest
@@ -331,12 +332,20 @@ typedef struct	s_variables
 	int		plrzd;
 	int		jump;
 	int		jump_time;
+	int		fps;
+	int		tex_to_fill;
+	int		scroll_first_tex;
+	int		mouse_mode;
+	int		mouse_x;
+	int		mouse_y;
+	SDL_Rect	scroll_tex_rect;
 }				t_variables;
 
 typedef struct	s_sdl
 {
 	SDL_Window	*win;
 	SDL_Surface	*sur;
+	SDL_Rect	winrect;
 	char		quit;
 	t_wall		*walls;
 	t_sector	*sectors;
@@ -351,7 +360,6 @@ typedef struct	s_sdl
 	t_kernel	k;
 	int			loop_update_time;
 	TTF_Font	*arial_font;
-
 }				t_sdl;
 
 #endif
