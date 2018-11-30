@@ -144,8 +144,6 @@ void	draw_text_number(t_sdl *iw, t_draw_info *d, const char *s, int numb)
 void	draw_some_info(t_sdl *iw)
 {
 	t_draw_info	d;
-	int		i;
-	int		j;
 
 	d.col.r = 0;
 	d.col.g = 255;
@@ -158,6 +156,16 @@ void	draw_some_info(t_sdl *iw)
 	draw_text_number(iw, &d, "FPS: ", iw->v.fps);
 	d.rect.y = 25;
 	draw_text_number(iw, &d, "Sector: ", iw->d.cs);
+}
+
+void	draw_sphere(t_sdl *iw, int xc, int yc, int r)
+{
+	
+}
+
+void	draw_menu(t_sdl *iw)
+{
+
 }
 
 void	ft_scaled_blit(SDL_Surface *tex, SDL_Surface *winsur, SDL_Rect *rect)
@@ -273,63 +281,10 @@ void	key_down(int code, t_sdl *iw)
 		iw->v.mouse_mode = ((iw->v.mouse_mode == 1) ? 0 : 1);
 		SDL_SetRelativeMouseMode(iw->v.mouse_mode);
 	}
-	// else if (code == 79)
-	// {
-	// 	iw->p.introt += 4;
-	// 	if (iw->p.introt > 360)
-	// 		iw->p.introt -= 360;
-	// 	iw->p.rot = (float)iw->p.introt * G1;
-	// 	update(iw);
-	// }
-	// else if (code == 80)
-	// {
-	// 	iw->p.introt -= 4;
-	// 	if (iw->p.introt < 0)
-	// 		iw->p.introt += 360;
-	// 	iw->p.rot = (float)iw->p.introt * G1;
-	// 	update(iw);
-	// }
-	// else if (code == 26)
-	// {
-	// 	iw->p.x += 60;
-	// 	update(iw);
-	// }
-	// else if (code == 22)
-	// {
-	// 	iw->p.x -= 60;
-	// 	update(iw);
-	// }
-	// else if (code == 4)
-	// {
-	// 	iw->p.y += 60;
-	// 	update(iw);
-	// }
-	// else if (code == 7)
-	// {
-	// 	iw->p.y -= 60;
-	// 	update(iw);
-	// }
-	// else if (code == 8)
-	// {
-	// 	iw->p.z += 60;
-	// 	update(iw);
-	// }
-	// else if (code == 20)
-	// {
-	// 	iw->p.z -= 60;
-	// 	update(iw);
-	// }
-	// else if (code == 82 && iw->p.rotup < 2 * WINDOW_H)
-	// {
-	// 	iw->p.rotup += 2 * WINDOW_H / 11;
-	// 	update(iw);
-	// }
-	// else if (code == 81 && iw->p.rotup > -2 * WINDOW_H)
-	// {
-	// 	iw->p.rotup -= 2 * WINDOW_H / 11;
-	// 	update(iw);
-	// }
-	// 
+	else if (code == 55 && *(iw->v.look_sector) != 0 && iw->v.mouse_mode == 1)
+		(*(iw->v.look_sector))->cl.t = iw->v.tex_to_fill;
+	else if (code == 56 && *(iw->v.look_sector) != 0 && iw->v.mouse_mode == 1)
+		(*(iw->v.look_sector))->fr.t = iw->v.tex_to_fill;
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
 }
 
@@ -364,19 +319,23 @@ void	mouse_button_up(int x, int y, t_sdl *iw)
 {
 	int		i;
 
-	if (y > WINDOW_H && iw->v.mouse_mode == 0)
+	if (y > WINDOW_H && y < WINDOW_H + 100 && iw->v.mouse_mode == 0)
 	{
 		i = x / 100 + iw->v.scroll_first_tex;
 		if (i < TEXTURES_COUNT)
 			iw->v.tex_to_fill = i;
 	}
+	else if (iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0)
+	{
+		(*(iw->v.look_wall))->t = iw->v.tex_to_fill;
+	}
 }
 
 void	mouse_wheel(SDL_Event *e, t_sdl *iw)
 {
-	if (iw->v.mouse_y > WINDOW_H && iw->v.mouse_mode == 0)
+	if (iw->v.mouse_y > WINDOW_H && iw->v.mouse_y < WINDOW_H + 100 && iw->v.mouse_mode == 0)
 	{
-		iw->v.scroll_first_tex -= e->wheel.y;
+		iw->v.scroll_first_tex -= e->wheel.y / 2;
 		if (iw->v.scroll_first_tex < 0)
 			iw->v.scroll_first_tex = 0;
 		if (iw->v.scroll_first_tex >= TEXTURES_COUNT)
@@ -438,7 +397,7 @@ void	move_collisions(t_sdl *iw, int dx, int dy)
 	if (inside_sector_xy(iw, iw->d.cs, iw->p.x + dx * PL_COL_SZ, iw->p.y) &&
 		inside_sector_xy(iw, iw->d.cs, iw->p.x + dx, iw->p.y))
 	{
-		dd = dy / 10;
+		dd = dy / 20 * 2;
 		dy = 0;
 		i = -1;
 		while (++i < 10 &&
@@ -451,7 +410,7 @@ void	move_collisions(t_sdl *iw, int dx, int dy)
 	else if (inside_sector_xy(iw, iw->d.cs, iw->p.x, iw->p.y + dy * PL_COL_SZ) &&
 		inside_sector_xy(iw, iw->d.cs, iw->p.x, iw->p.y + dy))
 	{
-		dd = dx / 10;
+		dd = dx / 20 * 2;
 		dx = 0;
 		i = -1;
 		while (++i < 10 &&
@@ -500,7 +459,7 @@ void	move(t_sdl *iw, int pl, int time)
 	t_wall	*sw;
 
 	ang = (iw->p.introt + pl) % 360;
-	speed = MOVING_SPEED_PER_HALF_SEC * (float)(clock() - time) / (float)CLOCKS_PER_SEC;
+	speed = MOVING_SPEED_PER_HALF_SEC * (double)(clock() - time) / (double)CLKS_P_S;
 	if (ang < 90)
 	{
 		dx = (int)(speed * cosf((float)ang * G1)) * 2;
@@ -535,122 +494,42 @@ void	move(t_sdl *iw, int pl, int time)
 	else if ((sw = is_wall_portal(iw, dx, dy)) == 0)
 		move_collisions(iw, dx, dy);
 	else
-		move_in_portal(iw, dx, dy, sw);
-	//if (/*inside_sector_xy(iw, iw->d.cs, iw->p.x + dx * PL_COL_SZ, iw->p.y + dy * PL_COL_SZ) &&*/
-	//	inside_sector_xy(iw, iw->d.cs, iw->p.x + dx, iw->p.y + dy))
-	//{
-	//	iw->p.x += dx;
-	//	iw->p.y += dy;
-	//}
-	
+		move_in_portal(iw, dx, dy, sw);	
 }
-
-//int		get_minwalls_len(t_sdl *iw, int dx, int dy)
-//{
-//	int		min;
-//	int		wall;
-//	int		len;
-//
-//	min = -1;
-//	wall = iw->sectors[iw->d.cs].sw - 1;
-//	while (++wall < iw->sectors[iw->d.cs].sw + iw->sectors[iw->d.cs].nw)
-//	{
-//		len = fabsf(iw->walls[wall].l.a * (float)(iw->p.x + dx) +
-//			iw->walls[wall].l.b * (float)(iw->p.y + dy) + iw->walls[wall].l.c) /
-//			sqrtf(powf(iw->walls[wall].l.a, 2.0f) + powf(iw->walls[wall].l.b, 2.0f));
-//		if (len < min || min == -1)
-//			min = len;
-//	}
-//	return (min);
-//}
-//
-//void	move3(t_sdl *iw, int dx, int dy)
-//{
-//	int		minlen;
-//
-//	if (inside_sector_xy(iw, iw->d.cs, iw->p.x + dx, iw->p.y + dy))
-//	{
-//		minlen = get_minwalls_len(iw, dx, dy);
-//		printf("min %d\n", minlen);
-//		if (minlen > 10)
-//		{
-//			iw->p.x += dx;
-//			iw->p.y += dy;
-//		}
-//	}
-//}
-//
-//void	move2(t_sdl *iw, int pl, int time)
-//{
-//	int		ang;
-//	int		dx;
-//	int		dy;
-//	float	speed;
-//
-//	ang = (iw->p.introt + pl) % 360;
-//	speed = MOVING_SPEED_PER_HALF_SEC * (float)(clock() - time) / (float)CLOCKS_PER_SEC;
-//	if (ang < 90)
-//	{
-//		dx = (int)(speed * cosf((float)ang * G1)) * 2;
-//		dy = (int)(-speed * sinf((float)ang * G1)) * 2;
-//	}
-//	else if (ang < 180)
-//	{
-//		dx = (int)(-speed * cosf(G180 - (float)ang * G1)) * 2;
-//		dy = (int)(-speed * sinf(G180 - (float)ang * G1)) * 2;
-//	}
-//	else if (ang < 270)
-//	{
-//		dx = (int)(speed * cosf((float)ang * G1) - G180) * 2;
-//		dy = (int)(-speed * sinf((float)ang * G1) - G180) * 2;
-//	}
-//	else
-//	{
-//		dx = (int)(speed * cosf(G360 - (float)ang * G1)) * 2;
-//		dy = (int)(speed * sinf(G360 - (float)ang * G1)) * 2;
-//	}
-//	move3(iw, dx, dy);
-//}
 
 void	loop(t_sdl *iw)
 {
 	int		t;
 	float	jsz;
 
-	if ((float)(clock() - iw->loop_update_time) < (float)CLOCKS_PER_SEC / (float)MAX_FPS)
+	if ((double)(clock() - iw->loop_update_time) < (double)CLKS_P_S / (double)MAX_FPS)
 		return;
 	if (iw->v.rot_right != -1)
 	{
-		/*iw->p.introt = (iw->p.introt + ROTATION_SPEED_PER_HALF_SEC * (clock() - iw->v.rot_right)
-			/ CLOCKS_PER_SEC * 2) % 360;*/
-		iw->p.rot += (ROTATION_SPEED_PER_HALF_SEC * (float)(clock() - iw->v.rot_right)
-			/ (float)CLOCKS_PER_SEC * 2.0f) * G1;
+		iw->p.rot += (ROTATION_SPEED_PER_HALF_SEC * (double)(clock() - iw->v.rot_right)
+			/ (double)CLKS_P_S * 2.0f) * G1;
 		while (iw->p.rot >= G360)
 			iw->p.rot -= G360;
 		iw->p.introt = (int)(iw->p.rot / G1);
-		/*iw->p.rot = (float)iw->p.introt * G1;*/
 		iw->v.rot_right = clock();
 	}
 	if (iw->v.rot_left != -1)
 	{
-		/*iw->p.introt = (iw->p.introt - ROTATION_SPEED_PER_HALF_SEC * (clock() - iw->v.rot_left)
-			/ CLOCKS_PER_SEC * 2 + 360) % 360;*/
-		iw->p.rot -= (ROTATION_SPEED_PER_HALF_SEC * (float)(clock() - iw->v.rot_left)
-			/ (float)CLOCKS_PER_SEC * 2.0f) * G1;
+		iw->p.rot -= (ROTATION_SPEED_PER_HALF_SEC * (double)(clock() - iw->v.rot_left)
+			/ (double)CLKS_P_S * 2.0f) * G1;
 		while (iw->p.rot < 0.0f)
 			iw->p.rot += G360;
 		iw->p.introt = (int)(iw->p.rot / G1);
-		/*iw->p.rot = (float)iw->p.introt * G1;*/
 		iw->v.rot_left = clock();
 	}
 	if (iw->v.rot_up != -1 && iw->p.rotup < 2 * WINDOW_H)
 	{
-		iw->p.rotup += 2 * WINDOW_H * (clock() - iw->v.rot_up) / CLOCKS_PER_SEC;
+		iw->p.rotup += 2 * WINDOW_H * (clock() - iw->v.rot_up) / CLKS_P_S;
 		iw->v.rot_up = clock();
 	}
 	if (iw->v.rot_down != -1 && iw->p.rotup > -2 * WINDOW_H)
 	{
-		iw->p.rotup -= 2 * WINDOW_H * (clock() - iw->v.rot_down) / CLOCKS_PER_SEC;
+		iw->p.rotup -= 2 * WINDOW_H * (clock() - iw->v.rot_down) / CLKS_P_S;
 		iw->v.rot_down = clock();
 	}
 	if (iw->d.cs >= 0)
@@ -680,13 +559,13 @@ void	loop(t_sdl *iw)
 		if (iw->v.fall != -1)
 		{
 			t = clock();
-			iw->p.z -= (int)(iw->v.accel * ((float)(t - iw->v.fall) /
-				(float)CLOCKS_PER_SEC) * 100.0f/* *
+			iw->p.z -= (int)(iw->v.accel * ((double)(t - iw->v.fall) /
+				(double)CLKS_P_S) * 50.0f/* *
 				((float)(t - iw->loop_update_time) / (float)CLOCKS_PER_SEC)*/);
 		}
 		else if (iw->v.jump_time != -1)
 		{
-			jsz = (float)(clock() - iw->v.jump_time) / (float)CLOCKS_PER_SEC * (float)JUMP_HEIGHT *
+			jsz = (double)(clock() - iw->v.jump_time) / (double)CLKS_P_S * (double)JUMP_HEIGHT *
 				iw->v.accel / 10.0f;
 			if ((int)jsz >= iw->v.jump)
 			{
@@ -698,6 +577,7 @@ void	loop(t_sdl *iw)
 				iw->p.z += (int)jsz;
 				iw->v.jump -= (int)jsz;
 			}
+
 		}
 		if (iw->v.fall == -1 && iw->v.jump_time == -1
 			&& (iw->p.z - iw->v.plrzd) > PLAYER_HEIGHT)
@@ -713,7 +593,7 @@ void	loop(t_sdl *iw)
 	else
 		iw->v.fall = -1;
 	update(iw);
-	iw->v.fps = CLOCKS_PER_SEC / (clock() - iw->loop_update_time);
+	iw->v.fps = (double)CLKS_P_S / (double)(clock() - iw->loop_update_time);
 	iw->loop_update_time = clock();
 }
 
@@ -753,50 +633,6 @@ void	main_loop(t_sdl *iw)
 		//pthread_mutex_unlock(&iw->mutex);
 	}
 }
-
-//void	loop_control(t_sdl *iw)
-//{
-//	iw->loop_control_time = clock();
-//	while (!iw->quit)
-//	{
-//		if (clock() - iw->loop_control_time < CLOCKS_PER_SEC / 60)
-//			continue;
-//		else
-//			iw->loop_control_time = clock();
-//		pthread_mutex_lock(&iw->mutex);
-//		if (iw->v.rot_right)
-//			iw->p.introt = (iw->p.introt + ROTATION_SPEED) % 360;
-//		if (iw->v.rot_left)
-//			iw->p.introt = (iw->p.introt - ROTATION_SPEED + 360) % 360;
-//		if (iw->v.front)
-//			move(iw, 0);
-//		if (iw->v.back)
-//			move(iw, 180);
-//		if (iw->v.left)
-//			move(iw, 270);
-//		if (iw->v.right)
-//			move(iw, 90);
-//		if (iw->v.rot_up && iw->p.rotup < 2 * WINDOW_H)
-//			iw->p.rotup += WINDOW_H / 22;
-//		if (iw->v.rot_down && iw->p.rotup > -2 * WINDOW_H)
-//			iw->p.rotup -= WINDOW_H / 22;
-//		iw->p.rot = (float)iw->p.introt * G1;
-//		pthread_mutex_unlock(&iw->mutex);
-//	}
-//}
-//
-//void	main_loop_control(t_sdl *iw)
-//{
-//	pthread_t	control;
-//	pthread_t	draw;
-//
-//	pthread_create(&control, NULL,
-//		(void *(*)(void *))loop_control, (void *)iw);
-//	pthread_create(&draw, NULL,
-//		(void *(*)(void *))main_loop, (void *)iw);
-//	//pthread_join(control, (void **)iw);
-//	pthread_join(draw, (void **)iw);
-//}
 
 void	get_wall_line(t_sdl *iw, int wall)
 {
@@ -854,41 +690,17 @@ int inside_sector(int sector, t_sdl *iw)
 	return (wallCrossed >> 31);
 }
 
-
-int		inside_sectorZ(int sector, t_sdl *iw)
-{
-	// int		maxz;
-	// int		minz;
-	// int		i;
-
-	// i = iw->sectors[sector].sw;
-	// maxz = iw->walls[i].zu;
-	// minz = iw->walls[i].zd;
-	// while (++i < iw->sectors[sector].startWall + iw->sectors[sector].numWalls)
-	// {
-	// 	if (iw->walls[i].zu > maxz)
-	// 		maxz = iw->walls[i].zu;
-	// 	if (iw->walls[i].zd < minz)
-	// 		minz = iw->walls[i].zd;
-	// }
-	// if (iw->p.z <= maxz && iw->p.z >= minz)
-	// 	return (1);
-	// return (0);
-	
-	return (1);
-}
-
 int		get_sector(t_sdl *iw)
 {
 	int sec;
 
 	sec = iw->v.ls - 1;
 	while (++sec < iw->v.sc)
-		if (inside_sector(sec, iw) != 0 && inside_sectorZ(sec, iw) == 1)
+		if (inside_sector(sec, iw) != 0)
 			return (sec);
 	sec = -1;
 	while (++sec < iw->v.ls)
-		if (inside_sector(sec, iw) != 0 && inside_sectorZ(sec, iw) == 1)
+		if (inside_sector(sec, iw) != 0)
 			return (sec);
 	return (-1);
 }
@@ -1374,18 +1186,6 @@ void	draw_floor(t_sdl *iw, t_save_wall *left, int len)
 	}
 }
 
-//float	get_floor_coef(t_sdl *iw, float pl)
-//{
-//	int		i;
-//
-//	if (pl <= 0.0f)
-//		return (iw->c_floor[0]);
-//	else if (pl >= 0.9f)
-//		return (iw->c_floor[9]);
-//	i = (int)(pl * 10.0f);
-//	return (iw->c_floor[i] + (iw->c_floor[i + 1] - iw->c_floor[i]) * (pl - (float)i / 10.0f) / 0.1f);
-//}
-
 void	draw_inclined_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 {
 	int		i;
@@ -1676,15 +1476,6 @@ void	draw_ceil_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		d.ang += d.dang;
 	}
 }
-
-// void	draw_useless_lines(t_sdl *iw, t_save_wall *left, int len)
-// {
-// 	int		i;
-
-// 	i = iw->d.wallTop[0] - 1;
-// 	while (++i < iw->d.wallBot[0])
-// 		set_pixel(iw->sur, left->x, i, 0xFF00FF);
-// }
 
 void	draw_between_sectors_bot(t_sdl *iw, t_save_wall *left, int len, int *tmp)
 {
@@ -2295,8 +2086,13 @@ void	draw_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right
 	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen + iw->p.rotup;
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen + iw->p.rotup;
 	brez_line(tmp, l);
+	if (*(iw->v.look_wall) == 0 && left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
+		&& tmp[WINDOW_W / 2 - left->x] < WINDOW_H / 2)
+	{
+		*(iw->v.look_wall) = left->wall;
+		*(iw->v.look_sector) = &iw->sectors[iw->d.cs];
+	}
 	draw_between_sectors_bot_tex(iw, left, right, tmp);
-
 	/*lz = get_ceil_z(iw, left->wall->x, left->wall->y);
 	rz = get_ceil_z(iw, right->wall->x, right->wall->y);*/
 	lz = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
@@ -2304,6 +2100,12 @@ void	draw_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right
 	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen + iw->p.rotup;
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen + iw->p.rotup;
 	brez_line(tmp, l);
+	if (*(iw->v.look_wall) == 0 && left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
+		&& tmp[WINDOW_W / 2 - left->x] > WINDOW_H / 2)
+	{
+		*(iw->v.look_wall) = left->wall;
+		*(iw->v.look_sector) = &iw->sectors[iw->d.cs];
+	}
 	draw_between_sectors_top_tex(iw, left, right, tmp);
 	free(tmp);
 }
@@ -2353,17 +2155,17 @@ void	fill_portal(t_sdl *iw, t_save_wall *left, t_save_wall *right, t_sdl *iw2)
 	}
 }
 
-void	fill_portal_rev(t_sdl *iw, t_save_wall *left, t_save_wall *right, t_sdl *iw2)
-{
-	int		j;
+// void	fill_portal_rev(t_sdl *iw, t_sdl *iw2)
+// {
+// 	int		j;
 
-	j = -1;
-	while (++j <= WINDOW_W)
-	{
-		iw2->d.top[j] = iw->d.top[j];
-		iw2->d.bottom[j] = iw->d.bottom[j];
-	}
-}
+// 	j = -1;
+// 	while (++j <= WINDOW_W)
+// 	{
+// 		iw2->d.top[j] = iw->d.top[j];
+// 		iw2->d.bottom[j] = iw->d.bottom[j];
+// 	}
+// }
 
 void	fill_tb_by_slsr(t_sdl *iw)
 {
@@ -2417,6 +2219,13 @@ void	draw_next_sector_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, i
 	iw2.p.y += iw->walls[left->wall->nextsector_wall].y - left->wall->next->y;
 	iw2.d.cs = left->wall->nextsector;
 	iw->d.save_bot_betw = get_between_sectors_walls(&iw2, left, right, &iw->d.save_top_betw);
+	if (*(iw->v.look_wall) == 0 && left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
+		&& (iw->d.save_top_betw[WINDOW_W / 2 - left->x] > WINDOW_H / 2 ||
+		iw->d.save_bot_betw[WINDOW_W / 2 - left->x] < WINDOW_H / 2))
+	{
+		*(iw->v.look_wall) = left->wall;
+		*(iw->v.look_sector) = &iw->sectors[iw->d.cs];
+	}
 	if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
 		draw_floor_ceil_betw_tex_kernel(iw, left, right, len);
 	else
@@ -2426,7 +2235,7 @@ void	draw_next_sector_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, i
 	if ((iw->d.wallBot[0] < 0 && iw->d.wallBot[len - 1] < 0) ||
 		(iw->d.wallTop[0] >= WINDOW_H && iw->d.wallTop[len - 1] >= WINDOW_H))
 		return;
-	/*fill_portal_rev(iw, left, right, &iw2);*/
+	/*fill_portal_rev(iw, &iw2);*/
 	get_direction(&iw2);
 	get_screen_line(&iw2);
 	get_left_right_lines_points(&iw2);
@@ -2442,7 +2251,6 @@ void	draw_next_sector_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, i
 	iw2.d.prev_sector = iw->d.cs;
 	iw2.d.prev_sector_wall = left->wall;
 	draw_start(&iw2);
-	/*fill_portal(iw, left, right, &iw2);*/
 }
 
 void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
@@ -2511,6 +2319,15 @@ void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - left->zu) / (int)left->plen + iw->p.rotup;
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - right->zu) / (int)right->plen + iw->p.rotup;
 	brez_line(iw->d.wallTop, l);
+	if (*(iw->v.look_wall) == 0 && left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
+		&& iw->d.screen_left < WINDOW_W / 2 && iw->d.screen_right > WINDOW_W / 2)
+	{
+		if (left->wall->nextsector == -1 || left->wall->nextsector == iw->d.prev_sector)
+		{
+			*(iw->v.look_wall) = left->wall;
+			*(iw->v.look_sector) = &iw->sectors[iw->d.cs];
+		}
+	}
 	if (iw->v.kernel)
 		draw_all_kernel(iw, left, right, right->x - left->x + 1);
 	else
@@ -2732,6 +2549,8 @@ void	draw(t_sdl *iw)
 		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_bottom, CL_TRUE, 0,
 			(WINDOW_W + 1) * sizeof(int), iw->d.bottom, 0, NULL, NULL);
 	}
+	*(iw->v.look_wall) = 0;
+	*(iw->v.look_sector) = 0;
 	draw_start(iw);
 	if (iw->v.kernel)
 		iw->k.ret = clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_sur, CL_TRUE, 0,
@@ -2761,28 +2580,14 @@ void	read_textures(t_sdl *iw)
 	//printf("%d\n", read_pixel((iw->t)[0], 2, 0));
 }
 
-//void	fill_floor_coefficients(t_sdl *iw)
-//{
-//	iw->c_floor[0] = 1.0f;
-//	iw->c_floor[1] = 1.09559527f;
-//	iw->c_floor[2] = 1.22489332f;
-//	iw->c_floor[3] = 1.36770052f;
-//	iw->c_floor[4] = 1.47576687f;
-//	iw->c_floor[5] = 1.57079633f;
-//	iw->c_floor[6] = 1.62972344f;
-//	iw->c_floor[7] = 1.66705219f;
-//	iw->c_floor[8] = 1.65579454f;
-//	iw->c_floor[9] = 1.62237678f;
-//}
-
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 2501;
-	iw->p.y = 2501; //-2360
-	iw->p.z = 800;
-	iw->p.introt = 1;
+	iw->p.x = 6091;
+	iw->p.y = 2937; //-2360
+	iw->p.z = 600;
+	iw->p.introt = 193;
 	iw->p.rot = (float)iw->p.introt * G1;
-	iw->p.rotup = 0; //550
+	iw->p.rotup = 12; //550
 	iw->v.ls = 0;
 	iw->v.angle = (float)WINDOW_W / (float)WINDOW_H * 22.0f * G1;// 0.698132f;
 	iw->v.kernel = 1;
@@ -2813,6 +2618,10 @@ void	get_def(t_sdl *iw)
 	iw->v.scroll_tex_rect.w = WINDOW_W;
 	iw->v.scroll_tex_rect.x = 0;
 	iw->v.scroll_tex_rect.y = WINDOW_H;
+	iw->v.look_wall = (t_wall **)malloc(sizeof(t_wall *));
+	*(iw->v.look_wall) = 0;
+	iw->v.look_sector = (t_sector **)malloc(sizeof(t_sector *));
+	*(iw->v.look_sector) = 0;
 }
 
 void	get_kernel_mem(t_sdl *iw)
@@ -2860,8 +2669,8 @@ int		main(void)
 	TTF_Init();
 	iw.arial_font = TTF_OpenFont("fonts/ARIAL.TTF", 24);
 	SDL_SetRelativeMouseMode(iw.v.mouse_mode);
-	iw.win = SDL_CreateWindow("SDL", 10/* SDL_WINDOWPOS_CENTERED*/, SDL_WINDOWPOS_CENTERED,
-		WINDOW_W, WINDOW_H + 100, SDL_WINDOW_SHOWN);
+	iw.win = SDL_CreateWindow("SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+		WINDOW_W, WINDOW_H + 100 + 100, SDL_WINDOW_SHOWN);
 	//iw.ren = SDL_CreateRenderer(iw.win, -1, 0);
 	iw.sur = SDL_GetWindowSurface(iw.win);
 	draw_tex_to_select(&iw);

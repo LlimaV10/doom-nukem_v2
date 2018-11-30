@@ -339,6 +339,8 @@ typedef struct	s_variables
 	int		mouse_x;
 	int		mouse_y;
 	SDL_Rect	scroll_tex_rect;
+	t_wall		**look_wall;
+	t_sector	**look_sector;
 }				t_variables;
 
 typedef struct	s_sdl
