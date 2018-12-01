@@ -158,14 +158,52 @@ void	draw_some_info(t_sdl *iw)
 	draw_text_number(iw, &d, "Sector: ", iw->d.cs);
 }
 
-void	draw_sphere(t_sdl *iw, int xc, int yc, int r)
+void	draw_sphere(t_sdl *iw, int a, const char *t)
 {
-	
+	float	sq;
+	int		i;
+	int		b;
+	int		r;
+	SDL_Surface	*st;
+	SDL_Color	col;
+	SDL_Rect	rect;
+
+	col.a = 0;
+	col.r = 0;
+	col.g = 255;
+	col.b = 0;
+	rect.h = 50;
+	rect.w = 50;
+	rect.x = a - 6;
+	rect.y = WINDOW_H + 135;
+	b = WINDOW_H + 150;
+	r = 25;
+	i = a - r;
+	while (++i < a + r)
+	{
+		sq = sqrtf(-powf(a, 2.0f) + 2.0f * (float)(a * i) +
+			powf(r, 2.0f) - powf(i, 2.0f));
+		set_pixel(iw->sur, i, (int)((float)b - sq) - 20, MENU_COLOR);
+		set_pixel(iw->sur, i, (int)(sq + (float)b) + 20, MENU_COLOR);
+	}
+	i = -1;
+	while (++i < r / 3)
+	{
+		set_pixel(iw->sur, a + r + i - 2, b - 20 - i, MENU_COLOR);
+		set_pixel(iw->sur, a + r - i - 2, b - 20 - i, MENU_COLOR);
+		set_pixel(iw->sur, a - r + i + 2, b + 20 + i, MENU_COLOR);
+		set_pixel(iw->sur, a - r - i + 2, b + 20 + i, MENU_COLOR);
+	}
+	st = TTF_RenderText_Solid(iw->arial_font, t, col);
+	SDL_BlitSurface(st, NULL, iw->sur, &rect);
+	SDL_FreeSurface(st);
 }
 
 void	draw_menu(t_sdl *iw)
 {
-
+	draw_sphere(iw, 30, "X");
+	draw_sphere(iw, 100, "Y");
+	draw_sphere(iw, 170, "Z");
 }
 
 void	ft_scaled_blit(SDL_Surface *tex, SDL_Surface *winsur, SDL_Rect *rect)
@@ -335,7 +373,7 @@ void	mouse_wheel(SDL_Event *e, t_sdl *iw)
 {
 	if (iw->v.mouse_y > WINDOW_H && iw->v.mouse_y < WINDOW_H + 100 && iw->v.mouse_mode == 0)
 	{
-		iw->v.scroll_first_tex -= e->wheel.y / 2;
+		iw->v.scroll_first_tex -= e->wheel.y;
 		if (iw->v.scroll_first_tex < 0)
 			iw->v.scroll_first_tex = 0;
 		if (iw->v.scroll_first_tex >= TEXTURES_COUNT)
@@ -2674,6 +2712,7 @@ int		main(void)
 	//iw.ren = SDL_CreateRenderer(iw.win, -1, 0);
 	iw.sur = SDL_GetWindowSurface(iw.win);
 	draw_tex_to_select(&iw);
+	draw_menu(&iw);
 	// draw
 	get_map(&iw);
 	create_map(&iw);
