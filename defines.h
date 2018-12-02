@@ -1,8 +1,8 @@
 #ifndef __DEFINES_H
 # define __DEFINES_H
 
-# define WINDOW_W 800
-# define WINDOW_H 350
+# define WINDOW_W 1000
+# define WINDOW_H 550
 # define MAX_SOURCE_SIZE 0x100000
 # define TEXTURES_COUNT 8
 # define G1 0.01745329
