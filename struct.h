@@ -341,6 +341,9 @@ typedef struct	s_variables
 	SDL_Rect	scroll_tex_rect;
 	t_wall		**look_wall;
 	t_sector	**look_sector;
+	// 0 - floor, 1 - ceil
+	int		changing_fc;
+	SDL_Rect	chang_fc_rect;
 }				t_variables;
 
 typedef struct	s_sdl

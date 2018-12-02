@@ -141,6 +141,25 @@ void	draw_text_number(t_sdl *iw, t_draw_info *d, const char *s, int numb)
 	SDL_FreeSurface(d->stext);
 }
 
+void	draw_text(t_sdl *iw, const char *s, int x, int y)
+{
+	SDL_Color	col;
+	SDL_Rect	rect;
+	SDL_Surface	*stext;
+
+	col.a = 0;
+	col.r = 0;
+	col.g = 255;
+	col.b = 0;
+	rect.x = x;
+	rect.y = y;
+	rect.h = 100;
+	rect.w = 100;
+	stext = TTF_RenderText_Solid(iw->arial_font, s, col);
+	SDL_BlitSurface(stext, NULL, iw->sur, &rect);
+	SDL_FreeSurface(stext);
+}
+
 void	draw_some_info(t_sdl *iw)
 {
 	t_draw_info	d;
@@ -164,18 +183,7 @@ void	draw_menu_sphere(t_sdl *iw, int a, const char *t)
 	int		i;
 	int		b;
 	int		r;
-	SDL_Surface	*st;
-	SDL_Color	col;
-	SDL_Rect	rect;
 
-	col.a = 0;
-	col.r = 0;
-	col.g = 255;
-	col.b = 0;
-	rect.h = 50;
-	rect.w = 50;
-	rect.x = a - 6;
-	rect.y = WINDOW_H + 135;
 	b = WINDOW_H + 150;
 	r = 25;
 	i = a - r;
@@ -194,9 +202,7 @@ void	draw_menu_sphere(t_sdl *iw, int a, const char *t)
 		set_pixel(iw->sur, a - r + i + 2, b + 20 + i, MENU_COLOR);
 		set_pixel(iw->sur, a - r - i + 2, b + 20 + i, MENU_COLOR);
 	}
-	st = TTF_RenderText_Solid(iw->arial_font, t, col);
-	SDL_BlitSurface(st, NULL, iw->sur, &rect);
-	SDL_FreeSurface(st);
+	draw_text(iw, t, a - 6, WINDOW_H + 135);
 }
 
 void	draw_up_down_menu_arrows(t_sdl *iw, int x)
@@ -221,9 +227,13 @@ void	draw_up_down_menu_arrows(t_sdl *iw, int x)
 
 void	draw_menu(t_sdl *iw)
 {
-	draw_menu_sphere(iw, 70, "X");
-	draw_menu_sphere(iw, 140, "Y");
-	draw_up_down_menu_arrows(iw, 20);
+	draw_menu_sphere(iw, 100, "X");
+	draw_menu_sphere(iw, 170, "Y");
+	draw_up_down_menu_arrows(iw, 50);
+	if (iw->v.changing_fc)
+		draw_text(iw, "C", 15, WINDOW_H + 135);
+	else
+		draw_text(iw, "F", 15, WINDOW_H + 135);
 }
 
 void	ft_scaled_blit(SDL_Surface *tex, SDL_Surface *winsur, SDL_Rect *rect)
@@ -388,6 +398,15 @@ void	mouse_button_up(int x, int y, t_sdl *iw)
 	{
 		if (x < 40)
 		{
+			iw->v.changing_fc = ((iw->v.changing_fc) ? 0 : 1);
+			SDL_FillRect(iw->sur, &iw->v.chang_fc_rect, 0x000000);
+			if (iw->v.changing_fc)
+				draw_text(iw, "C", 15, WINDOW_H + 135);
+			else
+				draw_text(iw, "F", 15, WINDOW_H + 135);
+		}
+		/*if (x < 40)
+		{
 			if (y < WINDOW_H + 150 && (*(iw->v.look_sector))->cl.z - (*(iw->v.look_sector))->fr.z > 200)
 				(*(iw->v.look_sector))->cl.z += 100;
 			if (y > WINDOW_H + 150)
@@ -395,7 +414,7 @@ void	mouse_button_up(int x, int y, t_sdl *iw)
 				(*(iw->v.look_sector))->cl.z -= 100;
 				printf("sector_start_wall %d z = %d\n", (*(iw->v.look_sector))->sw, (*(iw->v.look_sector))->cl.z);
 			}
-		}
+		}*/
 	}
 	else if (iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0)
 		(*(iw->v.look_wall))->t = iw->v.tex_to_fill;
@@ -2156,7 +2175,7 @@ void	draw_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right
 	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen + iw->p.rotup;
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen + iw->p.rotup;
 	brez_line(tmp, l);
-	if (*(iw->v.look_wall) == 0 && left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
+	if (*(iw->v.look_wall) == 0 && iw->v.mouse_mode == 1 && left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
 		&& tmp[WINDOW_W / 2 - left->x] < WINDOW_H / 2)
 	{
 		*(iw->v.look_wall) = left->wall;
@@ -2170,7 +2189,7 @@ void	draw_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right
 	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen + iw->p.rotup;
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen + iw->p.rotup;
 	brez_line(tmp, l);
-	if (*(iw->v.look_wall) == 0 && left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
+	if (*(iw->v.look_wall) == 0 && iw->v.mouse_mode == 1 && left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
 		&& tmp[WINDOW_W / 2 - left->x] > WINDOW_H / 2)
 	{
 		*(iw->v.look_wall) = left->wall;
@@ -2289,7 +2308,7 @@ void	draw_next_sector_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, i
 	iw2.p.y += iw->walls[left->wall->nextsector_wall].y - left->wall->next->y;
 	iw2.d.cs = left->wall->nextsector;
 	iw->d.save_bot_betw = get_between_sectors_walls(&iw2, left, right, &iw->d.save_top_betw);
-	if (*(iw->v.look_wall) == 0 && left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
+	if (*(iw->v.look_wall) == 0 && iw->v.mouse_mode == 1 && left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
 		&& (iw->d.save_top_betw[WINDOW_W / 2 - left->x] > WINDOW_H / 2 ||
 		iw->d.save_bot_betw[WINDOW_W / 2 - left->x] < WINDOW_H / 2))
 	{
@@ -2389,7 +2408,7 @@ void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - left->zu) / (int)left->plen + iw->p.rotup;
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - right->zu) / (int)right->plen + iw->p.rotup;
 	brez_line(iw->d.wallTop, l);
-	if (*(iw->v.look_wall) == 0 && left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
+	if (*(iw->v.look_wall) == 0 && iw->v.mouse_mode == 1 && left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
 		&& iw->d.screen_left < WINDOW_W / 2 && iw->d.screen_right > WINDOW_W / 2)
 	{
 		if (left->wall->nextsector == -1)
@@ -2624,8 +2643,11 @@ void	draw(t_sdl *iw)
 		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_bottom, CL_TRUE, 0,
 			(WINDOW_W + 1) * sizeof(int), iw->d.bottom, 0, NULL, NULL);
 	}
-	*(iw->v.look_wall) = 0;
-	*(iw->v.look_sector) = 0;
+	if (iw->v.mouse_mode == 1)
+	{
+		*(iw->v.look_wall) = 0;
+		*(iw->v.look_sector) = 0;
+	}
 	draw_start(iw);
 	if (iw->v.kernel)
 		iw->k.ret = clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_sur, CL_TRUE, 0,
@@ -2697,6 +2719,11 @@ void	get_def(t_sdl *iw)
 	*(iw->v.look_wall) = 0;
 	iw->v.look_sector = (t_sector **)malloc(sizeof(t_sector *));
 	*(iw->v.look_sector) = 0;
+	iw->v.changing_fc = 0;
+	iw->v.chang_fc_rect.h = 100;
+	iw->v.chang_fc_rect.w = 40;
+	iw->v.chang_fc_rect.x = 0;
+	iw->v.chang_fc_rect.y = WINDOW_H + 100;
 }
 
 void	get_kernel_mem(t_sdl *iw)
