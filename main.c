@@ -158,7 +158,7 @@ void	draw_some_info(t_sdl *iw)
 	draw_text_number(iw, &d, "Sector: ", iw->d.cs);
 }
 
-void	draw_sphere(t_sdl *iw, int a, const char *t)
+void	draw_menu_sphere(t_sdl *iw, int a, const char *t)
 {
 	float	sq;
 	int		i;
@@ -199,11 +199,31 @@ void	draw_sphere(t_sdl *iw, int a, const char *t)
 	SDL_FreeSurface(st);
 }
 
+void	draw_up_down_menu_arrows(t_sdl *iw, int x)
+{
+	int		i;
+
+	i = WINDOW_H + 140;
+	while (--i > WINDOW_H + 110)
+		set_pixel(iw->sur, x, i, MENU_COLOR);
+	i = WINDOW_H + 160;
+	while (++i < WINDOW_H + 190)
+		set_pixel(iw->sur, x, i, MENU_COLOR);
+	i = -1;
+	while (++i < 10)
+	{
+		set_pixel(iw->sur, x + i, WINDOW_H + 110 + i, MENU_COLOR);
+		set_pixel(iw->sur, x - i, WINDOW_H + 110 + i, MENU_COLOR);
+		set_pixel(iw->sur, x + i, WINDOW_H + 190 - i, MENU_COLOR);
+		set_pixel(iw->sur, x - i, WINDOW_H + 190 - i, MENU_COLOR);
+	}
+}
+
 void	draw_menu(t_sdl *iw)
 {
-	draw_sphere(iw, 30, "X");
-	draw_sphere(iw, 100, "Y");
-	draw_sphere(iw, 170, "Z");
+	draw_menu_sphere(iw, 70, "X");
+	draw_menu_sphere(iw, 140, "Y");
+	draw_up_down_menu_arrows(iw, 20);
 }
 
 void	ft_scaled_blit(SDL_Surface *tex, SDL_Surface *winsur, SDL_Rect *rect)
@@ -363,10 +383,22 @@ void	mouse_button_up(int x, int y, t_sdl *iw)
 		if (i < TEXTURES_COUNT)
 			iw->v.tex_to_fill = i;
 	}
-	else if (iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0)
+	else if (y > WINDOW_H + 100 && y < WINDOW_H + 200
+		&& iw->v.mouse_mode == 0 && *(iw->v.look_wall) != 0)
 	{
-		(*(iw->v.look_wall))->t = iw->v.tex_to_fill;
+		if (x < 40)
+		{
+			if (y < WINDOW_H + 150 && (*(iw->v.look_sector))->cl.z - (*(iw->v.look_sector))->fr.z > 200)
+				(*(iw->v.look_sector))->cl.z += 100;
+			if (y > WINDOW_H + 150)
+			{
+				(*(iw->v.look_sector))->cl.z -= 100;
+				printf("sector_start_wall %d z = %d\n", (*(iw->v.look_sector))->sw, (*(iw->v.look_sector))->cl.z);
+			}
+		}
 	}
+	else if (iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0)
+		(*(iw->v.look_wall))->t = iw->v.tex_to_fill;
 }
 
 void	mouse_wheel(SDL_Event *e, t_sdl *iw)
@@ -2360,7 +2392,12 @@ void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	if (*(iw->v.look_wall) == 0 && left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
 		&& iw->d.screen_left < WINDOW_W / 2 && iw->d.screen_right > WINDOW_W / 2)
 	{
-		if (left->wall->nextsector == -1 || left->wall->nextsector == iw->d.prev_sector)
+		if (left->wall->nextsector == -1)
+		{
+			*(iw->v.look_wall) = left->wall;
+			*(iw->v.look_sector) = &iw->sectors[iw->d.cs];
+		}
+		else if (left->wall->nextsector == iw->d.prev_sector)
 		{
 			*(iw->v.look_wall) = left->wall;
 			*(iw->v.look_sector) = &iw->sectors[iw->d.cs];
