@@ -383,6 +383,28 @@ void	mouse_move(int xrel, int yrel, t_sdl *iw)
 		iw->p.rotup = -2 * WINDOW_H;
 }
 
+void	rotate_fc(t_sector_fc *fc, int xy, int pl)
+{
+	if (fc->n == 0)
+	{
+		fc->n = (t_sector_fc *)malloc(sizeof(t_sector_fc));
+		fc->n->c = INCLINED_FC_Z;
+		fc->n->a = 0;
+		fc->n->b = 0;
+	}
+	if (xy && ((pl > 0 && fc->n->b < MAX_INCLINED_FC_XY) || (pl < 0 && fc->n->b > -MAX_INCLINED_FC_XY)))
+		fc->n->b += pl;
+	else if (!xy && ((pl > 0 && fc->n->a < MAX_INCLINED_FC_XY) || (pl < 0 && fc->n->a > -MAX_INCLINED_FC_XY)))
+		fc->n->a += pl;
+	if (fc->n->a == 0 && fc->n->b == 0)
+	{
+		free(fc->n);
+		fc->n = 0;
+	}
+	else
+		fc->n->d = -fc->n->a * fc->x - fc->n->b * fc->y - fc->n->c * fc->z;
+}
+
 void	mouse_button_up(int x, int y, t_sdl *iw)
 {
 	int		i;
@@ -405,16 +427,65 @@ void	mouse_button_up(int x, int y, t_sdl *iw)
 			else
 				draw_text(iw, "F", 15, WINDOW_H + 135);
 		}
-		/*if (x < 40)
+		else if (x < 70)
 		{
-			if (y < WINDOW_H + 150 && (*(iw->v.look_sector))->cl.z - (*(iw->v.look_sector))->fr.z > 200)
-				(*(iw->v.look_sector))->cl.z += 100;
-			if (y > WINDOW_H + 150)
+			if (y < WINDOW_H + 150)
 			{
-				(*(iw->v.look_sector))->cl.z -= 100;
-				printf("sector_start_wall %d z = %d\n", (*(iw->v.look_sector))->sw, (*(iw->v.look_sector))->cl.z);
+				if (iw->v.changing_fc)
+					(*(iw->v.look_sector))->cl.z += 100;
+				else if ((*(iw->v.look_sector))->cl.z - (*(iw->v.look_sector))->fr.z > 200)
+					(*(iw->v.look_sector))->fr.z += 100;
 			}
-		}*/
+			else
+			{
+				if (!iw->v.changing_fc)
+					(*(iw->v.look_sector))->fr.z -= 100;
+				else if ((*(iw->v.look_sector))->cl.z - (*(iw->v.look_sector))->fr.z > 200)
+					(*(iw->v.look_sector))->cl.z -= 100;
+			}
+			if (iw->v.changing_fc && (*(iw->v.look_sector))->cl.n != 0)
+				(*(iw->v.look_sector))->cl.n->d = -(*(iw->v.look_sector))->cl.n->a * (*(iw->v.look_sector))->cl.x -
+				(*(iw->v.look_sector))->cl.n->b * (*(iw->v.look_sector))->cl.y -
+				(*(iw->v.look_sector))->cl.n->c * (*(iw->v.look_sector))->cl.z;
+			else if (!iw->v.changing_fc && (*(iw->v.look_sector))->fr.n != 0)
+				(*(iw->v.look_sector))->fr.n->d = -(*(iw->v.look_sector))->fr.n->a * (*(iw->v.look_sector))->fr.x -
+				(*(iw->v.look_sector))->fr.n->b * (*(iw->v.look_sector))->fr.y -
+				(*(iw->v.look_sector))->fr.n->c * (*(iw->v.look_sector))->fr.z;
+		}
+		else if (x < 140)
+		{
+			if (y < WINDOW_H + 150)
+			{
+				if (iw->v.changing_fc)
+					rotate_fc(&(*(iw->v.look_sector))->cl, 0, 1);
+				else
+					rotate_fc(&(*(iw->v.look_sector))->fr, 0, 1);
+			}
+			else
+			{
+				if (iw->v.changing_fc)
+					rotate_fc(&(*(iw->v.look_sector))->cl, 0, -1);
+				else
+					rotate_fc(&(*(iw->v.look_sector))->fr, 0, -1);
+			}
+		}
+		else if (x < 210)
+		{
+			if (y < WINDOW_H + 150)
+			{
+				if (iw->v.changing_fc)
+					rotate_fc(&(*(iw->v.look_sector))->cl, 1, 1);
+				else
+					rotate_fc(&(*(iw->v.look_sector))->fr, 1, 1);
+			}
+			else
+			{
+				if (iw->v.changing_fc)
+					rotate_fc(&(*(iw->v.look_sector))->cl, 1, -1);
+				else
+					rotate_fc(&(*(iw->v.look_sector))->fr, 1, -1);
+			}
+		}
 	}
 	else if (iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0)
 		(*(iw->v.look_wall))->t = iw->v.tex_to_fill;
