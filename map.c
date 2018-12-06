@@ -150,10 +150,10 @@ void	get_map(t_sdl *iw)
 	new_wall(&(iw->walls[i]), 8000, 3900, 2, 28);
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
-	new_wall(&(iw->walls[i]), 8100, 3900, 2, 27);
+	new_wall(&(iw->walls[i]), 8500, 3900, 2, 27);
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
-	new_wall(&(iw->walls[i]), 8100, 4000, 2, 26);
+	new_wall(&(iw->walls[i]), 8500, 4000, 2, 26);
 	iw->walls[i - 1].next = &iw->walls[i];
 
 	iw->walls[i].next = &iw->walls[22];
@@ -162,10 +162,10 @@ void	get_map(t_sdl *iw)
 	new_wall(&(iw->walls[i]), 8000, 4000, 1, 25);
 	//iw->walls[i - 1].next = &iw->walls[i];
 	i++;
-	new_wall(&(iw->walls[i]), 8100, 4000, 1, 24);
+	new_wall(&(iw->walls[i]), 8500, 4000, 1, 24);
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
-	new_wall(&(iw->walls[i]), 8100, 3900, 1, 23);
+	new_wall(&(iw->walls[i]), 8500, 3900, 1, 23);
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
 	new_wall(&(iw->walls[i]), 8000, 3900, 1, 22);
@@ -284,4 +284,14 @@ void	get_map2(t_sdl *iw)
 
 	iw->walls[i].next = &iw->walls[12];
 	printf("asfdasga\n\n\n\n");
+}
+
+void	get_animation(t_sdl *iw)
+{
+	iw->v.count_portal_rot_anim = 1;
+	iw->anim = (t_anim_portal_rotate *)malloc(sizeof(t_anim_portal_rotate));
+	iw->anim[0].start_wall = 22;
+	iw->anim[0].angle = 2;
+	iw->anim[0].anim_status = 0;
+	iw->anim[0].time = -1;
 }

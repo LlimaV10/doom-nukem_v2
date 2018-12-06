@@ -21,6 +21,7 @@
 # define MENU_COLOR 0x00FF00
 # define INCLINED_FC_Z 30
 # define MAX_INCLINED_FC_XY 15
+# define ANIMATION_TIME_SEC 1
 # define MAX_FPS 500
 
 #ifdef __APPLE__

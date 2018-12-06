@@ -27,6 +27,7 @@
 
 void	get_map(t_sdl *iw);
 void	get_map2(t_sdl *iw);
+void	get_animation(t_sdl *iw);
 void	load_kernel(t_kernel *k);
 int		get_ceil_z(t_sdl *iw, int x, int y);
 int		get_floor_z(t_sdl *iw, int x, int y);

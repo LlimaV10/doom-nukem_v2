@@ -66,6 +66,17 @@ typedef struct	s_sector
 	t_sector_fc	cl;
 }				t_sector;
 
+typedef struct	s_anim_portal_rotate
+{
+	int		start_wall;
+	int		angle;
+	// 0 - in standart, 1 - rotated
+	int		anim_status;
+	// -1 - static, else - begin time
+	int		time;
+	//struct s_anim_portal_rotate *next;
+}				t_anim_portal_rotate;
+
 typedef struct	s_player
 {
 	int		x;
@@ -344,6 +355,7 @@ typedef struct	s_variables
 	// 0 - floor, 1 - ceil
 	int		changing_fc;
 	SDL_Rect	chang_fc_rect;
+	int		count_portal_rot_anim;
 }				t_variables;
 
 typedef struct	s_sdl
@@ -354,6 +366,7 @@ typedef struct	s_sdl
 	char		quit;
 	t_wall		*walls;
 	t_sector	*sectors;
+	t_anim_portal_rotate	*anim;
 	// Player
 	t_player	p;
 	t_variables	v;
