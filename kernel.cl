@@ -139,19 +139,20 @@ __kernel void draw_inclined_wall_floor_ceil_tex_kernel(
 		}
 		top[j] = wallTop[j];
 	}
-
 	tx = (cfloat[13] + left_len) * (float)cint[0] * cfloat[14] / 1000.0f;
 	zu = (float)cint[19] + left_len * cfloat[15];
 	zd = (float)cint[20] + left_len * cfloat[16];
+	dty = ((zu - zd) * (float)cint[1] / 1000.0f) /
+		(float)(wallBot[j] - wallTop[j]) * cfloat[14];
+	//invzu = (float)((int)invzu - ((int)invzu % 1000) + 1000) - invzu;
+	//invzd = (float)((int)invzd - ((int)invzd % 1000) + 1000) - invzd;
 	if (wallTop[j] < top[j])
-		ty = zu + cfloat[14] * (zu - zd) * (float)(top[j] - wallTop[j]) /
+		ty = zu - cfloat[14] * (zu - zd) * (float)(top[j] - wallTop[j]) /
 			(float)(wallBot[j] - wallTop[j]);
 	else
 		ty = zu;
+	ty = (float)((int)ty - ((int)ty % 1000) + 1000) - ty;
 	ty = ty * (float)cint[1] / 1000.0f;
-
-	dty = ((zu - zd) * (float)cint[1] / 1000.0f) /
-		(float)(wallBot[j] - wallTop[j]) * cfloat[14];
 	i = top[j] - 1;
 	while (++i < bottom[j])
 	{
@@ -288,12 +289,12 @@ __kernel void draw_wall_floor_ceil_tex_kernel(
 
 	tx = (cfloat[13] + left_len) * (float)cint[0] * cfloat[14] / 1000.0f;
 	if (wallTop[j] < top[j])
-		ty = (float)cfloat[15] + cfloat[14] * (float)(cfloat[15] - cfloat[16]) * (float)(top[j] - wallTop[j]) /
+		ty = (float)cfloat[15] - cfloat[14] * (float)(cfloat[15] - cfloat[16]) * (float)(top[j] - wallTop[j]) /
 		(float)(wallBot[j] - wallTop[j]);
 	else
 		ty = (float)cfloat[15];
+	ty = (float)((int)ty - ((int)ty % 1000) + 1000) - ty;
 	ty = ty * (float)cint[1] / 1000.0f;
-
 	dty = ((float)(cfloat[15] - cfloat[16]) * (float)cint[1] / 1000.0f) /
 		(float)(wallBot[j] - wallTop[j]) * cfloat[14];
 	i = top[j] - 1;
@@ -485,12 +486,13 @@ __kernel void draw_inclined_floor_ceil_betw_walls_tex_kernel(
 	if (bottom[j] > bottom_betw[j])
 	{
 		if (wallTop[j] < bottom_betw[j])
-			ty = zu + cfloat[14] *
+			ty = zu - cfloat[14] *
 			(zu - zd) *
 			(float)(bottom_betw[j] - wallTop[j]) /
 			(float)(wallBot[j] - wallTop[j]);
 		else
 			ty = zu;
+		ty = (float)((int)ty - ((int)ty % 1000) + 1000) - ty;
 		ty = ty * (float)cint[1] / 1000.0f;
 		if (bottom_betw[j] < top[j])
 		{
@@ -511,12 +513,13 @@ __kernel void draw_inclined_floor_ceil_betw_walls_tex_kernel(
 	if (top[j] < top_betw[j])
 	{
 		if (wallTop[j] < top_betw[j])
-			ty = zu + cfloat[14] *
+			ty = zu - cfloat[14] *
 			(zu - zd) *
 			(float)(top[j] - wallTop[j]) /
 			(float)(wallBot[j] - wallTop[j]);
 		else
 			ty = zu;
+		ty = (float)((int)ty - ((int)ty % 1000) + 1000) - ty;
 		ty = ty * (float)cint[1] / 1000.0f;
 		i = top[j] - 1;
 		while (++i < top_betw[j] && i < bottom[j])
@@ -668,12 +671,13 @@ __kernel void draw_floor_ceil_betw_walls_tex_kernel(
 	if (bottom[j] > bottom_betw[j])
 	{
 		if (wallTop[j] < bottom_betw[j])
-			ty = cfloat[15] + cfloat[14] *
+			ty = cfloat[15] - cfloat[14] *
 			(cfloat[15] - cfloat[16]) *
 			(float)(bottom_betw[j] - wallTop[j]) /
 			(float)(wallBot[j] - wallTop[j]);
 		else
 			ty = cfloat[15];
+		ty = (float)((int)ty - ((int)ty % 1000) + 1000) - ty;
 		ty = ty * (float)cint[1] / 1000.0f;
 		if (bottom_betw[j] < top[j])
 		{
@@ -694,12 +698,13 @@ __kernel void draw_floor_ceil_betw_walls_tex_kernel(
 	if (top[j] < top_betw[j])
 	{
 		if (wallTop[j] < top_betw[j])
-			ty = cfloat[15] + cfloat[14] *
+			ty = cfloat[15] - cfloat[14] *
 			(cfloat[15] - cfloat[16]) *
 			(float)(top[j] - wallTop[j]) /
 			(float)(wallBot[j] - wallTop[j]);
 		else
 			ty = cfloat[15];
+		ty = (float)((int)ty - ((int)ty % 1000) + 1000) - ty;
 		ty = ty * (float)cint[1] / 1000.0f;
 		i = top[j] - 1;
 		while (++i < top_betw[j] && i < bottom[j])

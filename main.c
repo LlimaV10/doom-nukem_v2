@@ -292,34 +292,34 @@ void	update(t_sdl *iw)
 	//printf("update ret %d\n", ret);
 }
 
-void	check_animations(t_sdl *iw)
-{
-	//(*(iw->v.look_wall))
-	int		i;
-	t_wall	*w;
-	t_wall	*sw;
-
-	i = -1;
-	while (++i < iw->v.count_portal_rot_anim)
-	{
-		sw = &iw->walls[iw->anim[i].start_wall];
-		if (sw == *(iw->v.look_wall))
-		{
-			iw->anim[0].time = clock();
-			return;
-		}
-		w = iw->walls[iw->anim[i].start_wall].next;
-		while (w != sw)
-		{
-			if (w == *(iw->v.look_wall))
-			{
-				iw->anim[0].time = clock();
-				return;
-			}
-			w = w->next;
-		}
-	}
-}
+//void	check_animations(t_sdl *iw)
+//{
+//	//(*(iw->v.look_wall))
+//	int		i;
+//	t_wall	*w;
+//	t_wall	*sw;
+//
+//	i = -1;
+//	while (++i < iw->v.count_portal_rot_anim)
+//	{
+//		sw = &iw->walls[iw->anim[i].start_wall];
+//		if (sw == *(iw->v.look_wall))
+//		{
+//			iw->anim[0].time = clock();
+//			return;
+//		}
+//		w = iw->walls[iw->anim[i].start_wall].next;
+//		while (w != sw)
+//		{
+//			if (w == *(iw->v.look_wall))
+//			{
+//				iw->anim[0].time = clock();
+//				return;
+//			}
+//			w = w->next;
+//		}
+//	}
+//}
 
 void	key_up(int code, t_sdl *iw)
 {
@@ -383,8 +383,8 @@ void	key_down(int code, t_sdl *iw)
 		(*(iw->v.look_sector))->cl.t = iw->v.tex_to_fill;
 	else if (code == 56 && *(iw->v.look_sector) != 0 && iw->v.mouse_mode == 1)
 		(*(iw->v.look_sector))->fr.t = iw->v.tex_to_fill;
-	else if (code == 9)
-		check_animations(iw);
+	/*else if (code == 9)
+		check_animations(iw);*/
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
 }
 
@@ -710,52 +710,52 @@ void	get_wall_line2(t_sdl *iw, t_wall *wall)
 		wall->x * wall->next->y);
 }
 
-void	do_animations(t_sdl *iw)
-{
-	int		i;
-	t_wall	*sw;
-	t_wall	*w;
-	t_wall	*nw;
-	float	ang;
-
-	i = -1;
-	while (++i < iw->v.count_portal_rot_anim)
-	{
-		if (iw->anim[i].time > 0)
-		{
-			//ang = (float)(clock() - iw->anim[i].time) / (float)CLKS_P_S
-			if (iw->anim[i].anim_status == 0)
-			{
-				ang = (float)iw->anim[i].angle * G1;
-				//iw->anim[i].anim_status = 1;
-				//iw->anim[i].time = -1;
-				sw = &iw->walls[iw->anim[i].start_wall];
-				w = sw->next;
-				while (w != sw)
-				{
-					printf("old x %d y %d\n", w->x, w->y);
-					w->x = (float)sw->x + (float)(w->x - sw->x) * cosf(ang) -
-						(float)(w->y - sw->y) * sinf(ang);
-					w->y = (float)sw->y + (float)(w->y - sw->y) * cosf(ang) +
-						(float)(w->x - sw->x) * sinf(ang);
-					printf("new x %d y %d\n", w->x, w->y);
-					nw = iw->walls[w->nextsector_wall].next;
-					nw->x = w->x;
-					nw->y = w->y;
-					w = w->next;
-				}
-				w = sw->next;
-				while (w != sw)
-				{
-					nw = iw->walls[w->nextsector_wall].next;
-					get_wall_line2(iw, w);
-					get_wall_line2(iw, nw);
-					w = w->next;
-				}
-			}
-		}
-	}
-}
+//void	do_animations(t_sdl *iw)
+//{
+//	int		i;
+//	t_wall	*sw;
+//	t_wall	*w;
+//	t_wall	*nw;
+//	float	ang;
+//
+//	i = -1;
+//	while (++i < iw->v.count_portal_rot_anim)
+//	{
+//		if (iw->anim[i].time > 0)
+//		{
+//			//ang = (float)(clock() - iw->anim[i].time) / (float)CLKS_P_S
+//			if (iw->anim[i].anim_status == 0)
+//			{
+//				ang = (float)iw->anim[i].angle * G1;
+//				//iw->anim[i].anim_status = 1;
+//				//iw->anim[i].time = -1;
+//				sw = &iw->walls[iw->anim[i].start_wall];
+//				w = sw->next;
+//				while (w != sw)
+//				{
+//					printf("old x %d y %d\n", w->x, w->y);
+//					w->x = (float)sw->x + (float)(w->x - sw->x) * cosf(ang) -
+//						(float)(w->y - sw->y) * sinf(ang);
+//					w->y = (float)sw->y + (float)(w->y - sw->y) * cosf(ang) +
+//						(float)(w->x - sw->x) * sinf(ang);
+//					printf("new x %d y %d\n", w->x, w->y);
+//					nw = iw->walls[w->nextsector_wall].next;
+//					nw->x = w->x;
+//					nw->y = w->y;
+//					w = w->next;
+//				}
+//				w = sw->next;
+//				while (w != sw)
+//				{
+//					nw = iw->walls[w->nextsector_wall].next;
+//					get_wall_line2(iw, w);
+//					get_wall_line2(iw, nw);
+//					w = w->next;
+//				}
+//			}
+//		}
+//	}
+//}
 
 void	loop(t_sdl *iw)
 {
@@ -792,7 +792,7 @@ void	loop(t_sdl *iw)
 		iw->p.rotup -= 2 * WINDOW_H * (clock() - iw->v.rot_down) / CLKS_P_S;
 		iw->v.rot_down = clock();
 	}
-	do_animations(iw);
+	//do_animations(iw);
 	if (iw->d.cs >= 0)
 	{
 		iw->v.plrzu = get_ceil_z(iw, iw->p.x, iw->p.y);
