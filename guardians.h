@@ -6,17 +6,17 @@
 # include <SDL.h>
 # include <SDL_ttf.h>
 // Visual C -------
-// # include <CL/cl.h>
-// # include <io.h>
-// # define open _open
-// # define close _close
-// # define read _read
-// # define write _write
-// # define HAVE_STRUCT_TIMESPEC
+# include <CL/cl.h>
+# include <io.h>
+# define open _open
+# define close _close
+# define read _read
+# define write _write
+# define HAVE_STRUCT_TIMESPEC
 // Visual C -------
 // Unix -----
-# include <OpenCL/cl.h>
-# include <unistd.h>
+//# include <OpenCL/cl.h>
+//# include <unistd.h>
 // Unix -----
 # include "libft/libft.h"
 # include <fcntl.h>

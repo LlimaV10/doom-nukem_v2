@@ -205,6 +205,12 @@ typedef struct	s_draw_wall_floor_ceil_tex
 	float		tx;
 	float		ty;
 	float		dty;
+
+	float 		rot;
+	float 		dx;
+	float 		dy;
+	float 		sky_x;
+	float 		sky_y;
 }				t_draw_wall_floor_ceil_tex;
 
 typedef struct	s_draw_wall_floor_ceil_tex_kernel
@@ -226,6 +232,15 @@ typedef struct	s_draw_floor_tex_kernel
 	float	zd;
 	float	len_lr;
 }				t_draw_floor_tex_kernel;
+
+typedef struct	s_draw_skybox
+{
+	float 		rot;
+	float 		dx;
+	float 		dy;
+	float 		sky_x;
+	float 		sky_y;
+}				t_draw_skybox;
 
 typedef struct	s_save_wall
 {
@@ -356,6 +371,7 @@ typedef struct	s_variables
 	int		changing_fc;
 	SDL_Rect	chang_fc_rect;
 	int		count_portal_rot_anim;
+	int		skybox;
 }				t_variables;
 
 typedef struct	s_sdl

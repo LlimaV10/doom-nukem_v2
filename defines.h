@@ -1,10 +1,10 @@
 #ifndef __DEFINES_H
 # define __DEFINES_H
 
-# define WINDOW_W 2000
-# define WINDOW_H 1100
+# define WINDOW_W 1000
+# define WINDOW_H 550
 # define MAX_SOURCE_SIZE 0x100000
-# define TEXTURES_COUNT 8
+# define TEXTURES_COUNT 16
 # define G1 0.01745329
 # define G90 1.5707963f
 # define G180 3.1415926f
