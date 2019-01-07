@@ -3091,9 +3091,9 @@ void	get_kernel_mem(t_sdl *iw)
 	iw->k.m_wallBot = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
 		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
 	iw->k.m_cint = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
-		24 * sizeof(int), NULL, &iw->k.ret);
+		25 * sizeof(int), NULL, &iw->k.ret);
 	iw->k.m_cfloat = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
-		17 * sizeof(float), NULL, &iw->k.ret);
+		19 * sizeof(float), NULL, &iw->k.ret);
 	iw->k.m_top_betw = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
 		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
 	iw->k.m_bot_betw = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
