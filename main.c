@@ -2966,7 +2966,11 @@ void	draw(t_sdl *iw)
 		*(iw->v.look_sector) = 0;
 	}
 	draw_start(iw);
-	draw_skybox(iw);
+	if (!iw->v.kernel)
+		draw_skybox(iw);
+	else
+		draw_skybox_kernel(iw);
+
 	if (iw->v.kernel)
 		iw->k.ret = clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_sur, CL_TRUE, 0,
 			WINDOW_W * WINDOW_H * sizeof(int), iw->sur->pixels, 0, NULL, NULL);
@@ -3087,7 +3091,7 @@ void	get_kernel_mem(t_sdl *iw)
 	iw->k.m_wallBot = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
 		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
 	iw->k.m_cint = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
-		23 * sizeof(int), NULL, &iw->k.ret);
+		24 * sizeof(int), NULL, &iw->k.ret);
 	iw->k.m_cfloat = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
 		17 * sizeof(float), NULL, &iw->k.ret);
 	iw->k.m_top_betw = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,

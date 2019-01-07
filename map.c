@@ -31,7 +31,7 @@ void	get_map(t_sdl *iw)
 	iw->sectors[0].cl.x = 5000;
 	iw->sectors[0].cl.y = 0;
 	iw->sectors[0].cl.z = 2000;
-	iw->sectors[0].cl.t = 0;
+	iw->sectors[0].cl.t = -1;
 
 	iw->sectors[1].sw = 14;///////
 	iw->sectors[1].nw = 8 + 4;
@@ -44,7 +44,7 @@ void	get_map(t_sdl *iw)
 	iw->sectors[1].cl.x = 5000;
 	iw->sectors[1].cl.y = 0;
 	iw->sectors[1].cl.z = 1200;
-	iw->sectors[1].cl.t = -1;
+	iw->sectors[1].cl.t = 0;
 
 	iw->sectors[2].sw = 26;///////
 	iw->sectors[2].nw = 4;
