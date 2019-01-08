@@ -7,7 +7,7 @@ void	set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 	{
 		Uint8 *target_pixel = (Uint8 *)surface->pixels + y * surface->pitch + x * 4;
 		*(Uint32 *)target_pixel = pixel;
-	} 
+	}
 }
 
 Uint32	get_pixel(SDL_Surface *sur, const int x, const int y)
@@ -383,6 +383,8 @@ void	key_down(int code, t_sdl *iw)
 		(*(iw->v.look_sector))->cl.t = iw->v.tex_to_fill;
 	else if (code == 56 && *(iw->v.look_sector) != 0 && iw->v.mouse_mode == 1)
 		(*(iw->v.look_sector))->fr.t = iw->v.tex_to_fill;
+	else if (code == 54 && *(iw->v.look_sector) != 0 && iw->v.mouse_mode == 1)
+		(*(iw->v.look_sector))->cl.t = -1;
 	/*else if (code == 9)
 		check_animations(iw);*/
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
@@ -400,7 +402,7 @@ void	key_down_repeat(int code, t_sdl *iw)
 void	mouse_move(int xrel, int yrel, t_sdl *iw)
 {
 	if (iw->v.mouse_mode == 0)
-		return ;
+		return;
 	//printf("xrel %d yrel %d\n", xrel, yrel);
 	iw->p.rot += MOUSE_SENSIVITY * (float)xrel;
 	if (iw->p.rot < 0.0f)
@@ -437,7 +439,7 @@ void	rotate_fc(t_sector_fc *fc, int xy, int pl)
 		fc->n->d = -fc->n->a * fc->x - fc->n->b * fc->y - fc->n->c * fc->z;
 }
 
-void	mouse_button_up(int x, int y, t_sdl *iw)
+void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 {
 	int		i;
 
@@ -534,6 +536,12 @@ void	mouse_button_up(int x, int y, t_sdl *iw)
 	}
 	else if (iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0)
 		(*(iw->v.look_wall))->t = iw->v.tex_to_fill;
+}
+
+void	mouse_buttonright_up(int x, int y, t_sdl *iw)
+{
+	if (iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0)
+		(*(iw->v.look_wall))->t = -1;
 }
 
 void	mouse_wheel(SDL_Event *e, t_sdl *iw)
@@ -699,7 +707,7 @@ void	move(t_sdl *iw, int pl, int time)
 	else if ((sw = is_wall_portal(iw, dx, dy)) == 0)
 		move_collisions(iw, dx, dy);
 	else
-		move_in_portal(iw, dx, dy, sw);	
+		move_in_portal(iw, dx, dy, sw);
 }
 
 void	get_wall_line2(t_sdl *iw, t_wall *wall)
@@ -883,13 +891,15 @@ void	main_loop(t_sdl *iw)
 				iw->v.mouse_y = e.motion.y;
 			}
 			else if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_LEFT)
-				mouse_button_up(e.button.x, e.button.y, iw);
+				mouse_buttonleft_up(e.button.x, e.button.y, iw);
+			else if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_RIGHT)
+				mouse_buttonright_up(e.button.x, e.button.y, iw);
 			else if (e.type == SDL_MOUSEWHEEL && e.wheel.y != 0)
 				mouse_wheel(&e, iw);
-			//else if (e.type == SDL_KEYUP)
-			//	key_up(e.key.keysym.scancode, iw);
-		/**/
-		//pthread_mutex_lock(&iw->mutex);
+		//else if (e.type == SDL_KEYUP)
+		//	key_up(e.key.keysym.scancode, iw);
+	/**/
+	//pthread_mutex_lock(&iw->mutex);
 		loop(iw);
 		//pthread_mutex_unlock(&iw->mutex);
 	}
@@ -913,10 +923,10 @@ void	create_map(t_sdl *iw)
 	{
 		if (iw->sectors[i].fr.n != 0)
 			iw->sectors[i].fr.n->d = -iw->sectors[i].fr.n->a * iw->sectors[i].fr.x -
-				iw->sectors[i].fr.n->b * iw->sectors[i].fr.y - iw->sectors[i].fr.n->c * iw->sectors[i].fr.z; 
+			iw->sectors[i].fr.n->b * iw->sectors[i].fr.y - iw->sectors[i].fr.n->c * iw->sectors[i].fr.z;
 		if (iw->sectors[i].cl.n != 0)
 			iw->sectors[i].cl.n->d = -iw->sectors[i].cl.n->a * iw->sectors[i].cl.x -
-				iw->sectors[i].cl.n->b * iw->sectors[i].cl.y - iw->sectors[i].cl.n->c * iw->sectors[i].cl.z;
+			iw->sectors[i].cl.n->b * iw->sectors[i].cl.y - iw->sectors[i].cl.n->c * iw->sectors[i].cl.z;
 		j = iw->sectors[i].sw - 1;
 		while (++j < iw->sectors[i].sw + iw->sectors[i].nw)
 			get_wall_line(iw, j);
@@ -940,7 +950,7 @@ int inside_sector(int sector, t_sdl *iw)
 		if ((y1 ^ y2) < 0)
 		{
 			x1 = iw->walls[i].x - iw->p.x;
-			x2  =iw->walls[i].next->x - iw->p.x;
+			x2 = iw->walls[i].next->x - iw->p.x;
 			//x2 = iw->walls[iw->walls[i].nextwall].x - iw->p.x;
 			if ((x1 ^ x2) >= 0)
 				wallCrossed ^= x1;
@@ -1100,7 +1110,7 @@ int		get_floor_z(t_sdl *iw, int x, int y)
 		return (iw->sectors[iw->d.cs].fr.z);
 	else
 		return ((iw->sectors[iw->d.cs].fr.n->a * x + iw->sectors[iw->d.cs].fr.n->b *
-		y + iw->sectors[iw->d.cs].fr.n->d) / (-iw->sectors[iw->d.cs].fr.n->c));
+			y + iw->sectors[iw->d.cs].fr.n->d) / (-iw->sectors[iw->d.cs].fr.n->c));
 }
 
 int		get_ceil_z(t_sdl *iw, int x, int y)
@@ -1109,7 +1119,7 @@ int		get_ceil_z(t_sdl *iw, int x, int y)
 		return (iw->sectors[iw->d.cs].cl.z);
 	else
 		return ((iw->sectors[iw->d.cs].cl.n->a * x + iw->sectors[iw->d.cs].cl.n->b *
-		y + iw->sectors[iw->d.cs].cl.n->d) / (-iw->sectors[iw->d.cs].cl.n->c));
+			y + iw->sectors[iw->d.cs].cl.n->d) / (-iw->sectors[iw->d.cs].cl.n->c));
 }
 
 float	get_vectors_angle(float x1, float y1, float x2, float y2)
@@ -1127,12 +1137,12 @@ float	get_vectors_angle(float x1, float y1, float x2, float y2)
 void	get_visible_walls2(t_sdl *iw, int wall, float lang)
 {
 	t_save_wall	*w;
-	
+
 	w = (t_save_wall *)malloc(sizeof(t_save_wall));
 	w->x = (int)(lang * (float)WINDOW_W / (2.0f * iw->v.angle));
-	w->len = sqrtf(powf((float)(iw->p.x - iw->walls[wall].x), 2.0f) +  powf((float)(iw->p.y - iw->walls[wall].y), 2.0f));
+	w->len = sqrtf(powf((float)(iw->p.x - iw->walls[wall].x), 2.0f) + powf((float)(iw->p.y - iw->walls[wall].y), 2.0f));
 	w->plen = fabsf(iw->d.screen.a * (float)iw->walls[wall].x + iw->d.screen.b * (float)iw->walls[wall].y + iw->d.screen.c) /
-				sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
+		sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
 	if ((int)w->plen == 0)
 		w->plen = 1.0f;
 	w->olen = 0.0f;
@@ -1220,7 +1230,7 @@ int		point_in_front_and_on_wall(t_sdl *iw, t_intpoint2d *p, int wall)
 int		visible_wall(t_sdl *iw, int wall)
 {
 	if ((iw->p.x - iw->walls[wall].x) * (iw->walls[wall].next->y - iw->walls[wall].y) -
-			(iw->p.y - iw->walls[wall].y) * (iw->walls[wall].next->x - iw->walls[wall].x) >= 0)
+		(iw->p.y - iw->walls[wall].y) * (iw->walls[wall].next->x - iw->walls[wall].x) >= 0)
 		return (1);
 	return (0);
 }
@@ -1248,7 +1258,7 @@ void	add_lr_wall(t_sdl *iw, t_intpoint2d *p, t_wall *wall, int x)
 	tmp->wall = wall;
 	tmp->len = sqrtf(powf((float)(iw->p.x - p->x), 2.0f) + powf((float)(iw->p.y - p->y), 2.0f));
 	tmp->plen = fabsf(iw->d.screen.a * (float)p->x + iw->d.screen.b * (float)p->y + iw->d.screen.c) /
-				sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
+		sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
 	if ((int)tmp->plen == 0)
 		tmp->plen = 1.0f;
 	tmp->olen = sqrtf(powf(p->x - wall->x, 2.0f) + powf(p->y - wall->y, 2.0f));
@@ -1279,7 +1289,7 @@ void	get_left_right_visible_walls(t_sdl *iw)
 	get_all_intersection_line(iw, &iw->d.right_line, 1);
 }
 
-t_save_wall	*find_next_vis_wall (t_sdl *iw, t_save_wall *left)
+t_save_wall	*find_next_vis_wall(t_sdl *iw, t_save_wall *left)
 {
 	t_save_wall	*right;
 
@@ -1435,7 +1445,7 @@ void	draw_floor(t_sdl *iw, t_save_wall *left, int len)
 	{
 		if (iw->d.wallBot[j] >= iw->d.bottom[left->x + j] ||
 			iw->d.top[left->x + j] >= iw->d.bottom[left->x + j])
-			continue ;
+			continue;
 		if (iw->d.wallBot[j] < iw->d.top[left->x + j])
 			i = iw->d.top[left->x + j] - 1;
 		else
@@ -1572,9 +1582,9 @@ void	draw_floor_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 			d.floor.y = d.weight * d.r.y + (1.0f - d.weight) * d.py;
 			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[iw->sectors[iw->d.cs].fr.t],
 				((d.floor.x < 0) ? (((int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w) + iw->t[iw->sectors[iw->d.cs].fr.t]->w - 1) :
-					((int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w)),
-				((d.floor.y < 0) ? (((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h) + iw->t[iw->sectors[iw->d.cs].fr.t]->h - 1) :
-					((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h))
+				((int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w)),
+					((d.floor.y < 0) ? (((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h) + iw->t[iw->sectors[iw->d.cs].fr.t]->h - 1) :
+				((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h))
 			));
 		}
 		if (iw->d.wallBot[j] < iw->d.bottom[left->x + j])
@@ -1660,9 +1670,9 @@ void	draw_inclined_ceil_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, in
 				get_floor_z(iw, d.floor.x * 1000.0f, d.floor.y * 1000.0f) + d.coef) / 2.0f;
 			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[iw->sectors[iw->d.cs].cl.t],
 				((d.floor.x < 0) ? (((int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w) + iw->t[iw->sectors[iw->d.cs].fr.t]->w - 1) :
-					((int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w)),
-				((d.floor.y < 0) ? (((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h) + iw->t[iw->sectors[iw->d.cs].fr.t]->h - 1) :
-					((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h))
+				((int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w)),
+					((d.floor.y < 0) ? (((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h) + iw->t[iw->sectors[iw->d.cs].fr.t]->h - 1) :
+				((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h))
 			));
 		}
 		if (iw->d.wallTop[j] > iw->d.top[left->x + j])
@@ -1727,9 +1737,9 @@ void	draw_ceil_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 			d.floor.y = d.weight * d.r.y + (1.0f - d.weight) * d.py;
 			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[iw->sectors[iw->d.cs].cl.t],
 				((d.floor.x < 0) ? (((int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w) + iw->t[iw->sectors[iw->d.cs].fr.t]->w - 1) :
-					((int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w)),
-				((d.floor.y < 0) ? (((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h) + iw->t[iw->sectors[iw->d.cs].fr.t]->h - 1) :
-					((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h))
+				((int)(d.floor.x * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->w) % iw->t[iw->sectors[iw->d.cs].fr.t]->w)),
+					((d.floor.y < 0) ? (((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h) + iw->t[iw->sectors[iw->d.cs].fr.t]->h - 1) :
+				((int)(d.floor.y * (float)iw->t[iw->sectors[iw->d.cs].fr.t]->h) % iw->t[iw->sectors[iw->d.cs].fr.t]->h))
 			));
 		}
 		if (iw->d.wallTop[j] > iw->d.top[left->x + j])
@@ -1748,7 +1758,7 @@ void	draw_between_sectors_bot(t_sdl *iw, t_save_wall *left, int len, int *tmp)
 	{
 		if (iw->d.top[left->x + j] >= iw->d.bottom[left->x + j] ||
 			iw->d.bottom[left->x + j] <= tmp[j])
-			continue ;
+			continue;
 		i = tmp[j] - 1;
 		while (++i < iw->d.bottom[left->x + j])
 			set_pixel(iw->sur, left->x + j, i, 0xFF0000);
@@ -1761,6 +1771,9 @@ void	draw_between_sectors_bot_tex(t_sdl *iw, t_save_wall *left, t_save_wall *rig
 	int		i;
 	int		j;
 	t_draw_wall_tex	d;
+
+	if (left->wall->t < 0)
+		return;
 
 	d.lv.x = (float)(left->p.x - iw->p.x);
 	d.lv.y = (float)(left->p.y - iw->p.y);
@@ -1798,7 +1811,7 @@ void	draw_between_sectors_bot_tex(t_sdl *iw, t_save_wall *left, t_save_wall *rig
 		d.zu = (float)left->zu + d.left_len * d.zudiff;
 		d.zd = (float)left->zd + d.left_len * d.zddiff;
 		if (iw->d.wallTop[j] < tmp[j])
-			d.ty = d.zu + iw->tsz[left->wall->t] * 
+			d.ty = d.zu + iw->tsz[left->wall->t] *
 			(d.zu - d.zd) * (float)(tmp[j] - iw->d.wallTop[j]) /
 			(float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
 		else
@@ -1848,6 +1861,9 @@ void	draw_between_sectors_top_tex(t_sdl *iw, t_save_wall *left, t_save_wall *rig
 	int		i;
 	int		j;
 	t_draw_wall_tex	d;
+
+	if (left->wall->t < 0)
+		return;
 
 	d.lv.x = (float)(left->p.x - iw->p.x);
 	d.lv.y = (float)(left->p.y - iw->p.y);
@@ -1940,9 +1956,9 @@ void	draw_floor_ceil_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int l
 			d.rot += G360;
 		else if (d.rot > G360)
 			d.rot -= G360;
-		d.sky_x = d.rot * ((float)iw->t[iw->v.skybox]->w) / G360;
-		d.dx = (float)iw->t[iw->v.skybox]->w / (G360 / (iw->v.angle * 2) * WINDOW_W);
-		d.dy = (float)iw->t[iw->v.skybox]->h / (float)(4 * WINDOW_H);
+		d.sky_x = d.rot * ((float)iw->t[iw->l.skybox]->w) / G360;
+		d.dx = (float)iw->t[iw->l.skybox]->w / (G360 / (iw->v.angle * 2) * WINDOW_W);
+		d.dy = (float)iw->t[iw->l.skybox]->h / (float)(4 * WINDOW_H);
 	}
 	j = -1;
 	while (++j < len)
@@ -2014,14 +2030,14 @@ void	draw_floor_ceil_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int l
 			else
 			{
 				d.sky_y = -iw->p.rotup + 2 * WINDOW_H;
-				d.sky_y = (d.sky_y * (iw->t[iw->v.skybox]->h)) / (4 * WINDOW_H);
+				d.sky_y = (d.sky_y * (iw->t[iw->l.skybox]->h)) / (4 * WINDOW_H);
 				i = iw->d.top[left->x + j] - 1;
 				d.sky_y += d.dy * iw->d.top[left->x + j];
-				if (d.sky_x > iw->t[iw->v.skybox]->w)
-					d.sky_x = d.sky_x - iw->t[iw->v.skybox]->w;
+				if (d.sky_x > iw->t[iw->l.skybox]->w)
+					d.sky_x = d.sky_x - iw->t[iw->l.skybox]->w;
 				while (++i < iw->d.wallTop[j] && i < iw->d.bottom[left->x + j])
 				{
-					set_pixel(iw->sur, j + left->x, i, get_pixel(iw->t[iw->v.skybox],
+					set_pixel(iw->sur, j + left->x, i, get_pixel(iw->t[iw->l.skybox],
 						(int)d.sky_x, (int)d.sky_y));
 					d.sky_y += d.dy;
 				}
@@ -2067,9 +2083,9 @@ void	draw_inclined_floor_ceil_tex(t_sdl *iw, t_save_wall *left, t_save_wall *rig
 			d.rot += G360;
 		else if (d.rot > G360)
 			d.rot -= G360;
-		d.sky_x = d.rot * ((float)iw->t[iw->v.skybox]->w) / G360;
-		d.dx = (float)iw->t[iw->v.skybox]->w / (G360 / (iw->v.angle * 2) * WINDOW_W);
-		d.dy = (float)iw->t[iw->v.skybox]->h / (float)(4 * WINDOW_H);
+		d.sky_x = d.rot * ((float)iw->t[iw->l.skybox]->w) / G360;
+		d.dx = (float)iw->t[iw->l.skybox]->w / (G360 / (iw->v.angle * 2) * WINDOW_W);
+		d.dy = (float)iw->t[iw->l.skybox]->h / (float)(4 * WINDOW_H);
 	}
 
 	j = -1;
@@ -2145,14 +2161,14 @@ void	draw_inclined_floor_ceil_tex(t_sdl *iw, t_save_wall *left, t_save_wall *rig
 			else
 			{
 				d.sky_y = -iw->p.rotup + 2 * WINDOW_H;
-				d.sky_y = (d.sky_y * (iw->t[iw->v.skybox]->h)) / (4 * WINDOW_H);
+				d.sky_y = (d.sky_y * (iw->t[iw->l.skybox]->h)) / (4 * WINDOW_H);
 				i = iw->d.top[left->x + j] - 1;
 				d.sky_y += d.dy * iw->d.top[left->x + j];
-				if (d.sky_x > iw->t[iw->v.skybox]->w)
-					d.sky_x = d.sky_x - iw->t[iw->v.skybox]->w;
+				if (d.sky_x > iw->t[iw->l.skybox]->w)
+					d.sky_x = d.sky_x - iw->t[iw->l.skybox]->w;
 				while (++i < iw->d.wallTop[j] && i < iw->d.bottom[left->x + j])
 				{
-					set_pixel(iw->sur, j + left->x, i, get_pixel(iw->t[iw->v.skybox],
+					set_pixel(iw->sur, j + left->x, i, get_pixel(iw->t[iw->l.skybox],
 						(int)d.sky_x, (int)d.sky_y));
 					d.sky_y += d.dy;
 				}
@@ -2207,7 +2223,7 @@ void	draw_wall_floor_ceil_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, 
 		d.left_len = sinf(d.ang) * d.lenpl / sin(d.sing - d.ang);
 		d.r.x = (float)left->p.x + d.rv.x * d.left_len;
 		d.r.y = (float)left->p.y + d.rv.y * d.left_len;
-		
+
 		d.wall_dist = (float)WINDOW_H / (fabsf(iw->d.screen.a * d.r.x + iw->d.screen.b * d.r.y + iw->d.screen.c) /
 			iw->d.screen_len) * d.frcoef;
 		d.r.x /= 1000.0f;
@@ -2260,28 +2276,31 @@ void	draw_wall_floor_ceil_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, 
 			iw->d.top[left->x + j] = iw->d.wallTop[j];
 		}
 
-		d.tx = (left->olen + d.left_len) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
-		if (iw->d.wallTop[j] < iw->d.top[j + left->x])
-			d.ty = d.zu + iw->tsz[left->wall->t] * (d.zu - d.zd) * (float)(iw->d.top[j + left->x] - iw->d.wallTop[j]) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
-		else
-			d.ty = d.zu;
-		d.ty = d.ty * (float)iw->t[left->wall->t]->h / 1000.0f;
-		d.dty = ((d.zu - d.zd) * (float)iw->t[left->wall->t]->h / 1000.0f) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]) * iw->tsz[left->wall->t];
-		if (iw->d.wallTop[j] < iw->d.top[j + left->x])
-			i = iw->d.top[left->x + j] - 1;
-		else
-			i = iw->d.wallTop[j] - 1;
-		while (++i < iw->d.bottom[left->x + j])
+		if (left->wall->t >= 0)
 		{
-			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[left->wall->t], (int)d.tx % iw->t[left->wall->t]->w, (int)d.ty % iw->t[left->wall->t]->h));
-			d.ty += d.dty;
-		}
-		if (iw->d.wallTop[j] < iw->d.top[j + left->x] &&
+			d.tx = (left->olen + d.left_len) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
+			if (iw->d.wallTop[j] < iw->d.top[j + left->x])
+				d.ty = d.zu + iw->tsz[left->wall->t] * (d.zu - d.zd) * (float)(iw->d.top[j + left->x] - iw->d.wallTop[j]) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
+			else
+				d.ty = d.zu;
+			d.ty = d.ty * (float)iw->t[left->wall->t]->h / 1000.0f;
+			d.dty = ((d.zu - d.zd) * (float)iw->t[left->wall->t]->h / 1000.0f) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]) * iw->tsz[left->wall->t];
+			if (iw->d.wallTop[j] < iw->d.top[j + left->x])
+				i = iw->d.top[left->x + j] - 1;
+			else
+				i = iw->d.wallTop[j] - 1;
+			while (++i < iw->d.bottom[left->x + j])
+			{
+				set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[left->wall->t], (int)d.tx % iw->t[left->wall->t]->w, (int)d.ty % iw->t[left->wall->t]->h));
+				d.ty += d.dty;
+			}
+			if (iw->d.wallTop[j] < iw->d.top[j + left->x] &&
 				iw->d.top[left->x + j] < iw->d.bottom[left->x + j])
-			iw->d.bottom[left->x + j] = iw->d.top[left->x + j] - 1;
-		else if (iw->d.wallTop[j] >= iw->d.top[j + left->x] &&
+				iw->d.bottom[left->x + j] = iw->d.top[left->x + j] - 1;
+			else if (iw->d.wallTop[j] >= iw->d.top[j + left->x] &&
 				iw->d.wallTop[j] < iw->d.bottom[left->x + j])
-			iw->d.bottom[left->x + j] = iw->d.wallTop[j] - 1;
+				iw->d.bottom[left->x + j] = iw->d.wallTop[j] - 1;
+		}
 		//iw->d.top[left->x + j] = iw->d.bottom[left->x + j];
 
 		d.ang += d.dang;
@@ -2386,31 +2405,33 @@ void	draw_inclined_wall_floor_ceil_tex(t_sdl *iw, t_save_wall *left, t_save_wall
 			iw->d.top[left->x + j] = iw->d.wallTop[j];
 		}
 
-		d.tx = (left->olen + d.left_len) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
-		d.zu = (float)left->zu + d.left_len * d.zudiff;
-		d.zd = (float)left->zd + d.left_len * d.zddiff;
-		if (iw->d.wallTop[j] < iw->d.top[j + left->x])
-			d.ty = d.zu + iw->tsz[left->wall->t] * (d.zu - d.zd) * (float)(iw->d.top[j + left->x] - iw->d.wallTop[j]) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
-		else
-			d.ty = d.zu;
-		d.ty = d.ty * (float)iw->t[left->wall->t]->h / 1000.0f;
-		d.dty = ((d.zu - d.zd) * (float)iw->t[left->wall->t]->h / 1000.0f) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]) * iw->tsz[left->wall->t];
-		if (iw->d.wallTop[j] < iw->d.top[j + left->x])
-			i = iw->d.top[left->x + j] - 1;
-		else
-			i = iw->d.wallTop[j] - 1;
-		while (++i < iw->d.bottom[left->x + j])
+		if (left->wall->t >= 0)
 		{
-			set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[left->wall->t], (int)d.tx % iw->t[left->wall->t]->w, (int)d.ty % iw->t[left->wall->t]->h));
-			d.ty += d.dty;
+			d.tx = (left->olen + d.left_len) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
+			d.zu = (float)left->zu + d.left_len * d.zudiff;
+			d.zd = (float)left->zd + d.left_len * d.zddiff;
+			if (iw->d.wallTop[j] < iw->d.top[j + left->x])
+				d.ty = d.zu + iw->tsz[left->wall->t] * (d.zu - d.zd) * (float)(iw->d.top[j + left->x] - iw->d.wallTop[j]) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]);
+			else
+				d.ty = d.zu;
+			d.ty = d.ty * (float)iw->t[left->wall->t]->h / 1000.0f;
+			d.dty = ((d.zu - d.zd) * (float)iw->t[left->wall->t]->h / 1000.0f) / (float)(iw->d.wallBot[j] - iw->d.wallTop[j]) * iw->tsz[left->wall->t];
+			if (iw->d.wallTop[j] < iw->d.top[j + left->x])
+				i = iw->d.top[left->x + j] - 1;
+			else
+				i = iw->d.wallTop[j] - 1;
+			while (++i < iw->d.bottom[left->x + j])
+			{
+				set_pixel(iw->sur, left->x + j, i, get_pixel(iw->t[left->wall->t], (int)d.tx % iw->t[left->wall->t]->w, (int)d.ty % iw->t[left->wall->t]->h));
+				d.ty += d.dty;
+			}
+			if (iw->d.wallTop[j] < iw->d.top[j + left->x] &&
+				iw->d.top[left->x + j] < iw->d.bottom[left->x + j])
+				iw->d.bottom[left->x + j] = iw->d.top[left->x + j] - 1;
+			else if (iw->d.wallTop[j] >= iw->d.top[j + left->x] &&
+				iw->d.wallTop[j] < iw->d.bottom[left->x + j])
+				iw->d.bottom[left->x + j] = iw->d.wallTop[j] - 1;
 		}
-		if (iw->d.wallTop[j] < iw->d.top[j + left->x] &&
-			iw->d.top[left->x + j] < iw->d.bottom[left->x + j])
-			iw->d.bottom[left->x + j] = iw->d.top[left->x + j] - 1;
-		else if (iw->d.wallTop[j] >= iw->d.top[j + left->x] &&
-			iw->d.wallTop[j] < iw->d.bottom[left->x + j])
-			iw->d.bottom[left->x + j] = iw->d.wallTop[j] - 1;
-
 		//if (iw->d.wallTop[j] < iw->d.top[j + left->x])
 		//	iw->d.bottom[left->x + j] = iw->d.top[left->x + j] - 1;
 		//else
@@ -2558,7 +2579,7 @@ void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 
 	//printf("next_sector\n");
 	iw2 = *iw;
-//	if (iw->sectors[iw->d.cs].cl.t < 0)
+	//	if (iw->sectors[iw->d.cs].cl.t < 0)
 	fill_top_skybox(&iw2, left, right->x - left->x + 1);
 	iw2.p.x += iw->walls[left->wall->nextsector_wall].x - left->wall->next->x;
 	iw2.p.y += iw->walls[left->wall->nextsector_wall].y - left->wall->next->y;
@@ -2596,7 +2617,7 @@ void	draw_next_sector_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, i
 	iw->d.save_bot_betw = get_between_sectors_walls(&iw2, left, right, &iw->d.save_top_betw);
 	if (*(iw->v.look_wall) == 0 && iw->v.mouse_mode == 1 && left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
 		&& (iw->d.save_top_betw[WINDOW_W / 2 - left->x] > WINDOW_H / 2 ||
-		iw->d.save_bot_betw[WINDOW_W / 2 - left->x] < WINDOW_H / 2))
+			iw->d.save_bot_betw[WINDOW_W / 2 - left->x] < WINDOW_H / 2))
 	{
 		*(iw->v.look_wall) = left->wall;
 		*(iw->v.look_sector) = &iw->sectors[iw->d.cs];
@@ -2752,10 +2773,10 @@ t_save_wall_pairs	*get_closest_between_pair(t_save_wall_pairs	*pair)
 		if (tmp != pair)
 			if ((tmp->left->x >= pair->left->x && tmp->left->x < pair->right->x &&
 				((pair->left->wall->x - pair->right->wall->x) * (tmp->left->p.y - pair->right->wall->y) -
-					(pair->left->wall->y - pair->right->wall->y) * (tmp->left->p.x - pair->right->wall->x) > 0)) ||
-				(tmp->right->x > pair->left->x && tmp->right->x <= pair->right->x &&
+				(pair->left->wall->y - pair->right->wall->y) * (tmp->left->p.x - pair->right->wall->x) > 0)) ||
+					(tmp->right->x > pair->left->x && tmp->right->x <= pair->right->x &&
 				((pair->left->wall->x - pair->right->wall->x) * (tmp->right->p.y - pair->right->wall->y) -
-					(pair->left->wall->y - pair->right->wall->y) * (tmp->right->p.x - pair->right->wall->x) > 0)))
+						(pair->left->wall->y - pair->right->wall->y) * (tmp->right->p.x - pair->right->wall->x) > 0)))
 				save = tmp;
 		tmp = tmp->next;
 	}
@@ -2843,25 +2864,25 @@ void	draw_skybox(t_sdl *iw)
 	d.rot = iw->p.rot - iw->v.angle;
 	if (d.rot < 0.0f)
 		d.rot += G360;
-	d.sky_x = d.rot * ((double)iw->t[iw->v.skybox]->w) / G360;
-	d.dx = (float)iw->t[iw->v.skybox]->w / (G360 / (iw->v.angle * 2) * WINDOW_W);
-	d.dy = (float)iw->t[iw->v.skybox]->h / (float)(4 * WINDOW_H);
-	j = - 1;
+	d.sky_x = d.rot * ((double)iw->t[iw->l.skybox]->w) / G360;
+	d.dx = (float)iw->t[iw->l.skybox]->w / (G360 / (iw->v.angle * 2) * WINDOW_W);
+	d.dy = (float)iw->t[iw->l.skybox]->h / (float)(4 * WINDOW_H);
+	j = -1;
 	while (++j < WINDOW_W)
 	{
 		d.sky_y = -iw->p.rotup + 2 * WINDOW_H;
-		d.sky_y = (d.sky_y * (iw->t[iw->v.skybox]->h)) / (4 * WINDOW_H);
+		d.sky_y = (d.sky_y * (iw->t[iw->l.skybox]->h)) / (4 * WINDOW_H);
 		d.sky_y += d.dy * iw->d.top[j];
 		i = iw->d.top[j] - 1;
 		while (++i <= iw->d.bottom[j] && i < WINDOW_H)
 		{
-			set_pixel(iw->sur, j, i, get_pixel(iw->t[iw->v.skybox],
+			set_pixel(iw->sur, j, i, get_pixel(iw->t[iw->l.skybox],
 				(int)d.sky_x, (int)d.sky_y));
 			d.sky_y += d.dy;
 		}
 		d.sky_x += d.dx;
-		if (d.sky_x >= iw->t[iw->v.skybox]->w)
-			d.sky_x = d.sky_x - iw->t[iw->v.skybox]->w;
+		if (d.sky_x >= iw->t[iw->l.skybox]->w)
+			d.sky_x = d.sky_x - iw->t[iw->l.skybox]->w;
 	}
 }
 
@@ -2879,7 +2900,7 @@ void	draw_start(t_sdl *iw)
 		if ((right = find_next_vis_wall(iw, left)) != 0 && left->x < right->x)
 			if (!(right->x < iw->d.screen_left || left->x > iw->d.screen_right))
 				add_pair(iw, left, right);
-				//draw_left_right(iw, left, right);
+		//draw_left_right(iw, left, right);
 		left = left->next;
 	}
 
@@ -2927,7 +2948,7 @@ void	draw(t_sdl *iw)
 {
 	set_top_bottom(iw);
 	if ((iw->d.cs = get_sector(iw)) == -1)
-		return ;
+		return;
 	get_direction(iw);
 	get_screen_line(iw);
 	get_left_right_lines_points(iw);
@@ -3027,7 +3048,7 @@ void	get_def(t_sdl *iw)
 	iw->p.rotup = 12; //550
 	iw->v.ls = 0;
 	iw->v.angle = (float)WINDOW_W / (float)WINDOW_H * 22.0f * G1;// 0.698132f;
-	iw->v.kernel = 1;
+	iw->v.kernel = 0;
 	load_kernel(&iw->k);
 	//fill_floor_coefficients(iw);
 	iw->v.front = -1;
@@ -3064,7 +3085,7 @@ void	get_def(t_sdl *iw)
 	iw->v.chang_fc_rect.w = 40;
 	iw->v.chang_fc_rect.x = 0;
 	iw->v.chang_fc_rect.y = WINDOW_H + 100;
-	iw->v.skybox = 13;
+	iw->l.skybox = 13;
 }
 
 void	get_kernel_mem(t_sdl *iw)
@@ -3076,10 +3097,10 @@ void	get_kernel_mem(t_sdl *iw)
 	{
 		/*if (i != 1)
 		{*/
-			iw->k.m_t[i] = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
-				iw->t[i]->w * iw->t[i]->h * 3, NULL, &iw->k.ret);
-			clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t[i], CL_TRUE, 0,
-				iw->t[i]->w * iw->t[i]->h * 3, iw->t[i]->pixels, 0, NULL, NULL);
+		iw->k.m_t[i] = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
+			iw->t[i]->w * iw->t[i]->h * 3, NULL, &iw->k.ret);
+		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t[i], CL_TRUE, 0,
+			iw->t[i]->w * iw->t[i]->h * 3, iw->t[i]->pixels, 0, NULL, NULL);
 		//}
 	}
 	iw->k.m_top = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE,

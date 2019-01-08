@@ -371,8 +371,12 @@ typedef struct	s_variables
 	int		changing_fc;
 	SDL_Rect	chang_fc_rect;
 	int		count_portal_rot_anim;
-	int		skybox;
 }				t_variables;
+
+typedef struct	s_level
+{
+	int		skybox;
+}				t_level;
 
 typedef struct	s_sdl
 {
@@ -386,6 +390,7 @@ typedef struct	s_sdl
 	// Player
 	t_player	p;
 	t_variables	v;
+	t_level		l;
 	t_draw		d;
 	// textures
 	SDL_Surface *(t)[TEXTURES_COUNT];
