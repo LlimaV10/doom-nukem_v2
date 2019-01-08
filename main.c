@@ -2912,10 +2912,12 @@ void	draw_start(t_sdl *iw)
 	{
 		draw_left_right(iw, tmp->left, tmp->right);
 		tmp = tmp->next;
-		/*iw->k.ret = clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_sur, CL_TRUE, 0,
-			WINDOW_W * WINDOW_H * sizeof(int), iw->sur->pixels, 0, NULL, NULL);
-		SDL_UpdateWindowSurface(iw->win);
-		system("PAUSE");*/
+		// iw->k.ret = clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_sur, CL_TRUE, 0,
+		// 	WINDOW_W * WINDOW_H * sizeof(int), iw->sur->pixels, 0, NULL, NULL);
+		// SDL_UpdateWindowSurface(iw->win);
+		// char s[500];
+		// read(0, s, 10);
+		//system("PAUSE");
 	}
 	free_walls(iw);
 	free_pairs(iw);
@@ -3017,15 +3019,15 @@ void	read_textures(t_sdl *iw)
 
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 7267;
-	iw->p.y = 2693; //-2360
+	iw->p.x = 8219;
+	iw->p.y = 2149; //-2360
 	iw->p.z = 600;
-	iw->p.introt = 179;
+	iw->p.introt = 271;
 	iw->p.rot = (float)iw->p.introt * G1;
 	iw->p.rotup = 12; //550
 	iw->v.ls = 0;
 	iw->v.angle = (float)WINDOW_W / (float)WINDOW_H * 22.0f * G1;// 0.698132f;
-	iw->v.kernel = 0;
+	iw->v.kernel = 1;
 	load_kernel(&iw->k);
 	//fill_floor_coefficients(iw);
 	iw->v.front = -1;

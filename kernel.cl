@@ -826,6 +826,9 @@ __kernel void draw_floor_ceil_betw_walls_tex_kernel(
 //12 - screen_left
 //13 - screen_right
 
+//14 - ceil->t
+//15 - rotup
+
 //float
 //0 - dang
 //1 - lenpl
@@ -840,10 +843,9 @@ __kernel void draw_floor_ceil_betw_walls_tex_kernel(
 //10 - clpl
 //11 - px
 //12 - py
-	//13 - left_olen
-	//14 - wall_tsz
-	//15 - zu
-	//16 - zd
+
+//13 - p.rot
+//14 - v.angle
 
 
 // top && bottom + left->x
@@ -868,9 +870,11 @@ __kernel void draw_floor_ceil_tex_kernel(
 	float	weight;
 	float	floorx;
 	float	floory;
-	//float	tx;
-	//float	ty;
-	//float	dty;
+
+	float	rot;
+	float	sky_x;
+	float	sky_y;
+	float	dy;
 
 	//printf("5");
 	j = get_global_id(0);
@@ -911,23 +915,50 @@ __kernel void draw_floor_ceil_tex_kernel(
 		bottom[j] = wallBot[j];
 	}
 
+	if (cint[14] < 0)
+	{
+		rot = (cfloat[13] - cfloat[14]) + (float)(cint[8] + j) /
+			(float)cint[6] * cfloat[14] * 2.0f;
+		if (rot < 0.0f)
+			rot += 6.2831852f;
+		else if (rot > 6.2831852f)
+			rot -= 6.2831852f;
+		sky_x = rot * (float)cint[4] / 6.2831852f;
+		dy = (float)cint[5] / (float)(4 * cint[7]);
+	}
+
 	if (wallTop[j] > top[j])
 	{
-		if (wallTop[j] < bottom[j])
-			i = wallTop[j] + 1;
-		else
-			i = bottom[j] + 1;
-		k = (float)(wallBot[j] - wallTop[j]) +
-			cfloat[10] * (float)(wallTop[j] - i + 1);
-		while (--i >= top[j])
+		if (cint[14] >= 0)
 		{
-			weight = wall_dist / k;
-			k += cfloat[10];
-			floorx = weight * rx + (1.0f - weight) * cfloat[11];
-			floory = weight * ry + (1.0f - weight) * cfloat[12];
-			tp = ((floorx < 0.0f) ? (((int)(floorx * (float)cint[4]) % cint[4]) + cint[4] - 1) : ((int)(floorx * (float)cint[4]) % cint[4])) * 3
-				+ ((floory < 0.0f) ? (((int)(floory * (float)cint[5]) % cint[5]) + cint[5] - 1) : ((int)(floory * (float)cint[5]) % cint[5])) * 3 * cint[4];
-			wpixels[cint[8] + j + i * cint[6]] = (int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16);
+			if (wallTop[j] < bottom[j])
+				i = wallTop[j] + 1;
+			else
+				i = bottom[j] + 1;
+			k = (float)(wallBot[j] - wallTop[j]) +
+				cfloat[10] * (float)(wallTop[j] - i + 1);
+			while (--i >= top[j])
+			{
+				weight = wall_dist / k;
+				k += cfloat[10];
+				floorx = weight * rx + (1.0f - weight) * cfloat[11];
+				floory = weight * ry + (1.0f - weight) * cfloat[12];
+				tp = ((floorx < 0.0f) ? (((int)(floorx * (float)cint[4]) % cint[4]) + cint[4] - 1) : ((int)(floorx * (float)cint[4]) % cint[4])) * 3
+					+ ((floory < 0.0f) ? (((int)(floory * (float)cint[5]) % cint[5]) + cint[5] - 1) : ((int)(floory * (float)cint[5]) % cint[5])) * 3 * cint[4];
+				wpixels[cint[8] + j + i * cint[6]] = (int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16);
+			}
+		}
+		else
+		{
+			sky_y = ((-cint[15] + 2 * cint[7]) * cint[5]) / (4 * cint[7]) +
+				dy * top[j];
+			i = top[j] - 1;
+			while (++i < wallTop[j] && i < bottom[j])
+			{
+				tp = (int)sky_x * 3 + (int)sky_y * 3 * cint[4];
+				wpixels[cint[8] + j + i * cint[6]] = (int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16);
+				sky_y += dy;
+			}
 		}
 		top[j] = wallTop[j];
 	}
@@ -1008,6 +1039,10 @@ __kernel void draw_floor_ceil_tex_kernel(
 //21 - screen_left - 19
 //22 - screen_right - 20
 
+//14 - ceil->t - 21
+//15 - rotup - 22
+
+
 //float
 //0 - dang
 //1 - lenpl
@@ -1022,10 +1057,9 @@ __kernel void draw_floor_ceil_tex_kernel(
 //10 - clpl
 //11 - px
 //12 - py
-	//13 - left_olen
-	//14 - wall_tsz
-	//15 - zudiff
-	//16 - zddiff
+
+//13 - p.rot
+//14 - v.angle
 
 // top && bottom + left->x
 
@@ -1051,11 +1085,11 @@ __kernel void draw_inclined_floor_ceil_tex_kernel(
 	float	weight;
 	float	floorx;
 	float	floory;
-	//float	tx;
-	//float	ty;
-	//float	dty;
-	//float	zu;
-	//float	zd;
+
+	float	rot;
+	float	sky_x;
+	float	sky_y;
+	float	dy;
 
 	//printf("6");
 	j = get_global_id(0);
@@ -1101,25 +1135,52 @@ __kernel void draw_inclined_floor_ceil_tex_kernel(
 		bottom[j] = wallBot[j];
 	}
 
+	if (cint[21] < 0)
+	{
+		rot = (cfloat[13] - cfloat[14]) + (float)(cint[8] + j) /
+			(float)cint[6] * cfloat[14] * 2.0f;
+		if (rot < 0.0f)
+			rot += 6.2831852f;
+		else if (rot > 6.2831852f)
+			rot -= 6.2831852f;
+		sky_x = rot * (float)cint[4] / 6.2831852f;
+		dy = (float)cint[5] / (float)(4 * cint[7]);
+	}
+
 	if (wallTop[j] > top[j])
 	{
-		if (wallTop[j] < bottom[j])
-			i = wallTop[j] + 1;
-		else
-			i = bottom[j] + 1;
-		k = (float)(wallBot[j] - wallTop[j]) +
-			cfloat[10] * (float)(wallTop[j] - i + 1);
-		while (--i >= top[j])
+		if (cint[21] >= 0)
 		{
-			weight = wall_dist * clcoef / k;
-			k += cfloat[10];
-			floorx = weight * rx + (1.0f - weight) * cfloat[11];
-			floory = weight * ry + (1.0f - weight) * cfloat[12];
-			clcoef = ((cint[15] * (int)(floorx * 1000.0f) + cint[16] * (int)(floory * 1000.0f) + cint[18]) / cint[17] * -1 -
-				(cint[11] * (int)(floorx * 1000.0f) + cint[12] * (int)(floory * 1000.0f) + cint[14]) / cint[13] * -1 + clcoef) / 2.0f;
-			tp = ((floorx < 0.0f) ? (((int)(floorx * (float)cint[4]) % cint[4]) + cint[4] - 1) : ((int)(floorx * (float)cint[4]) % cint[4])) * 3
-				+ ((floory < 0.0f) ? (((int)(floory * (float)cint[5]) % cint[5]) + cint[5] - 1) : ((int)(floory * (float)cint[5]) % cint[5])) * 3 * cint[4];
-			wpixels[cint[8] + j + i * cint[6]] = (int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16);
+			if (wallTop[j] < bottom[j])
+				i = wallTop[j] + 1;
+			else
+				i = bottom[j] + 1;
+			k = (float)(wallBot[j] - wallTop[j]) +
+				cfloat[10] * (float)(wallTop[j] - i + 1);
+			while (--i >= top[j])
+			{
+				weight = wall_dist * clcoef / k;
+				k += cfloat[10];
+				floorx = weight * rx + (1.0f - weight) * cfloat[11];
+				floory = weight * ry + (1.0f - weight) * cfloat[12];
+				clcoef = ((cint[15] * (int)(floorx * 1000.0f) + cint[16] * (int)(floory * 1000.0f) + cint[18]) / cint[17] * -1 -
+					(cint[11] * (int)(floorx * 1000.0f) + cint[12] * (int)(floory * 1000.0f) + cint[14]) / cint[13] * -1 + clcoef) / 2.0f;
+				tp = ((floorx < 0.0f) ? (((int)(floorx * (float)cint[4]) % cint[4]) + cint[4] - 1) : ((int)(floorx * (float)cint[4]) % cint[4])) * 3
+					+ ((floory < 0.0f) ? (((int)(floory * (float)cint[5]) % cint[5]) + cint[5] - 1) : ((int)(floory * (float)cint[5]) % cint[5])) * 3 * cint[4];
+				wpixels[cint[8] + j + i * cint[6]] = (int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16);
+			}
+		}
+		else
+		{
+			sky_y = ((-cint[22] + 2 * cint[7]) * cint[5]) / (4 * cint[7]) +
+				dy * top[j];
+			i = top[j] - 1;
+			while (++i < wallTop[j] && i < bottom[j])
+			{
+				tp = (int)sky_x * 3 + (int)sky_y * 3 * cint[4];
+				wpixels[cint[8] + j + i * cint[6]] = (int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16);
+				sky_y += dy;
+			}
 		}
 		top[j] = wallTop[j];
 	}
