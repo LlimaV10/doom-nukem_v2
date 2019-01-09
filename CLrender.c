@@ -65,8 +65,14 @@ void	draw_inclined_wall_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left, t_sa
 	int		cint[24];
 	float	cfloat[17];
 
-	cint[0] = iw->t[left->wall->t]->w;
-	cint[1] = iw->t[left->wall->t]->h;
+	if (left->wall->t >= 0)
+	{
+		cint[0] = iw->t[left->wall->t]->w;
+		cint[1] = iw->t[left->wall->t]->h;
+		cfloat[14] = iw->tsz[left->wall->t];
+	}
+	else
+		cint[0] = -1;
 	cint[2] = iw->t[iw->sectors[iw->d.cs].fr.t]->w;
 	cint[3] = iw->t[iw->sectors[iw->d.cs].fr.t]->h;
 	if (iw->sectors[iw->d.cs].cl.t >= 0)
@@ -118,7 +124,6 @@ void	draw_inclined_wall_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left, t_sa
 	cfloat[7] = iw->d.screen.c;
 	cfloat[8] = iw->d.screen_len;
 	cfloat[13] = left->olen;
-	cfloat[14] = iw->tsz[left->wall->t];
 
 	d.lv.x = (float)(left->p.x - iw->p.x);
 	d.lv.y = (float)(left->p.y - iw->p.y);
@@ -143,45 +148,6 @@ void	draw_inclined_wall_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left, t_sa
 	cfloat[11] = (float)iw->p.x / 1000.0f;
 	cfloat[12] = (float)iw->p.y / 1000.0f;
 
-	/*m_top = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE, len * sizeof(int), NULL, &iw->k.ret);
-	m_bottom = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE, len * sizeof(int), NULL, &iw->k.ret);
-	m_wpixels = clCreateBuffer(iw->k.context, CL_MEM_WRITE_ONLY, WINDOW_W * WINDOW_H * sizeof(int), NULL, &iw->k.ret);
-	m_wallpixels = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, iw->t[left->wall->t]->w *
-		iw->t[left->wall->t]->h * sizeof(int), NULL, &iw->k.ret);*/
-		/*m_floorpixels = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, iw->t[iw->sectors[iw->d.cs].fr.t]->w *
-			iw->t[iw->sectors[iw->d.cs].fr.t]->h * sizeof(int), NULL, &iw->k.ret);
-		m_ceilpixels = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, iw->t[iw->sectors[iw->d.cs].cl.t]->w *
-			iw->t[iw->sectors[iw->d.cs].cl.t]->h * sizeof(int), NULL, &iw->k.ret);*/
-			// m_wallTop = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, len * sizeof(int), NULL, &iw->k.ret);
-			// m_wallBot = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, len * sizeof(int), NULL, &iw->k.ret);
-			// m_cint = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, 23 * sizeof(int), NULL, &iw->k.ret);
-			// m_cfloat = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, 17 * sizeof(float), NULL, &iw->k.ret);
-
-			/*clEnqueueWriteBuffer(iw->k.command_queue, m_top, CL_TRUE, 0, len * sizeof(int), &iw->d.top[left->x], 0, NULL, NULL);
-			clEnqueueWriteBuffer(iw->k.command_queue, m_bottom, CL_TRUE, 0, len * sizeof(int), &iw->d.bottom[left->x], 0, NULL, NULL);
-			clEnqueueWriteBuffer(iw->k.command_queue, m_wpixels, CL_TRUE, 0, WINDOW_W * WINDOW_H * sizeof(int), iw->sur->pixels, 0, NULL, NULL);
-			clEnqueueWriteBuffer(iw->k.command_queue, m_wallpixels, CL_TRUE, 0, iw->t[left->wall->t]->w *
-				iw->t[left->wall->t]->h * sizeof(int), iw->t[left->wall->t]->pixels, 0, NULL, NULL);
-			if (left->wall->t == iw->sectors[iw->d.cs].fr.t)
-				m_floorpixels = m_wallpixels;
-			else
-			{
-				m_floorpixels = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, iw->t[iw->sectors[iw->d.cs].fr.t]->w *
-					iw->t[iw->sectors[iw->d.cs].fr.t]->h * sizeof(int), NULL, &iw->k.ret);
-				clEnqueueWriteBuffer(iw->k.command_queue, m_floorpixels, CL_TRUE, 0, iw->t[iw->sectors[iw->d.cs].fr.t]->w *
-					iw->t[iw->sectors[iw->d.cs].fr.t]->h * sizeof(int), iw->t[iw->sectors[iw->d.cs].fr.t]->pixels, 0, NULL, NULL);
-			}
-			if (left->wall->t == iw->sectors[iw->d.cs].cl.t)
-				m_ceilpixels = m_wallpixels;
-			else if (iw->sectors[iw->d.cs].fr.t == iw->sectors[iw->d.cs].cl.t)
-				m_ceilpixels = m_floorpixels;
-			else
-			{
-				m_ceilpixels = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, iw->t[iw->sectors[iw->d.cs].cl.t]->w *
-					iw->t[iw->sectors[iw->d.cs].cl.t]->h * sizeof(int), NULL, &iw->k.ret);
-				clEnqueueWriteBuffer(iw->k.command_queue, m_ceilpixels, CL_TRUE, 0, iw->t[iw->sectors[iw->d.cs].cl.t]->w *
-					iw->t[iw->sectors[iw->d.cs].cl.t]->h * sizeof(int), iw->t[iw->sectors[iw->d.cs].cl.t]->pixels, 0, NULL, NULL);
-			}*/
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallTop, CL_TRUE, 0, len * sizeof(int), iw->d.wallTop, 0, NULL, NULL);
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallBot, CL_TRUE, 0, len * sizeof(int), iw->d.wallBot, 0, NULL, NULL);
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 24 * sizeof(int), cint, 0, NULL, NULL);
@@ -193,7 +159,10 @@ void	draw_inclined_wall_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left, t_sa
 	iw->k.ret = clSetKernelArg(iw->k.kernel, 0, sizeof(cl_mem), (void *)&iw->k.m_top);
 	iw->k.ret = clSetKernelArg(iw->k.kernel, 1, sizeof(cl_mem), (void *)&iw->k.m_bottom);
 	iw->k.ret = clSetKernelArg(iw->k.kernel, 2, sizeof(cl_mem), (void *)&iw->k.m_sur);
-	iw->k.ret = clSetKernelArg(iw->k.kernel, 3, sizeof(cl_mem), (void *)&iw->k.m_t[left->wall->t]);
+	if (left->wall->t >= 0)
+		iw->k.ret = clSetKernelArg(iw->k.kernel, 3, sizeof(cl_mem), (void *)&iw->k.m_t[left->wall->t]);
+	else
+		iw->k.ret = clSetKernelArg(iw->k.kernel, 3, sizeof(cl_mem), (void *)&iw->k.m_t[0]);
 	iw->k.ret = clSetKernelArg(iw->k.kernel, 4, sizeof(cl_mem), (void *)&iw->k.m_t[iw->sectors[iw->d.cs].fr.t]);
 	if (iw->sectors[iw->d.cs].cl.t >= 0)
 		iw->k.ret = clSetKernelArg(iw->k.kernel, 5, sizeof(cl_mem), (void *)&iw->k.m_t[iw->sectors[iw->d.cs].cl.t]);
@@ -251,8 +220,14 @@ void	draw_wall_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *
 	int		cint[15];
 	float	cfloat[17];
 
-	cint[0] = iw->t[left->wall->t]->w;
-	cint[1] = iw->t[left->wall->t]->h;
+	if (left->wall->t >= 0)
+	{
+		cint[0] = iw->t[left->wall->t]->w;
+		cint[1] = iw->t[left->wall->t]->h;
+		cfloat[14] = iw->tsz[left->wall->t];
+	}
+	else
+		cint[0] = -1;
 	cint[2] = iw->t[iw->sectors[iw->d.cs].fr.t]->w;
 	cint[3] = iw->t[iw->sectors[iw->d.cs].fr.t]->h;
 	if (iw->sectors[iw->d.cs].cl.t >= 0)
@@ -274,8 +249,7 @@ void	draw_wall_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *
 	cfloat[7] = iw->d.screen.c;
 	cfloat[8] = iw->d.screen_len;
 	cfloat[13] = left->olen;
-	cfloat[14] = iw->tsz[left->wall->t];
-
+	
 	d.lv.x = (float)(left->p.x - iw->p.x);
 	d.lv.y = (float)(left->p.y - iw->p.y);
 	d.rv.x = (float)(right->p.x - iw->p.x);
@@ -298,42 +272,6 @@ void	draw_wall_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *
 	cfloat[11] = (float)iw->p.x / 1000.0f;
 	cfloat[12] = (float)iw->p.y / 1000.0f;
 
-	/*m_top = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE, len * sizeof(int), NULL, &iw->k.ret);
-	m_bottom = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE, len * sizeof(int), NULL, &iw->k.ret);
-	m_wpixels = clCreateBuffer(iw->k.context, CL_MEM_WRITE_ONLY, WINDOW_W * WINDOW_H * sizeof(int), NULL, &iw->k.ret);
-	m_wallpixels = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, iw->t[left->wall->t]->w *
-		iw->t[left->wall->t]->h * sizeof(int), NULL, &iw->k.ret);*/
-		// m_wallTop = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, len * sizeof(int), NULL, &iw->k.ret);
-		// m_wallBot = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, len * sizeof(int), NULL, &iw->k.ret);
-		// m_cint = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, 14 * sizeof(int), NULL, &iw->k.ret);
-		// m_cfloat = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, 17 * sizeof(float), NULL, &iw->k.ret);
-
-		/*clEnqueueWriteBuffer(iw->k.command_queue, m_top, CL_TRUE, 0, len * sizeof(int), &iw->d.top[left->x], 0, NULL, NULL);
-		clEnqueueWriteBuffer(iw->k.command_queue, m_bottom, CL_TRUE, 0, len * sizeof(int), &iw->d.bottom[left->x], 0, NULL, NULL);
-		clEnqueueWriteBuffer(iw->k.command_queue, m_wpixels, CL_TRUE, 0, WINDOW_W * WINDOW_H * sizeof(int), iw->sur->pixels, 0, NULL, NULL);
-		clEnqueueWriteBuffer(iw->k.command_queue, m_wallpixels, CL_TRUE, 0, iw->t[left->wall->t]->w *
-			iw->t[left->wall->t]->h * sizeof(int), iw->t[left->wall->t]->pixels, 0, NULL, NULL);
-		if (left->wall->t == iw->sectors[iw->d.cs].fr.t)
-			m_floorpixels = m_wallpixels;
-		else
-		{
-			m_floorpixels = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, iw->t[iw->sectors[iw->d.cs].fr.t]->w *
-				iw->t[iw->sectors[iw->d.cs].fr.t]->h * sizeof(int), NULL, &iw->k.ret);
-			clEnqueueWriteBuffer(iw->k.command_queue, m_floorpixels, CL_TRUE, 0, iw->t[iw->sectors[iw->d.cs].fr.t]->w *
-				iw->t[iw->sectors[iw->d.cs].fr.t]->h * sizeof(int), iw->t[iw->sectors[iw->d.cs].fr.t]->pixels, 0, NULL, NULL);
-		}
-		if (left->wall->t == iw->sectors[iw->d.cs].cl.t)
-			m_ceilpixels = m_wallpixels;
-		else if (iw->sectors[iw->d.cs].fr.t == iw->sectors[iw->d.cs].cl.t)
-			m_ceilpixels = m_floorpixels;
-		else
-		{
-			m_ceilpixels = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY, iw->t[iw->sectors[iw->d.cs].cl.t]->w *
-				iw->t[iw->sectors[iw->d.cs].cl.t]->h * sizeof(int), NULL, &iw->k.ret);
-			clEnqueueWriteBuffer(iw->k.command_queue, m_ceilpixels, CL_TRUE, 0, iw->t[iw->sectors[iw->d.cs].cl.t]->w *
-				iw->t[iw->sectors[iw->d.cs].cl.t]->h * sizeof(int), iw->t[iw->sectors[iw->d.cs].cl.t]->pixels, 0, NULL, NULL);
-		}*/
-
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallTop, CL_TRUE, 0, len * sizeof(int), iw->d.wallTop, 0, NULL, NULL);
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallBot, CL_TRUE, 0, len * sizeof(int), iw->d.wallBot, 0, NULL, NULL);
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 15 * sizeof(int), cint, 0, NULL, NULL);
@@ -345,7 +283,10 @@ void	draw_wall_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *
 	iw->k.ret = clSetKernelArg(iw->k.kernel, 0, sizeof(cl_mem), (void *)&iw->k.m_top);
 	iw->k.ret = clSetKernelArg(iw->k.kernel, 1, sizeof(cl_mem), (void *)&iw->k.m_bottom);
 	iw->k.ret = clSetKernelArg(iw->k.kernel, 2, sizeof(cl_mem), (void *)&iw->k.m_sur);
-	iw->k.ret = clSetKernelArg(iw->k.kernel, 3, sizeof(cl_mem), (void *)&iw->k.m_t[left->wall->t]);
+	if (left->wall->t >= 0)
+		iw->k.ret = clSetKernelArg(iw->k.kernel, 3, sizeof(cl_mem), (void *)&iw->k.m_t[left->wall->t]);
+	else
+		iw->k.ret = clSetKernelArg(iw->k.kernel, 3, sizeof(cl_mem), (void *)&iw->k.m_t[0]);
 	iw->k.ret = clSetKernelArg(iw->k.kernel, 4, sizeof(cl_mem), (void *)&iw->k.m_t[iw->sectors[iw->d.cs].fr.t]);
 	if (iw->sectors[iw->d.cs].cl.t >= 0)
 		iw->k.ret = clSetKernelArg(iw->k.kernel, 5, sizeof(cl_mem), (void *)&iw->k.m_t[iw->sectors[iw->d.cs].cl.t]);
@@ -930,12 +871,13 @@ void	draw_inclined_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wa
 
 void	draw_skybox_kernel(t_sdl *iw)
 {
-	int		cint[3];
+	int		cint[4];
 	float	cfloat[4];
 
 	cint[0] = WINDOW_H;
 	cint[1] = WINDOW_W;
 	cint[2] = iw->t[iw->l.skybox]->w;
+	cint[3] = iw->t[iw->l.skybox]->h;
 	cfloat[2] = iw->p.rot;
 	cfloat[3] = iw->v.angle;
 
@@ -943,7 +885,7 @@ void	draw_skybox_kernel(t_sdl *iw)
 		(iw->t[iw->l.skybox]->h)) / (4 * WINDOW_H);
 	cfloat[1] = (float)iw->t[iw->l.skybox]->h / (float)(4 * WINDOW_H);
 
-	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 3 * sizeof(int), cint, 0, NULL, NULL);
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 4 * sizeof(int), cint, 0, NULL, NULL);
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cfloat, CL_TRUE, 0, 4 * sizeof(float), cfloat, 0, NULL, NULL);
 
 	iw->k.kernel = clCreateKernel(iw->k.program, "draw_skybox_kernel", &iw->k.ret);

@@ -385,6 +385,8 @@ void	key_down(int code, t_sdl *iw)
 		(*(iw->v.look_sector))->fr.t = iw->v.tex_to_fill;
 	else if (code == 54 && *(iw->v.look_sector) != 0 && iw->v.mouse_mode == 1)
 		(*(iw->v.look_sector))->cl.t = -1;
+	else if (code == 16 && iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0)
+		(*(iw->v.look_wall))->t = -1;
 	/*else if (code == 9)
 		check_animations(iw);*/
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
@@ -535,13 +537,18 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 		}
 	}
 	else if (iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0)
-		(*(iw->v.look_wall))->t = iw->v.tex_to_fill;
+	{
+		if (iw->v.look_portal == 0 || iw->v.look_portal->glass < 0)
+			(*(iw->v.look_wall))->t = iw->v.tex_to_fill;
+		else
+			iw->v.look_portal->glass = -1;
+	}
 }
 
 void	mouse_buttonright_up(int x, int y, t_sdl *iw)
 {
-	if (iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0)
-		(*(iw->v.look_wall))->t = -1;
+	if (iw->v.mouse_mode == 1 && iw->v.look_portal != 0)
+		iw->v.look_portal->glass = iw->v.tex_to_fill;
 }
 
 void	mouse_wheel(SDL_Event *e, t_sdl *iw)
@@ -2572,6 +2579,87 @@ void	fill_tb_by_slsr(t_sdl *iw)
 		iw->d.top[i] = iw->d.bottom[i];
 }
 
+void	change_saved_top_bot_between_lines(t_sdl *iw, int len, int left_x)
+{
+	int		j;
+
+	j = -1;
+	while (++j < len)
+	{
+		if (iw->d.top[j + left_x] > iw->d.save_top_betw[j])
+			iw->d.save_top_betw[j] = iw->d.top[j + left_x];
+		if (iw->d.bottom[left_x + j] < iw->d.save_bot_betw[j])
+			iw->d.save_bot_betw[j] = iw->d.bottom[left_x + j];
+	}
+}
+
+void	draw_glass_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
+{
+	int		j;
+	int		i;
+	t_draw_glass	d;
+
+	/*printf("GLAAAAAAAAAAASSSSSSSSS\n");
+	j = -1;
+	while (++j < len)
+	{
+		i = iw->d.save_top_betw[j] - 1;
+		while (++i < iw->d.save_bot_betw[j])
+			set_pixel(iw->sur, j + left->x, i, 0x00FF00);
+	}*/
+	d.lv.x = (float)(left->p.x - iw->p.x);
+	d.lv.y = (float)(left->p.y - iw->p.y);
+	d.rv.x = (float)(right->p.x - iw->p.x);
+	d.rv.y = (float)(right->p.y - iw->p.y);
+	d.ang = acosf((d.lv.x * d.rv.x + d.lv.y * d.rv.y) / (sqrtf(d.lv.x * d.lv.x + d.lv.y * d.lv.y) * sqrtf(d.rv.x * d.rv.x + d.rv.y * d.rv.y)));
+	d.dang = d.ang / (float)len;
+	d.ang = 0.0f;
+	d.rv.x = (float)(-right->p.x + left->p.x);
+	d.rv.y = (float)(-right->p.y + left->p.y);
+	d.sing = G180 - acosf((d.lv.x * d.rv.x + d.lv.y * d.rv.y) / (sqrtf(d.lv.x * d.lv.x + d.lv.y * d.lv.y) * sqrtf(d.rv.x * d.rv.x + d.rv.y * d.rv.y)));
+	d.lenpl = sqrtf(powf(iw->p.x - left->p.x, 2.0f) + powf(iw->p.y - left->p.y, 2.0f));
+	d.len_lr = sqrtf(powf(left->p.x - right->p.x, 2.0f) + powf(left->p.y - right->p.y, 2.0f));
+	d.zudiff = (right->zu - left->zu) / d.len_lr;
+	d.zddiff = (right->zd - left->zd) / d.len_lr;
+
+	/*d.left_len = 0.0f;
+	d.tx = left->olen * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
+	while (d.tx >= (float)iw->t[left->wall->t]->w)
+		d.tx -= (float)iw->t[left->wall->t]->w;*/
+
+	j = -1;
+	while (++j < len)
+	{
+		/*if (iw->d.top[left->x + j] >= iw->d.bottom[left->x + j])
+		{
+			d.ang += d.dang;
+			continue;
+		}*/
+		d.left_len = sinf(d.ang) * d.lenpl / sin(d.sing - d.ang);
+		d.tx = (left->olen + d.left_len) * (float)iw->t[left->wall->glass]->w * iw->tsz[left->wall->glass] / 1000.0f;
+		d.zu = (float)left->zu + d.left_len * d.zudiff;
+		d.zd = (float)left->zd + d.left_len * d.zddiff;
+		if (iw->d.save_top_betw[j] < iw->d.top[j + left->x])
+			d.ty = d.zu + iw->tsz[left->wall->glass] * (d.zu - d.zd) * (float)(iw->d.top[j + left->x] - iw->d.save_top_betw[j]) / (float)(iw->d.save_bot_betw[j] - iw->d.save_top_betw[j]);
+		else
+			d.ty = d.zu;
+		d.ty = d.ty * (float)iw->t[left->wall->glass]->h / 1000.0f;
+		d.dty = ((d.zu - d.zd) * (float)iw->t[left->wall->glass]->h / 1000.0f) / (float)(iw->d.save_bot_betw[j] - iw->d.save_top_betw[j]) * iw->tsz[left->wall->glass];
+		i = iw->d.top[left->x + j] - 1;
+		while (++i < iw->d.bottom[left->x + j])
+		{
+			d.pixel = get_pixel(iw->t[left->wall->glass],
+				(int)d.tx % iw->t[left->wall->glass]->w,
+				(int)d.ty % iw->t[left->wall->glass]->h);
+			if (d.pixel != 0x000000)
+				set_pixel(iw->sur, left->x + j, i, d.pixel);
+			d.ty += d.dty;
+		}
+		//iw->d.top[left->x + j] = iw->d.bottom[left->x + j];
+		d.ang += d.dang;
+	}
+}
+
 void	draw_start(t_sdl *iw);
 void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 {
@@ -2584,6 +2672,8 @@ void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	iw2.p.x += iw->walls[left->wall->nextsector_wall].x - left->wall->next->x;
 	iw2.p.y += iw->walls[left->wall->nextsector_wall].y - left->wall->next->y;
 	iw2.d.cs = left->wall->nextsector;
+	iw->d.save_bot_betw = get_between_sectors_walls(&iw2, left, right, &iw->d.save_top_betw);
+	change_saved_top_bot_between_lines(iw, right->x - left->x + 1, left->x);
 	draw_between_sectors_walls(&iw2, left, right);
 	//fill_portal(iw, left, right, &iw2);
 	get_direction(&iw2);
@@ -2600,6 +2690,11 @@ void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	iw2.d.prev_sector = iw->d.cs;
 	iw2.d.prev_sector_wall = left->wall;
 	draw_start(&iw2);
+	if (left->wall->glass >= 0)
+		draw_glass_tex(iw, left, right, right->x - left->x + 1);
+	free(iw->d.save_bot_betw);
+	free(iw->d.save_top_betw);
+
 	//fill_bot_by_wallTop(iw, left, right->x - left->x);
 	fill_portal(iw, left, right, &iw2);
 	/*iw->d.top = iw2.d.top;
@@ -2626,8 +2721,6 @@ void	draw_next_sector_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, i
 		draw_floor_ceil_betw_tex_kernel(iw, left, right, len);
 	else
 		draw_inclined_floor_ceil_betw_tex_kernel(iw, left, right, len);
-	free(iw->d.save_bot_betw);
-	free(iw->d.save_top_betw);
 	if ((iw->d.wallBot[0] < 0 && iw->d.wallBot[len - 1] < 0) ||
 		(iw->d.wallTop[0] >= WINDOW_H && iw->d.wallTop[len - 1] >= WINDOW_H))
 		return;
@@ -2647,6 +2740,8 @@ void	draw_next_sector_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, i
 	iw2.d.prev_sector = iw->d.cs;
 	iw2.d.prev_sector_wall = left->wall;
 	draw_start(&iw2);
+	free(iw->d.save_bot_betw);
+	free(iw->d.save_top_betw);
 }
 
 void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
@@ -2718,6 +2813,8 @@ void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	if (*(iw->v.look_wall) == 0 && iw->v.mouse_mode == 1 && left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
 		&& iw->d.screen_left < WINDOW_W / 2 && iw->d.screen_right > WINDOW_W / 2)
 	{
+		if (left->wall->nextsector != -1 && iw->v.look_portal == 0)
+			iw->v.look_portal = left->wall;
 		if (left->wall->nextsector == -1)
 		{
 			*(iw->v.look_wall) = left->wall;
@@ -2985,6 +3082,7 @@ void	draw(t_sdl *iw)
 	}
 	if (iw->v.mouse_mode == 1)
 	{
+		iw->v.look_portal = 0;
 		*(iw->v.look_wall) = 0;
 		*(iw->v.look_sector) = 0;
 	}
@@ -3033,6 +3131,8 @@ void	read_textures(t_sdl *iw)
 	iw->tsz[14] = 1.0f;
 	iw->t[15] = SDL_LoadBMP("textures/15.bmp");
 	iw->tsz[15] = 1.0f;
+	iw->t[16] = SDL_LoadBMP("textures/16.bmp");
+	iw->tsz[16] = 1.0f;
 	//Uint8 *target_pixel = (Uint8 *)(iw->t)[0]->pixels;
 	//set_pixel((iw->t)[0], 0, 0, 0xFF0000);
 	//printf("%d\n", read_pixel((iw->t)[0], 2, 0));
@@ -3080,6 +3180,7 @@ void	get_def(t_sdl *iw)
 	*(iw->v.look_wall) = 0;
 	iw->v.look_sector = (t_sector **)malloc(sizeof(t_sector *));
 	*(iw->v.look_sector) = 0;
+	iw->v.look_portal = 0;
 	iw->v.changing_fc = 0;
 	iw->v.chang_fc_rect.h = 100;
 	iw->v.chang_fc_rect.w = 40;

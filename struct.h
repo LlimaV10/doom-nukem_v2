@@ -25,6 +25,8 @@ typedef struct	s_wall
 	int				nextsector;
 	// Index of the same wall in the next sector
 	int				nextsector_wall;
+	// Glass texture (-1 if just a portal)
+	int				glass;
 	struct s_wall	*next;
 }				t_wall;
 
@@ -242,6 +244,46 @@ typedef struct	s_draw_skybox
 	float 		sky_y;
 }				t_draw_skybox;
 
+typedef struct	s_draw_glass
+{
+	float	sing;
+	float	ang;
+	float	dang;
+	float	lenpl;
+	t_point2d	lv;
+	t_point2d	rv;
+	float	zu;
+	float	zd;
+	float	left_len;
+	float	len_lr;
+	float		zudiff;
+	float		zddiff;
+	float		tx;
+	float		ty;
+	float		dty;
+	int		pixel;
+	/*
+	float		wall_dist;
+	float		weight;
+	float		k;
+	float		frpl;
+	float		clpl;
+	t_point2d	floor;
+	t_point2d	r;
+	int		frcoef;
+	int		clcoef;
+	float		px;
+	float		py;
+	
+	
+
+	float 		rot;
+	float 		dx;
+	float 		dy;
+	float 		sky_x;
+	float 		sky_y;*/
+}				t_draw_glass;
+
 typedef struct	s_save_wall
 {
 	int		x;
@@ -366,6 +408,7 @@ typedef struct	s_variables
 	int		mouse_y;
 	SDL_Rect	scroll_tex_rect;
 	t_wall		**look_wall;
+	t_wall		*look_portal;
 	t_sector	**look_sector;
 	// 0 - floor, 1 - ceil
 	int		changing_fc;
