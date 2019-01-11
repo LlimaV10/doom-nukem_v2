@@ -262,6 +262,11 @@ typedef struct	s_draw_glass
 	float		ty;
 	float		dty;
 	int		pixel;
+
+	int		nleft_zu;
+	int		nright_zu;
+	int		nleft_zd;
+	int		nright_zd;
 	/*
 	float		wall_dist;
 	float		weight;
