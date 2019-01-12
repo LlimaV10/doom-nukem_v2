@@ -1236,3 +1236,77 @@ __kernel void draw_skybox_kernel(
 		sky_y += cfloat[1];
 	}
 }
+
+
+//int
+//0 - left->x
+//1 - glass_width
+//2 - glass_height
+//3 - nleft_zu
+//4 - nleft_zd
+//5 - WINDOW_W
+
+//float
+//0 - dang
+//1 - lenpl
+//2 - sing
+//3 - olen
+//4 - tsz[glass]
+//5 - zudiff
+//6 - zddiff
+
+__kernel void draw_glass_tex_kernel(
+	__global int *top, __global int *bottom,
+	__global int *wpixels, __global const uchar *glass_pixels,
+	__global const int *wallTop, __global const int *wallBot,
+	__global const int *cint, __global const float *cfloat
+)
+{
+	int		i;
+	int		j;
+	float	nang;
+	float	left_len;
+	float	tx;
+	float	zu;
+	float	zd;
+	float	dty;
+	float	ty;
+	int		tp;
+	int		pixel;
+
+	j = get_global_id(0);
+	top += cint[0];
+	bottom += cint[0];
+	if (top[j] >= bottom[j])
+		return;
+	nang = cfloat[0] * (float)j;
+	left_len = sin(nang) * cfloat[1] / sin(cfloat[2] - nang);
+	tx = (cfloat[3] + left_len) * (float)cint[1] * cfloat[4] / 1000.0f;
+	zu = (float)cint[3] + left_len * cfloat[5];
+	zd = (float)cint[4] + left_len * cfloat[6];
+	dty = ((zu - zd) * (float)cint[2] / 1000.0f) /
+		(float)(wallBot[j] - wallTop[j]) * cfloat[4];
+	/*ty = (float)((int)zu % (int)(1000.0f / cfloat[4]) +
+		(int)(1000.0f / cfloat[4])) - zu;
+	ty = ty * (float)cint[1] / (1000.0f / cfloat[4]);
+	while (ty < 0)
+		ty += (float)cint[2];*/
+
+	ty = 0.0f;
+	if (wallTop[j] < top[j])
+	{
+		ty += (float)(top[j] - wallTop[j]) * dty;
+		i = top[j] - 1;
+	}
+	else
+		i = wallTop[j] - 1;
+
+	while (++i < wallBot[j] && i < bottom[j])
+	{
+		tp = ((int)tx % cint[1]) * 3 + ((int)ty % cint[2]) * cint[1] * 3;
+		pixel = (int)(glass_pixels[tp] | glass_pixels[tp + 1] << 8 | glass_pixels[tp + 2] << 16);
+		if (pixel != 0x000000)
+			wpixels[cint[0] + j + i * cint[5]] = pixel;
+		ty += dty;
+	}
+}

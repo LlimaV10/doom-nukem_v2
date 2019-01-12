@@ -376,6 +376,8 @@ typedef struct	s_kernel
 	cl_mem	m_cfloat;
 	cl_mem	m_top_betw;
 	cl_mem	m_bot_betw;
+	cl_mem		m_save_top;
+	cl_mem		m_save_bottom;
 }				t_kernel;
 
 typedef struct	s_variables

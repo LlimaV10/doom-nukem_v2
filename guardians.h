@@ -5,19 +5,19 @@
 //# include "SDL2/SDL2.framework/Headers/SDL.h"
 # include <SDL.h>
 # include <SDL_ttf.h>
-// Visual C -------
-// # include <CL/cl.h>
-// # include <io.h>
-// # define open _open
-// # define close _close
-// # define read _read
-// # define write _write
-// # define HAVE_STRUCT_TIMESPEC
-// Visual C -------
-// Unix -----
+#ifdef __APPLE__
 # include <OpenCL/cl.h>
 # include <unistd.h>
-// Unix -----
+#else
+# include <CL/cl.h>
+# include <io.h>
+# define open _open
+# define close _close
+# define read _read
+# define write _write
+# define HAVE_STRUCT_TIMESPEC
+#endif
+
 # include "libft/libft.h"
 # include <fcntl.h>
 // # include <pthread.h>
@@ -38,5 +38,6 @@ void	draw_floor_ceil_betw_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *
 void	draw_inclined_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len);
 void	draw_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len);
 void	draw_skybox_kernel(t_sdl *iw);
+void	draw_glass_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len);
 
 #endif

@@ -909,3 +909,84 @@ void	draw_skybox_kernel(t_sdl *iw)
 	iw->k.ret = clFinish(iw->k.command_queue);
 	iw->k.ret = clReleaseKernel(iw->k.kernel);
 }
+
+void	draw_glass_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
+{
+	t_draw_wall_floor_ceil_tex_kernel	d;
+	int		cint[6];
+	float	cfloat[7];
+
+	cint[1] = iw->t[left->wall->glass]->w;
+	cint[2] = iw->t[left->wall->glass]->h;
+
+	d.lv.x = (float)(left->p.x - iw->p.x);
+	d.lv.y = (float)(left->p.y - iw->p.y);
+	d.rv.x = (float)(right->p.x - iw->p.x);
+	d.rv.y = (float)(right->p.y - iw->p.y);
+	d.ang = acosf((d.lv.x * d.rv.x + d.lv.y * d.rv.y) / (sqrtf(d.lv.x * d.lv.x + d.lv.y * d.lv.y) * sqrtf(d.rv.x * d.rv.x + d.rv.y * d.rv.y)));
+	cfloat[0] = d.ang / (float)len;
+	d.rv.x = (float)(-right->p.x + left->p.x);
+	d.rv.y = (float)(-right->p.y + left->p.y);
+	cfloat[2] = G180 - acosf((d.lv.x * d.rv.x + d.lv.y * d.rv.y) / (sqrtf(d.lv.x * d.lv.x + d.lv.y * d.lv.y) * sqrtf(d.rv.x * d.rv.x + d.rv.y * d.rv.y)));
+	cfloat[1] = sqrtf(powf(iw->p.x - left->p.x, 2.0f) + powf(iw->p.y - left->p.y, 2.0f));
+	d.len_lr = sqrtf(powf(left->p.x - right->p.x, 2.0f) + powf(left->p.y - right->p.y, 2.0f));
+
+	cint[0] = iw->d.cs;
+	iw->d.cs = left->wall->nextsector;
+	cint[3] = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
+	cint[4] = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
+	if (left->zu < cint[3])
+	{
+		cfloat[5] = (right->zu - left->zu) / d.len_lr;
+		cint[3] = left->zu;
+	}
+	else
+	{
+		cint[5] = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
+		cfloat[5] = (cint[5] - cint[3]) / d.len_lr;
+	}
+	if (left->zd > cint[4])
+	{
+		cfloat[6] = (right->zd - left->zd) / d.len_lr;
+		cint[4] = left->zd;
+	}
+	else
+	{
+		cint[5] = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
+		cfloat[6] = (cint[5] - cint[4]) / d.len_lr;
+	}
+	iw->d.cs = cint[0];
+
+	cint[0] = left->x;
+	cint[5] = WINDOW_W;
+	cfloat[3] = left->olen;
+	cfloat[4] = iw->tsz[left->wall->glass];
+
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallTop, CL_TRUE, 0, len * sizeof(int), iw->d.save_top_betw, 0, NULL, NULL);
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallBot, CL_TRUE, 0, len * sizeof(int), iw->d.save_bot_betw, 0, NULL, NULL);
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 6 * sizeof(int), cint, 0, NULL, NULL);
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cfloat, CL_TRUE, 0, 7 * sizeof(float), cfloat, 0, NULL, NULL);
+
+	iw->k.kernel = clCreateKernel(iw->k.program, "draw_glass_tex_kernel", &iw->k.ret);
+	//printf("Create_kernel_fci_ret %d\n", iw->k.ret);
+
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 0, sizeof(cl_mem), (void *)&iw->k.m_save_top);
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 1, sizeof(cl_mem), (void *)&iw->k.m_save_bottom);
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 2, sizeof(cl_mem), (void *)&iw->k.m_sur);
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 3, sizeof(cl_mem), (void *)&iw->k.m_t[left->wall->glass]);
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 4, sizeof(cl_mem), (void *)&iw->k.m_wallTop);
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 5, sizeof(cl_mem), (void *)&iw->k.m_wallBot);
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 6, sizeof(cl_mem), (void *)&iw->k.m_cint);
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 7, sizeof(cl_mem), (void *)&iw->k.m_cfloat);
+
+	size_t global_item_size = len;
+	size_t local_item_size = 1;
+
+	iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel, 1, NULL,
+		&global_item_size, &local_item_size, 0, NULL, NULL);
+	//printf("GLASSSS %d\n", iw->k.ret);
+
+	clFlush(iw->k.command_queue);
+	clFinish(iw->k.command_queue);
+	clReleaseKernel(iw->k.kernel);
+}
