@@ -423,7 +423,7 @@ void	rotate_fc(t_sector_fc *fc, int xy, int pl)
 {
 	if (fc->n == 0)
 	{
-		fc->n = (t_sector_fc *)malloc(sizeof(t_sector_fc));
+		fc->n = (t_vector *)malloc(sizeof(t_vector));
 		fc->n->c = INCLINED_FC_Z;
 		fc->n->a = 0;
 		fc->n->b = 0;
@@ -2979,11 +2979,16 @@ void	new_sort_pairs(t_sdl *iw)
 	t_save_wall_pairs	*tmp;
 	t_save_wall_pairs	*tmp2;
 	t_save_wall_pairs	*after;
+	int					i;
 
 	start.next = iw->d.vwp;
 	tmp = &start;
+	i = 0;
 	while (tmp->next != 0)
 	{
+		i++;
+		if (i > 1000)
+			break;
 		if ((after = get_closest_between_pair(tmp->next)) != 0)
 		{
 			tmp2 = tmp->next;
@@ -3203,7 +3208,7 @@ void	get_def(t_sdl *iw)
 	iw->p.rotup = 12; //550
 	iw->v.ls = 0;
 	iw->v.angle = (float)WINDOW_W / (float)WINDOW_H * 22.0f * G1;// 0.698132f;
-	iw->v.kernel = 0;
+	iw->v.kernel = 1;
 	load_kernel(&iw->k);
 	//fill_floor_coefficients(iw);
 	iw->v.front = -1;
