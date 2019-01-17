@@ -9,6 +9,7 @@ void	new_wall(t_wall *w, int x, int y, int ns, int nsw)
 	w->nextsector_wall = nsw;
 	w->glass = -1;
 	w->t = 2;
+	w->p = 0;
 }
 
 void	get_map(t_sdl *iw)
@@ -131,6 +132,8 @@ void	get_map(t_sdl *iw)
 
 	i++;
 	new_wall(&(iw->walls[i]), 10000, 6000, -1, -1);
+	iw->walls[i].t = 7;
+	printf("i %d\n", i);
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
 	new_wall(&(iw->walls[i]), 10000, -1000, -1, -1);

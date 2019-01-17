@@ -13,6 +13,27 @@ typedef struct	s_line2d
 	float	c;
 }				t_line2d;
 
+typedef struct	s_picture
+{
+	//left shift in units
+	int		left_plus;
+	// //top shift in units
+	// int		top_plus;
+	// Z Coordinate of top of the picture
+	int		zu;
+	//picture width
+	int		tw;
+	//texture
+	int		t;
+
+	int		zd;
+	int		x0;
+	int		x1;
+	int		y0;
+	int		y1;
+	struct s_picture	*next;
+}				t_picture;
+
 typedef struct	s_wall
 {
 	int				x;
@@ -27,6 +48,8 @@ typedef struct	s_wall
 	int				nextsector_wall;
 	// Glass texture (-1 if just a portal)
 	int				glass;
+	// Pictures above the main texture
+	t_picture		*p;
 	struct s_wall	*next;
 }				t_wall;
 
@@ -288,6 +311,26 @@ typedef struct	s_draw_glass
 	float 		sky_x;
 	float 		sky_y;*/
 }				t_draw_glass;
+typedef struct	s_draw_picture
+{
+	float lang;
+	float rang;
+	float plen;
+	int rx0;
+	int rx1;
+	int ry0_up;
+	int ry0_down;
+	int ry1_up;
+	int ry1_down;
+	float dy_down;
+	float dy_up;
+	float down;
+	float up;
+	float dx;
+	float pic_x;
+	float pic_y;
+	float	dy_plus;
+}				t_draw_picture;
 
 typedef struct	s_save_wall
 {
@@ -330,6 +373,8 @@ typedef struct	s_draw
 {
 	int			top[WINDOW_W + 1];
 	int			bottom[WINDOW_W + 1];
+	int			top_save[WINDOW_W + 1];
+	int			bottom_save[WINDOW_W + 1];
 	t_intpoint2d	view_dir;
 	t_line2d	screen;
 	float		screen_len;

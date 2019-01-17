@@ -385,7 +385,7 @@ void	key_down(int code, t_sdl *iw)
 		(*(iw->v.look_sector))->fr.t = iw->v.tex_to_fill;
 	else if (code == 54 && *(iw->v.look_sector) != 0 && iw->v.mouse_mode == 1)
 		(*(iw->v.look_sector))->cl.t = -1;
-	else if (code == 16 && iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0)
+	else if (code == 16 && iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0 && (*iw->v.look_wall)->nextsector == -1)
 		(*(iw->v.look_wall))->t = -1;
 	/*else if (code == 9)
 		check_animations(iw);*/
@@ -2799,17 +2799,119 @@ void	draw_next_sector_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, i
 	free(iw->d.save_top_betw);
 }
 
+void	draw_picture(t_sdl *iw, t_picture *pic)
+{
+	t_draw_picture	d;
+	int		i;
+	int		j;
+
+	d.lang = get_vectors_angle(iw->d.left_point.x - (float)iw->p.x, iw->d.left_point.y - (float)iw->p.y,
+			(float)(pic->x0 - iw->p.x), (float)(pic->y0 - iw->p.y));
+	d.rang = get_vectors_angle(iw->d.right_point.x - (float)iw->p.x, iw->d.right_point.y - (float)iw->p.y,
+			(float)(pic->x0 - iw->p.x), (float)(pic->y0 - iw->p.y));
+	if (d.rang < iw->v.angle * 2)
+		d.rx0 = (int)(d.lang * (float)WINDOW_W / (2.0f * iw->v.angle));
+	else
+		d.rx0 = -(int)(d.lang * (float)WINDOW_W / (2.0f * iw->v.angle));
+
+	d.lang = get_vectors_angle(iw->d.left_point.x - (float)iw->p.x, iw->d.left_point.y - (float)iw->p.y,
+			(float)(pic->x1 - iw->p.x), (float)(pic->y1 - iw->p.y));
+	d.rang = get_vectors_angle(iw->d.right_point.x - (float)iw->p.x, iw->d.right_point.y - (float)iw->p.y,
+			(float)(pic->x1 - iw->p.x), (float)(pic->y1 - iw->p.y));
+	if (d.rang < iw->v.angle * 2)
+		d.rx1 = (int)(d.lang * (float)WINDOW_W / (2.0f * iw->v.angle));
+	else
+		d.rx1 = -(int)(d.lang * (float)WINDOW_W / (2.0f * iw->v.angle));
+
+	d.plen = fabsf(iw->d.screen.a * (float)pic->x0 + iw->d.screen.b * (float)pic->y0 + iw->d.screen.c) /
+				sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
+	d.ry0_up = WINDOW_H * (iw->p.z + (int)d.plen / 2 - pic->zu) / (int)(d.plen + 1) + iw->p.rotup;
+	d.ry0_down = WINDOW_H * (iw->p.z + (int)d.plen / 2 - pic->zd) / (int)(d.plen + 1) + iw->p.rotup;
+
+	d.plen = fabsf(iw->d.screen.a * (float)pic->x1 + iw->d.screen.b * (float)pic->y1 + iw->d.screen.c) /
+				sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
+	
+	d.ry1_up = WINDOW_H * (iw->p.z + (int)d.plen / 2 - pic->zu) / (int)(d.plen + 1) + iw->p.rotup;
+	d.ry1_down = WINDOW_H * (iw->p.z + (int)d.plen / 2 - pic->zd) / (int)(d.plen + 1) + iw->p.rotup;
+
+	d.pic_x = 0;
+	d.down = d.ry0_down - d.ry1_down;
+	d.up = d.ry0_up - d.ry1_up;
+	d.dx = d.rx0 - d.rx1;
+	d.dy_down = d.down / d.dx;
+	d.dy_up = d.up / d.dx;
+	i = d.rx1;
+	if (i < 0)
+	{
+		d.pic_x += iw->t[pic->t]->w * abs(i) / d.dx;
+		d.dy_down += (float)(d.down / d.dx * abs(i));
+		d.dy_up += (float)(d.up / d.dx * abs(i));
+		i = 0;
+	}
+	while(i++ <= d.rx0 && i <= WINDOW_W)
+	{
+		if(iw->d.top_save[i] >= iw->d.bottom_save[i])
+			d.pic_x += iw->t[pic->t]->w / d.dx;
+		else
+		{
+			d.dy_plus = iw->t[pic->t]->h / ((d.ry1_down + (float)d.dy_down) - (d.ry1_up + (float)d.dy_up));
+			j = d.ry1_up + (float)d.dy_up;
+			if (j >= 0)
+				d.pic_y = 0;
+			else
+			{
+				d.pic_y = d.dy_plus * abs(j);
+				j = 0;
+			}
+			while(j++ <= d.ry1_down + (float)d.dy_down && j <= iw->d.bottom_save[i])
+			{
+				set_pixel(iw->sur, i, j, get_pixel(iw->t[pic->t], (int)d.pic_x, (int)d.pic_y));
+				d.pic_y += d.dy_plus;
+			}
+			d.pic_x += iw->t[pic->t]->w / d.dx;
+			d.dy_down += (float)(d.down / d.dx);
+			d.dy_up += (float)(d.up / d.dx);
+		}
+	}
+}
+
+void	draw_pictures(t_sdl *iw, t_save_wall *left)
+{
+	t_picture	*pic;
+
+	pic = left->wall->p;
+	while (pic != 0)
+	{
+		draw_picture(iw, pic);
+
+		pic = pic->next;
+	}
+}
+
 void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 {
+	int		i;
+	
 	if (left->wall->nextsector == -1)
 	{
 		/*draw_ceil_tex(iw, left, right, len);
 		draw_inclined_floor_tex_kernel(iw, left, right, len);
 		draw_wall_tex_kernel(iw, left, right, len);*/
+		if (left->wall->p != 0)
+		{
+			i = -1;
+			while (++i <= WINDOW_W)
+			{
+				iw->d.top_save[i] = iw->d.top[i];
+				iw->d.bottom_save[i] = iw->d.bottom[i];
+			}
+		}
 		if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
 			draw_wall_floor_ceil_tex(iw, left, right, len);
 		else
 			draw_inclined_wall_floor_ceil_tex(iw, left, right, len);
+		if (left->wall->p != 0)
+			draw_pictures(iw, left);
 	}
 	else
 	{
@@ -3208,7 +3310,7 @@ void	get_def(t_sdl *iw)
 	iw->p.rotup = 12; //550
 	iw->v.ls = 0;
 	iw->v.angle = (float)WINDOW_W / (float)WINDOW_H * 22.0f * G1;// 0.698132f;
-	iw->v.kernel = 1;
+	iw->v.kernel = 0;
 	load_kernel(&iw->k);
 	//fill_floor_coefficients(iw);
 	iw->v.front = -1;
@@ -3288,6 +3390,60 @@ void	get_kernel_mem(t_sdl *iw)
 		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
 }
 
+void	calculate_picture(t_sdl *iw, t_wall *wall, t_picture *pic)
+{
+	if (wall->x == wall->next->x)
+	{
+		pic->x1 = wall->x;
+		pic->x0 = wall->x;
+		if (wall->y > wall->next->y)
+		{
+			pic->y1 = wall->y - pic->left_plus;
+			pic->y0 = pic->y1 - pic->tw;
+		}
+		else
+		{
+			pic->y1 = wall->y + pic->left_plus;
+			pic->y0 = pic->y1 + pic->tw;
+		}
+	}
+	else if (wall->y == wall->next->y)
+	{
+		pic->y1 = wall->y;
+		pic->y0 = wall->y;
+		if (wall->x > wall->next->x)
+		{
+			pic->x1 = wall->x - pic->left_plus;
+			pic->x0 = pic->x1 - pic->tw;
+		}
+		else
+		{
+			pic->x1 = wall->x + pic->left_plus;
+			pic->x0 = pic->x1 + pic->tw;
+		}
+	}
+	else
+	{
+		//////
+	}
+
+	pic->zd = pic->zu - pic->tw * iw->t[pic->t]->h * 120 / iw->t[pic->t]->w / 100;
+}
+
+void	add_picture1(t_sdl *iw)
+{
+	t_picture	*tmp;
+
+	tmp = (t_picture *)malloc(sizeof(t_picture));
+	tmp->left_plus = 200;
+	tmp->zu = 1000;
+	tmp->tw = 500;
+	tmp->t = 15;
+	tmp->next = 0;
+	iw->walls[20].p = tmp;
+	calculate_picture(iw, &iw->walls[20], tmp);
+}
+
 int		main(void)
 {
 	t_sdl	iw;
@@ -3307,7 +3463,8 @@ int		main(void)
 	draw_menu(&iw);
 	// draw
 	get_map(&iw);
-	get_animation(&iw);
+	add_picture1(&iw); ///////
+	//get_animation(&iw);
 	create_map(&iw);
 	draw(&iw);
 	SDL_UpdateWindowSurface(iw.win);
