@@ -2856,12 +2856,12 @@ void	draw_picture(t_sdl *iw, t_picture *pic)
 		{
 			d.dy_plus = iw->t[pic->t]->h / ((d.ry1_down + (float)d.dy_down) - (d.ry1_up + (float)d.dy_up));
 			j = d.ry1_up + (float)d.dy_up;
-			if (j >= 0)
+			if (j >= iw->d.top_save[i])
 				d.pic_y = 0;
 			else
 			{
-				d.pic_y = d.dy_plus * abs(j);
-				j = 0;
+				d.pic_y = d.dy_plus * (iw->d.top_save[i] - j);
+				j = iw->d.top_save[i];
 			}
 			while(j++ <= d.ry1_down + (float)d.dy_down && j <= iw->d.bottom_save[i])
 			{
@@ -2888,6 +2888,11 @@ void	draw_pictures(t_sdl *iw, t_save_wall *left)
 	}
 }
 
+void	draw_pictures_kernel(t_sdl *iw, t_save_wall *left)
+{
+	
+}
+
 void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 {
 	int		i;
@@ -2899,12 +2904,14 @@ void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		draw_wall_tex_kernel(iw, left, right, len);*/
 		if (left->wall->p != 0)
 		{
-			i = -1;
-			while (++i <= WINDOW_W)
-			{
-				iw->d.top_save[i] = iw->d.top[i];
-				iw->d.bottom_save[i] = iw->d.bottom[i];
-			}
+			// i = -1;
+			// while (++i <= WINDOW_W)
+			// {
+			// 	iw->d.top_save[i] = iw->d.top[i];
+			// 	iw->d.bottom_save[i] = iw->d.bottom[i];
+			// }
+			ft_memcpy(iw->d.top_save, iw->d.top, WINDOW_W * sizeof(int));
+			ft_memcpy(iw->d.bottom_save, iw->d.bottom, WINDOW_W * sizeof(int));
 		}
 		if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
 			draw_wall_floor_ceil_tex(iw, left, right, len);
@@ -2931,10 +2938,19 @@ void	draw_all_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		/*draw_ceil_tex(iw, left, right, len);
 		draw_inclined_floor_tex_kernel(iw, left, right, len);
 		draw_wall_tex_kernel(iw, left, right, len);*/
+		if (left->wall->p != 0)
+		{
+			clEnqueueCopyBuffer(iw->k.command_queue, iw->k.m_top,
+				iw->k.m_save_top, 0, 0, WINDOW_W * sizeof(int), 0, NULL, NULL);
+			clEnqueueCopyBuffer(iw->k.command_queue, iw->k.m_bottom,
+				iw->k.m_save_bottom, 0, 0, WINDOW_W * sizeof(int), 0, NULL, NULL);
+		}
 		if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
 			draw_wall_floor_ceil_tex_kernel(iw, left, right, len);
 		else
 			draw_inclined_wall_floor_ceil_tex_kernel(iw, left, right, len);
+		if (left->wall->p != 0)
+			draw_pictures_kernel(iw, left);
 	}
 	else
 	{
