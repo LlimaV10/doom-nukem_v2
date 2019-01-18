@@ -1310,3 +1310,62 @@ __kernel void draw_glass_tex_kernel(
 		ty += dty;
 	}
 }
+
+//int
+//0 - start_i
+//1 - th
+//2 - ry1_down
+//3 - ry1_up
+//4 - tw
+//5 - WINDOW_W
+
+//float
+//0 - start_pic_x
+//1 - dpic_x
+//2 - start_dy_down
+//3 - ddy_down
+//4 - start_dy_up
+//5 - ddy_up
+
+
+__kernel void draw_picture_kernel(
+	__global int *top, __global int *bottom,
+	__global int *wpixels, __global const uchar *picture_pixels,
+	__global const int *cint, __global const float *cfloat
+)
+{
+	int		tp;
+	int		i;
+	int		j;
+	float	pic_x;
+	float	dy_down;
+	float	dy_up;
+	float	dy_plus;
+	float	pic_y;
+
+	i = get_global_id(0) + cint[0];
+	if (top[i] >= bottom[i])
+		return;
+	pic_x = cfloat[0] + cfloat[1] * (float)(i - cint[0]);
+	if ((int)pic_x >= cint[4])
+		return;
+	dy_down = cfloat[2] + cfloat[3] * (float)(i - cint[0]);
+	dy_up = cfloat[4] + cfloat[5] * (float)(i - cint[0]);
+
+	dy_plus = (float)cint[1] / (((float)cint[2] + dy_down) -
+		((float)cint[3] + dy_up));
+	j = cint[3] + (int)dy_up;
+	if (j >= top[i])
+		pic_y = 0.0f;
+	else
+	{
+		pic_y = dy_plus * (float)(top[i] - j);
+		j = top[i];
+	}
+	while (j++ <= cint[2] + (int)dy_down && j <= bottom[i] && (int)pic_y < cint[1])
+	{
+		tp = (int)pic_x * 3 + (int)pic_y * 3 * cint[4];
+		wpixels[i + j * cint[5]] = (int)(picture_pixels[tp] | picture_pixels[tp + 1] << 8 | picture_pixels[tp + 2] << 16);
+		pic_y += dy_plus;
+	}
+}

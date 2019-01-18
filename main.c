@@ -2888,11 +2888,6 @@ void	draw_pictures(t_sdl *iw, t_save_wall *left)
 	}
 }
 
-void	draw_pictures_kernel(t_sdl *iw, t_save_wall *left)
-{
-	
-}
-
 void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 {
 	int		i;
@@ -3451,10 +3446,34 @@ void	add_picture1(t_sdl *iw)
 	t_picture	*tmp;
 
 	tmp = (t_picture *)malloc(sizeof(t_picture));
-	tmp->left_plus = 200;
+	tmp->left_plus = 600;
 	tmp->zu = 1000;
 	tmp->tw = 500;
 	tmp->t = 15;
+	tmp->next = 0;
+	iw->walls[17].p = tmp;
+	calculate_picture(iw, &iw->walls[17], tmp);
+	tmp = (t_picture *)malloc(sizeof(t_picture));
+	tmp->left_plus = 600;
+	tmp->zu = 1000;
+	tmp->tw = 500;
+	tmp->t = 5;
+	tmp->next = 0;
+	iw->walls[18].p = tmp;
+	calculate_picture(iw, &iw->walls[18], tmp);
+	tmp = (t_picture *)malloc(sizeof(t_picture));
+	tmp->left_plus = 600;
+	tmp->zu = 1000;
+	tmp->tw = 500;
+	tmp->t = 6;
+	tmp->next = 0;
+	iw->walls[19].p = tmp;
+	calculate_picture(iw, &iw->walls[19], tmp);
+	tmp = (t_picture *)malloc(sizeof(t_picture));
+	tmp->left_plus = 600;
+	tmp->zu = 1000;
+	tmp->tw = 500;
+	tmp->t = 7;
 	tmp->next = 0;
 	iw->walls[20].p = tmp;
 	calculate_picture(iw, &iw->walls[20], tmp);

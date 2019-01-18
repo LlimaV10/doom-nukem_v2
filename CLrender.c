@@ -990,3 +990,109 @@ void	draw_glass_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, int
 	clFinish(iw->k.command_queue);
 	clReleaseKernel(iw->k.kernel);
 }
+
+void	draw_picture_kernel(t_sdl *iw, t_picture *pic)
+{
+	t_draw_picture	d;
+	int		cint[6];
+	float	cfloat[6];
+
+	cint[1] = iw->t[pic->t]->h;
+	cint[4] = iw->t[pic->t]->w;
+	cint[5] = WINDOW_W;
+
+
+	d.lang = get_vectors_angle(iw->d.left_point.x - (float)iw->p.x, iw->d.left_point.y - (float)iw->p.y,
+		(float)(pic->x0 - iw->p.x), (float)(pic->y0 - iw->p.y));
+	d.rang = get_vectors_angle(iw->d.right_point.x - (float)iw->p.x, iw->d.right_point.y - (float)iw->p.y,
+		(float)(pic->x0 - iw->p.x), (float)(pic->y0 - iw->p.y));
+	if (d.rang < iw->v.angle * 2)
+		d.rx0 = (int)(d.lang * (float)WINDOW_W / (2.0f * iw->v.angle));
+	else
+		return;
+
+	d.lang = get_vectors_angle(iw->d.left_point.x - (float)iw->p.x, iw->d.left_point.y - (float)iw->p.y,
+		(float)(pic->x1 - iw->p.x), (float)(pic->y1 - iw->p.y));
+	d.rang = get_vectors_angle(iw->d.right_point.x - (float)iw->p.x, iw->d.right_point.y - (float)iw->p.y,
+		(float)(pic->x1 - iw->p.x), (float)(pic->y1 - iw->p.y));
+	if (d.rang < iw->v.angle * 2)
+		d.rx1 = (int)(d.lang * (float)WINDOW_W / (2.0f * iw->v.angle));
+	else
+		d.rx1 = -(int)(d.lang * (float)WINDOW_W / (2.0f * iw->v.angle));
+
+	if (d.rx1 >= WINDOW_W)
+		return;
+	d.plen = fabsf(iw->d.screen.a * (float)pic->x0 + iw->d.screen.b * (float)pic->y0 + iw->d.screen.c) /
+		sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
+	d.ry0_up = WINDOW_H * (iw->p.z + (int)d.plen / 2 - pic->zu) / (int)(d.plen + 1) + iw->p.rotup;
+	d.ry0_down = WINDOW_H * (iw->p.z + (int)d.plen / 2 - pic->zd) / (int)(d.plen + 1) + iw->p.rotup;
+
+	d.plen = fabsf(iw->d.screen.a * (float)pic->x1 + iw->d.screen.b * (float)pic->y1 + iw->d.screen.c) /
+		sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
+
+	cint[3] = WINDOW_H * (iw->p.z + (int)d.plen / 2 - pic->zu) / (int)(d.plen + 1) + iw->p.rotup;
+	cint[2] = WINDOW_H * (iw->p.z + (int)d.plen / 2 - pic->zd) / (int)(d.plen + 1) + iw->p.rotup;
+
+	cfloat[0] = 0.0f;
+	d.down = d.ry0_down - cint[2];
+	d.up = d.ry0_up - cint[3];
+	d.dx = d.rx0 - d.rx1;
+	cint[0] = d.rx1;
+	cfloat[2] = d.down / d.dx;
+	cfloat[3] = d.down / d.dx;
+	cfloat[4] = d.up / d.dx;
+	cfloat[5] = d.up / d.dx;
+	cfloat[1] = (float)iw->t[pic->t]->w / d.dx;
+	if (cint[0] < 0)
+	{
+		cfloat[0] += cfloat[1] * (float)abs(cint[0]);
+		//iw->t[pic->t]->w * abs(cint[0]) / d.dx;
+		cfloat[2] += cfloat[3] * (float)abs(cint[0]);
+		//(float)(d.down / d.dx * abs(cint[0]));
+		cfloat[4] += cfloat[5] * (float)abs(cint[0]);
+		//(float)(d.up / d.dx * abs(cint[0]));
+		cint[0] = 0;
+	}
+
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 6 * sizeof(int), cint, 0, NULL, NULL);
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cfloat, CL_TRUE, 0, 6 * sizeof(float), cfloat, 0, NULL, NULL);
+
+	iw->k.kernel = clCreateKernel(iw->k.program, "draw_picture_kernel", &iw->k.ret);
+	//printf("draw_picture_kernel_ret %d\n", iw->k.ret);
+
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 0, sizeof(cl_mem), (void *)&iw->k.m_save_top);
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 1, sizeof(cl_mem), (void *)&iw->k.m_save_bottom);
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 2, sizeof(cl_mem), (void *)&iw->k.m_sur);
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 3, sizeof(cl_mem), (void *)&iw->k.m_t[pic->t]);
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 4, sizeof(cl_mem), (void *)&iw->k.m_cint);
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 5, sizeof(cl_mem), (void *)&iw->k.m_cfloat);
+
+	//while(i++ <= d.rx0 && i <= WINDOW_W)
+	size_t global_item_size;
+	if (d.rx0 < WINDOW_W)
+		global_item_size = d.rx0 - cint[0];
+	else
+		global_item_size = WINDOW_W - cint[0];
+	//printf("global %zu\n", global_item_size);
+	size_t local_item_size = 1;
+
+	iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel, 1, NULL,
+		&global_item_size, &local_item_size, 0, NULL, NULL);
+	//printf("GLASSSS %d\n", iw->k.ret);
+
+	clFlush(iw->k.command_queue);
+	clFinish(iw->k.command_queue);
+	clReleaseKernel(iw->k.kernel);
+}
+
+void	draw_pictures_kernel(t_sdl *iw, t_save_wall *left)
+{
+	t_picture	*pic;
+
+	pic = left->wall->p;
+	while (pic != 0)
+	{
+		draw_picture_kernel(iw, pic);
+		pic = pic->next;
+	}
+}
