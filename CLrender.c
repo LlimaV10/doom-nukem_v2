@@ -1076,8 +1076,9 @@ void	draw_picture_kernel(t_sdl *iw, t_picture *pic)
 	//printf("global %zu\n", global_item_size);
 	size_t local_item_size = 1;
 
-	iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel, 1, NULL,
-		&global_item_size, &local_item_size, 0, NULL, NULL);
+	if (global_item_size <= WINDOW_W)
+		iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel, 1, NULL,
+			&global_item_size, &local_item_size, 0, NULL, NULL);
 	//printf("GLASSSS %d\n", iw->k.ret);
 
 	clFlush(iw->k.command_queue);

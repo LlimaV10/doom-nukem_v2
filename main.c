@@ -718,7 +718,7 @@ void	move(t_sdl *iw, int pl, int *time)
 		move_in_portal(iw, dx, dy, sw);
 }
 
-void	get_wall_line2(t_sdl *iw, t_wall *wall)
+void	get_wall_line2(t_wall *wall)
 {
 	wall->l.a = (float)(wall->next->y - wall->y);
 	wall->l.b = (float)(wall->x - wall->next->x);
@@ -3401,6 +3401,57 @@ void	get_kernel_mem(t_sdl *iw)
 		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
 }
 
+//void	calculate_not_squared_wall_picture(t_sdl *iw, t_wall *wall, t_picture *pic)
+//{
+//	float	ra;
+//	float	rb;
+//	float	rc;
+//	float	y1;
+//	float	y2;
+//	float	disk;
+//
+//	get_wall_line2(wall);
+//	ra = 1.0f + powf(wall->l.b, 2.0f) / powf(wall->l.a, 2.0f);
+//	rb = 2.0f * wall->l.b / wall->l.a * ((float)wall->x + wall->l.c / wall->l.a) - (float)wall->y;
+//	rc = wall->l.c / wall->l.a * (wall->l.c / wall->l.a + 2.0f * (float)wall->x) + powf(wall->y, 2.0f) +
+//		(float)wall->x;// -powf(pic->left_plus, 2.0f);
+//
+//	disk = sqrtf(powf(rb, 2.0f) - ra * (rc - powf(pic->left_plus, 2.0f)));
+//	y1 = (-rb + disk) / ra;
+//	y2 = (-rb - disk) / ra;
+//	if (wall->next->y > wall->y)
+//		pic->y1 = ((int)y1 > wall->y) ? (int)y1 : (int)y2;
+//	else
+//		pic->y1 = ((int)y1 < wall->y) ? (int)y1 : (int)y2;
+//	pic->x1 = (int)(-(wall->l.b * (float)pic->y1 + wall->l.c) / wall->l.a);
+//
+//	disk = sqrtf(powf(rb, 2.0f) - ra * (rc - powf(pic->left_plus + pic->tw, 2.0f)));
+//	y1 = (-rb + disk) / ra;
+//	y2 = (-rb - disk) / ra;
+//	if (wall->next->y > wall->y)
+//		pic->y0 = ((int)y1 > wall->y) ? (int)y1 : (int)y2;
+//	else
+//		pic->y0 = ((int)y1 < wall->y) ? (int)y1 : (int)y2;
+//	pic->x0 = (int)(-(wall->l.b * (float)pic->y0 + wall->l.c) / wall->l.a);
+//}
+
+void	calculate_not_squared_wall_picture(t_sdl *iw, t_wall *wall, t_picture *pic)
+{
+	float	alpha;
+
+	alpha = get_vectors_angle(wall->next->x - wall->x, wall->next->y - wall->y,
+		((wall->next->x > wall->x) ? 10 : -10), 0);
+	pic->x1 = (float)wall->x + (float)pic->left_plus * cosf(alpha) *
+		((wall->next->x > wall->x) ? 1.0f : -1.0f);
+	pic->y1 = (float)wall->y + (float)pic->left_plus * sinf(alpha) *
+		((wall->next->y > wall->y) ? 1.0f : -1.0f);
+
+	pic->x0 = (float)wall->x + (float)(pic->left_plus + pic->tw) * cosf(alpha) *
+		((wall->next->x > wall->x) ? 1.0f : -1.0f);
+	pic->y0 = (float)wall->y + (float)(pic->left_plus + pic->tw) * sinf(alpha) *
+		((wall->next->y > wall->y) ? 1.0f : -1.0f);
+}
+
 void	calculate_picture(t_sdl *iw, t_wall *wall, t_picture *pic)
 {
 	if (wall->x == wall->next->x)
@@ -3434,9 +3485,7 @@ void	calculate_picture(t_sdl *iw, t_wall *wall, t_picture *pic)
 		}
 	}
 	else
-	{
-		//////
-	}
+		calculate_not_squared_wall_picture(iw, wall, pic);
 
 	pic->zd = pic->zu - pic->tw * iw->t[pic->t]->h * 120 / iw->t[pic->t]->w / 100;
 }
@@ -3451,8 +3500,8 @@ void	add_picture1(t_sdl *iw)
 	tmp->tw = 500;
 	tmp->t = 15;
 	tmp->next = 0;
-	iw->walls[17].p = tmp;
-	calculate_picture(iw, &iw->walls[17], tmp);
+	iw->walls[5].p = tmp;
+	calculate_picture(iw, &iw->walls[5], tmp);
 	tmp = (t_picture *)malloc(sizeof(t_picture));
 	tmp->left_plus = 600;
 	tmp->zu = 1000;
