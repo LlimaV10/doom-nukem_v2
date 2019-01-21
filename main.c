@@ -105,6 +105,46 @@ void	draw_crosshair(t_sdl *iw)
 		set_pixel(iw->sur, j, i, 0x00FF00);
 }
 
+void	add_picture(t_sdl *iw, t_wall *wall)
+{
+	t_picture	*tmp;
+
+	tmp = (t_picture *)malloc(sizeof(t_picture));
+	tmp->left_plus = 500;
+	tmp->zu = get_ceil_z(iw, wall->x, wall->y) - 100;
+	tmp->tw = 500;
+	tmp->t = iw->v.tex_to_fill;
+	tmp->next = wall->p;
+	wall->p = tmp;
+	calculate_picture(iw, wall, tmp);
+}
+
+void	delete_picture(t_wall *wall, t_picture *pic)
+{
+	t_picture	*tmp;
+
+	if (pic == wall->p)
+	{
+		wall->p = wall->p->next;
+		free(pic);
+	}
+	else
+	{
+		tmp = wall->p;
+		while (tmp->next != 0)
+		{
+			if (tmp->next == pic)
+				break;
+			tmp = tmp->next;
+		}
+		if (tmp->next != 0)
+		{
+			tmp->next = tmp->next->next;
+			free(pic);
+		}
+	}
+}
+
 //void	draw_text_to_window_surface(t_sdl *iw, int x, int y, SDL_Surface *t)
 //{
 //	int		i;
@@ -175,10 +215,10 @@ void	draw_some_info(t_sdl *iw)
 	draw_text_number(iw, &d, "FPS: ", iw->v.fps);
 	d.rect.y = 25;
 	draw_text_number(iw, &d, "Sector: ", iw->d.cs);
-	if (iw->v.edit_mode == 0)
-		draw_text(iw, "Wall texture editing mode", 0, 50);
-	else if (iw->v.edit_mode == 1)
-		draw_text(iw, "Pictures editing mode", 0, 50);
+	// if (iw->v.edit_mode == 0)
+	// 	draw_text(iw, "Wall texture editing mode", 0, 50);
+	// else if (iw->v.edit_mode == 1)
+	// 	draw_text(iw, "Pictures editing mode", 0, 50);
 
 	/*if (*(iw->v.look_picture) == 0)
 		draw_text(iw, "Look picture is NULL", 0, 75);
@@ -351,8 +391,11 @@ void	key_up(int code, t_sdl *iw)
 		iw->v.rot_up = -1;
 	else if (code == 81)
 		iw->v.rot_down = -1;
-	else if (code == 19)
-		iw->v.edit_mode = (iw->v.edit_mode == 0) ? 1 : 0;
+	else if (code == 47)
+		iw->v.picture_changing = 0;
+	else if (code == 19 && iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0)
+		add_picture(iw, *(iw->v.look_wall));
+	// 	iw->v.edit_mode = (iw->v.edit_mode == 0) ? 1 : 0;
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
 }
 
@@ -377,6 +420,11 @@ void	key_down(int code, t_sdl *iw)
 		iw->v.rot_up = clock();
 	else if (code == 81)
 		iw->v.rot_down = clock();
+	else if (code == 47 && *(iw->v.look_picture) != 0 && *(iw->v.look_wall) != 0)
+	{
+		iw->v.picture_changing = *(iw->v.look_picture);
+		iw->v.wall_picture_changing = *(iw->v.look_wall);
+	}
 	else if (code == 18)
 	{
 		iw->v.kernel = ((iw->v.kernel == 1) ? 0 : 1);
@@ -417,17 +465,27 @@ void	mouse_move(int xrel, int yrel, t_sdl *iw)
 	if (iw->v.mouse_mode == 0)
 		return;
 	//printf("xrel %d yrel %d\n", xrel, yrel);
-	iw->p.rot += MOUSE_SENSIVITY * (float)xrel;
-	if (iw->p.rot < 0.0f)
-		iw->p.rot += G360;
-	else if (iw->p.rot >= G360)
-		iw->p.rot -= G360;
-	iw->p.introt = (int)(iw->p.rot / G1);
-	iw->p.rotup -= MOUSE_UP_DOWN_SENSIVITY * yrel;
-	if (iw->p.rotup > 2 * WINDOW_H)
-		iw->p.rotup = 2 * WINDOW_H;
-	else if (iw->p.rotup < -2 * WINDOW_H)
-		iw->p.rotup = -2 * WINDOW_H;
+	if (iw->v.picture_changing == 0)
+	{
+		iw->p.rot += MOUSE_SENSIVITY * (float)xrel;
+		if (iw->p.rot < 0.0f)
+			iw->p.rot += G360;
+		else if (iw->p.rot >= G360)
+			iw->p.rot -= G360;
+		iw->p.introt = (int)(iw->p.rot / G1);
+		iw->p.rotup -= MOUSE_UP_DOWN_SENSIVITY * yrel;
+		if (iw->p.rotup > 2 * WINDOW_H)
+			iw->p.rotup = 2 * WINDOW_H;
+		else if (iw->p.rotup < -2 * WINDOW_H)
+			iw->p.rotup = -2 * WINDOW_H;
+	
+	}
+	else
+	{
+		iw->v.picture_changing->left_plus += xrel;
+		iw->v.picture_changing->zu -= yrel;
+		calculate_picture(iw, iw->v.wall_picture_changing, iw->v.picture_changing);
+	}
 }
 
 void	rotate_fc(t_sector_fc *fc, int xy, int pl)
@@ -547,19 +605,17 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 			}
 		}
 	}
-	else if (iw->v.mouse_mode == 1 && iw->v.edit_mode == 0
-		&& *(iw->v.look_wall) != 0)
+	else if (iw->v.mouse_mode == 1 && *(iw->v.look_picture) != 0 && *(iw->v.look_wall) != 0)
+	{
+		(*(iw->v.look_picture))->t = iw->v.tex_to_fill;
+		calculate_picture(iw, *(iw->v.look_wall), *(iw->v.look_picture));
+	}
+	else if (iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0)
 	{
 		if (iw->v.look_portal == 0 || iw->v.look_portal->glass < 0)
 			(*(iw->v.look_wall))->t = iw->v.tex_to_fill;
 		else
 			iw->v.look_portal->glass = -1;
-	}
-	else if (iw->v.mouse_mode == 1 && iw->v.edit_mode == 1
-		&& *(iw->v.look_picture) != 0 && *(iw->v.look_wall) != 0)
-	{
-		(*(iw->v.look_picture))->t = iw->v.tex_to_fill;
-		calculate_picture(iw, *(iw->v.look_wall), *(iw->v.look_picture));
 	}
 }
 
@@ -567,6 +623,8 @@ void	mouse_buttonright_up(int x, int y, t_sdl *iw)
 {
 	if (iw->v.mouse_mode == 1 && iw->v.look_portal != 0)
 		iw->v.look_portal->glass = iw->v.tex_to_fill;
+	else if (iw->v.mouse_mode == 1 && *(iw->v.look_picture) != 0 && *(iw->v.look_wall) != 0)
+		delete_picture(*(iw->v.look_wall), *(iw->v.look_picture));
 }
 
 void	mouse_wheel(SDL_Event *e, t_sdl *iw)
@@ -580,6 +638,13 @@ void	mouse_wheel(SDL_Event *e, t_sdl *iw)
 			iw->v.scroll_first_tex = TEXTURES_COUNT - 1;
 		SDL_FillRect(iw->sur, &iw->v.scroll_tex_rect, 0x000000);
 		draw_tex_to_select(iw);
+	}
+	else if (iw->v.mouse_mode == 1 && iw->v.picture_changing != 0)
+	{
+		iw->v.picture_changing->tw += e->wheel.y;
+		if (iw->v.picture_changing->tw < 0)
+			iw->v.picture_changing->tw = 0;
+		calculate_picture(iw, iw->v.wall_picture_changing, iw->v.picture_changing);
 	}
 }
 
@@ -2957,9 +3022,9 @@ void	draw_all_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		if (left->wall->p != 0)
 		{
 			clEnqueueCopyBuffer(iw->k.command_queue, iw->k.m_top,
-				iw->k.m_save_top, 0, 0, WINDOW_W * sizeof(int), 0, NULL, NULL);
+				iw->k.m_save_top2, 0, 0, WINDOW_W * sizeof(int), 0, NULL, NULL);
 			clEnqueueCopyBuffer(iw->k.command_queue, iw->k.m_bottom,
-				iw->k.m_save_bottom, 0, 0, WINDOW_W * sizeof(int), 0, NULL, NULL);
+				iw->k.m_save_bottom2, 0, 0, WINDOW_W * sizeof(int), 0, NULL, NULL);
 		}
 		if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
 			draw_wall_floor_ceil_tex_kernel(iw, left, right, len);
@@ -3343,7 +3408,7 @@ void	get_def(t_sdl *iw)
 	iw->p.rotup = 12; //550
 	iw->v.ls = 0;
 	iw->v.angle = (float)WINDOW_W / (float)WINDOW_H * 22.0f * G1;// 0.698132f;
-	iw->v.kernel = 0;
+	iw->v.kernel = 1;
 	load_kernel(&iw->k);
 	//fill_floor_coefficients(iw);
 	iw->v.front = -1;
@@ -3384,7 +3449,8 @@ void	get_def(t_sdl *iw)
 	iw->v.chang_fc_rect.x = 0;
 	iw->v.chang_fc_rect.y = WINDOW_H + 100;
 	iw->l.skybox = 13;
-	iw->v.edit_mode = 0;
+	iw->v.picture_changing = 0;
+	//iw->v.edit_mode = 0;
 }
 
 void	get_kernel_mem(t_sdl *iw)
@@ -3423,6 +3489,10 @@ void	get_kernel_mem(t_sdl *iw)
 	iw->k.m_save_top = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE,
 		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
 	iw->k.m_save_bottom = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE,
+		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
+		iw->k.m_save_top2 = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE,
+		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
+	iw->k.m_save_bottom2 = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE,
 		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
 }
 

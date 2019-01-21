@@ -423,6 +423,8 @@ typedef struct	s_kernel
 	cl_mem	m_bot_betw;
 	cl_mem		m_save_top;
 	cl_mem		m_save_bottom;
+	cl_mem		m_save_top2;
+	cl_mem		m_save_bottom2;
 }				t_kernel;
 
 typedef struct	s_variables
@@ -468,7 +470,9 @@ typedef struct	s_variables
 	SDL_Rect	chang_fc_rect;
 	int		count_portal_rot_anim;
 	// 0 - Walls texture editing, 1 - Pictures editing
-	int		edit_mode;
+	// int		edit_mode;
+	t_picture	*picture_changing;
+	t_wall		*wall_picture_changing;
 }				t_variables;
 
 typedef struct	s_level
