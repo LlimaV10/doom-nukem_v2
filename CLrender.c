@@ -991,7 +991,7 @@ void	draw_glass_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, int
 	clReleaseKernel(iw->k.kernel);
 }
 
-void	draw_picture_kernel(t_sdl *iw, t_picture *pic)
+int		draw_picture_kernel(t_sdl *iw, t_picture *pic)
 {
 	t_draw_picture	d;
 	int		cint[6];
@@ -1009,7 +1009,7 @@ void	draw_picture_kernel(t_sdl *iw, t_picture *pic)
 	if (d.rang < iw->v.angle * 2)
 		d.rx0 = (int)(d.lang * (float)WINDOW_W / (2.0f * iw->v.angle));
 	else
-		return;
+		return (0);
 
 	d.lang = get_vectors_angle(iw->d.left_point.x - (float)iw->p.x, iw->d.left_point.y - (float)iw->p.y,
 		(float)(pic->x1 - iw->p.x), (float)(pic->y1 - iw->p.y));
@@ -1021,7 +1021,7 @@ void	draw_picture_kernel(t_sdl *iw, t_picture *pic)
 		d.rx1 = -(int)(d.lang * (float)WINDOW_W / (2.0f * iw->v.angle));
 
 	if (d.rx1 >= WINDOW_W)
-		return;
+		return (0);
 	d.plen = fabsf(iw->d.screen.a * (float)pic->x0 + iw->d.screen.b * (float)pic->y0 + iw->d.screen.c) /
 		sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
 	d.ry0_up = WINDOW_H * (iw->p.z + (int)d.plen / 2 - pic->zu) / (int)(d.plen + 1) + iw->p.rotup;
@@ -1084,6 +1084,9 @@ void	draw_picture_kernel(t_sdl *iw, t_picture *pic)
 	clFlush(iw->k.command_queue);
 	clFinish(iw->k.command_queue);
 	clReleaseKernel(iw->k.kernel);
+	if (d.rx1 <= WINDOW_W / 2 && d.rx0 >= WINDOW_W / 2)
+		return (1);
+	return (0);
 }
 
 void	draw_pictures_kernel(t_sdl *iw, t_save_wall *left)
@@ -1093,7 +1096,8 @@ void	draw_pictures_kernel(t_sdl *iw, t_save_wall *left)
 	pic = left->wall->p;
 	while (pic != 0)
 	{
-		draw_picture_kernel(iw, pic);
+		if (draw_picture_kernel(iw, pic) && *(iw->v.look_picture) == 0)
+			*(iw->v.look_picture) = pic;
 		pic = pic->next;
 	}
 }

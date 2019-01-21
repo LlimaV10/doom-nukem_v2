@@ -462,10 +462,13 @@ typedef struct	s_variables
 	t_wall		**look_wall;
 	t_wall		*look_portal;
 	t_sector	**look_sector;
+	t_picture	**look_picture;
 	// 0 - floor, 1 - ceil
 	int		changing_fc;
 	SDL_Rect	chang_fc_rect;
 	int		count_portal_rot_anim;
+	// 0 - Walls texture editing, 1 - Pictures editing
+	int		edit_mode;
 }				t_variables;
 
 typedef struct	s_level

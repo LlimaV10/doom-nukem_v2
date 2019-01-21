@@ -41,5 +41,6 @@ void	draw_skybox_kernel(t_sdl *iw);
 void	draw_glass_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len);
 void	draw_pictures_kernel(t_sdl *iw, t_save_wall *left);
 float	get_vectors_angle(float x1, float y1, float x2, float y2);
+void	calculate_picture(t_sdl *iw, t_wall *wall, t_picture *pic);
 
 #endif

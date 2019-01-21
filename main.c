@@ -175,6 +175,15 @@ void	draw_some_info(t_sdl *iw)
 	draw_text_number(iw, &d, "FPS: ", iw->v.fps);
 	d.rect.y = 25;
 	draw_text_number(iw, &d, "Sector: ", iw->d.cs);
+	if (iw->v.edit_mode == 0)
+		draw_text(iw, "Wall texture editing mode", 0, 50);
+	else if (iw->v.edit_mode == 1)
+		draw_text(iw, "Pictures editing mode", 0, 50);
+
+	/*if (*(iw->v.look_picture) == 0)
+		draw_text(iw, "Look picture is NULL", 0, 75);
+	else
+		draw_text(iw, "Look picture not NULL", 0, 75);*/
 }
 
 void	draw_menu_sphere(t_sdl *iw, int a, const char *t)
@@ -342,6 +351,8 @@ void	key_up(int code, t_sdl *iw)
 		iw->v.rot_up = -1;
 	else if (code == 81)
 		iw->v.rot_down = -1;
+	else if (code == 19)
+		iw->v.edit_mode = (iw->v.edit_mode == 0) ? 1 : 0;
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
 }
 
@@ -536,12 +547,19 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 			}
 		}
 	}
-	else if (iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0)
+	else if (iw->v.mouse_mode == 1 && iw->v.edit_mode == 0
+		&& *(iw->v.look_wall) != 0)
 	{
 		if (iw->v.look_portal == 0 || iw->v.look_portal->glass < 0)
 			(*(iw->v.look_wall))->t = iw->v.tex_to_fill;
 		else
 			iw->v.look_portal->glass = -1;
+	}
+	else if (iw->v.mouse_mode == 1 && iw->v.edit_mode == 1
+		&& *(iw->v.look_picture) != 0 && *(iw->v.look_wall) != 0)
+	{
+		(*(iw->v.look_picture))->t = iw->v.tex_to_fill;
+		calculate_picture(iw, *(iw->v.look_wall), *(iw->v.look_picture));
 	}
 }
 
@@ -2799,7 +2817,7 @@ void	draw_next_sector_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, i
 	free(iw->d.save_top_betw);
 }
 
-void	draw_picture(t_sdl *iw, t_picture *pic)
+int		draw_picture(t_sdl *iw, t_picture *pic)
 {
 	t_draw_picture	d;
 	int		i;
@@ -2873,6 +2891,9 @@ void	draw_picture(t_sdl *iw, t_picture *pic)
 			d.dy_up += (float)(d.up / d.dx);
 		}
 	}
+	if (d.rx1 <= WINDOW_W / 2 && d.rx0 >= WINDOW_W / 2)
+		return (1);
+	return (0);
 }
 
 void	draw_pictures(t_sdl *iw, t_save_wall *left)
@@ -2882,8 +2903,8 @@ void	draw_pictures(t_sdl *iw, t_save_wall *left)
 	pic = left->wall->p;
 	while (pic != 0)
 	{
-		draw_picture(iw, pic);
-
+		if (draw_picture(iw, pic) && *(iw->v.look_picture) == 0)
+			*(iw->v.look_picture) = pic;
 		pic = pic->next;
 	}
 }
@@ -3258,6 +3279,7 @@ void	draw(t_sdl *iw)
 		iw->v.look_portal = 0;
 		*(iw->v.look_wall) = 0;
 		*(iw->v.look_sector) = 0;
+		*(iw->v.look_picture) = 0;
 	}
 	draw_start(iw);
 	if (!iw->v.kernel)
@@ -3353,6 +3375,8 @@ void	get_def(t_sdl *iw)
 	*(iw->v.look_wall) = 0;
 	iw->v.look_sector = (t_sector **)malloc(sizeof(t_sector *));
 	*(iw->v.look_sector) = 0;
+	iw->v.look_picture = (t_picture **)malloc(sizeof(t_picture *));
+	*(iw->v.look_picture) = 0;
 	iw->v.look_portal = 0;
 	iw->v.changing_fc = 0;
 	iw->v.chang_fc_rect.h = 100;
@@ -3360,6 +3384,7 @@ void	get_def(t_sdl *iw)
 	iw->v.chang_fc_rect.x = 0;
 	iw->v.chang_fc_rect.y = WINDOW_H + 100;
 	iw->l.skybox = 13;
+	iw->v.edit_mode = 0;
 }
 
 void	get_kernel_mem(t_sdl *iw)
