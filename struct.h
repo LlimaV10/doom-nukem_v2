@@ -65,6 +65,28 @@ typedef struct	s_vector
 	int		d;
 }				t_vector;
 
+typedef struct	s_sprite
+{
+	int x;
+	int t;
+	int y;
+	int z;
+	int x_s;
+	double plen;
+	double dist;
+	int spritewidth;
+	int spriteheight;
+	int sy;
+	int sx;
+	int ey;
+	int ex;
+	int i;
+	int num_sec;
+	int			*top;
+	int			*bottom;
+	struct s_sprite *next;
+}           t_sprite;
+
 typedef struct	s_sector_fc
 {
 	// X coordinate of floor|ceil
@@ -89,6 +111,8 @@ typedef struct	s_sector
 	t_sector_fc	fr;
 	// Sector Ceil
 	t_sector_fc	cl;
+	// Sprites inside of this sector
+	t_sprite	*s;
 }				t_sector;
 
 typedef struct	s_anim_portal_rotate

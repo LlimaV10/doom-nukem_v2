@@ -639,11 +639,10 @@ void	mouse_wheel(SDL_Event *e, t_sdl *iw)
 		SDL_FillRect(iw->sur, &iw->v.scroll_tex_rect, 0x000000);
 		draw_tex_to_select(iw);
 	}
-	else if (iw->v.mouse_mode == 1 && iw->v.picture_changing != 0)
+	else if (iw->v.mouse_mode == 1 && iw->v.picture_changing != 0
+		&& iw->v.picture_changing->tw + e->wheel.y > 50)
 	{
 		iw->v.picture_changing->tw += e->wheel.y;
-		if (iw->v.picture_changing->tw < 0)
-			iw->v.picture_changing->tw = 0;
 		calculate_picture(iw, iw->v.wall_picture_changing, iw->v.picture_changing);
 	}
 }
