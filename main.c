@@ -639,10 +639,12 @@ void	mouse_wheel(SDL_Event *e, t_sdl *iw)
 		SDL_FillRect(iw->sur, &iw->v.scroll_tex_rect, 0x000000);
 		draw_tex_to_select(iw);
 	}
-	else if (iw->v.mouse_mode == 1 && iw->v.picture_changing != 0
-		&& iw->v.picture_changing->tw + e->wheel.y > 50)
+	else if (iw->v.mouse_mode == 1 && iw->v.picture_changing != 0)
 	{
-		iw->v.picture_changing->tw += e->wheel.y;
+		if (e->wheel.y < 0 && iw->v.picture_changing->tw - 30 > 50)
+			iw->v.picture_changing->tw -= 30;
+		else if (e->wheel.y > 0)
+			iw->v.picture_changing->tw += 30;
 		calculate_picture(iw, iw->v.wall_picture_changing, iw->v.picture_changing);
 	}
 }
@@ -3171,6 +3173,22 @@ t_save_wall_pairs	*get_closest_between_pair(t_save_wall_pairs	*pair)
 // 	return (save.tmp);
 // }
 
+int		check_look_picture(t_sdl *iw)
+{
+	t_picture	*pic;
+
+	if (*(iw->v.look_wall) == 0 || *(iw->v.look_picture) == 0)
+		return (0);
+	pic = (*(iw->v.look_wall))->p;
+	while (pic)
+	{
+		if (pic == *(iw->v.look_picture))
+			return (1);
+		pic = pic->next;
+	}
+	return (0);
+}
+
 void	new_sort_pairs(t_sdl *iw)
 {
 	t_save_wall_pairs	start;
@@ -3346,6 +3364,8 @@ void	draw(t_sdl *iw)
 		*(iw->v.look_picture) = 0;
 	}
 	draw_start(iw);
+	if (!check_look_picture(iw))
+		*(iw->v.look_picture) = 0;
 	if (!iw->v.kernel)
 		draw_skybox(iw);
 	else
