@@ -2546,8 +2546,10 @@ void	draw_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right
 	l.x1 = right->x;
 	/*lz = get_floor_z(iw, left->wall->x, left->wall->y);
 	rz = get_floor_z(iw, right->wall->x, right->wall->y);*/
-	lz = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
-	rz = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
+	// lz = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
+	// rz = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
+	lz = get_floor_z(iw, left->p.x + iw->walls[left->wall->nextsector_wall].x - left->wall->next->x, left->p.y + iw->walls[left->wall->nextsector_wall].y - left->wall->next->y);
+	rz = get_floor_z(iw, right->p.x + iw->walls[left->wall->nextsector_wall].x - left->wall->next->x, right->p.y + iw->walls[left->wall->nextsector_wall].y - left->wall->next->y);
 	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen + iw->p.rotup;
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen + iw->p.rotup;
 	brez_line(tmp, l);
@@ -2560,8 +2562,10 @@ void	draw_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right
 	draw_between_sectors_bot_tex(iw, left, right, tmp);
 	/*lz = get_ceil_z(iw, left->wall->x, left->wall->y);
 	rz = get_ceil_z(iw, right->wall->x, right->wall->y);*/
-	lz = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
-	rz = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
+	// lz = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
+	// rz = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
+	lz = get_ceil_z(iw, left->p.x + iw->walls[left->wall->nextsector_wall].x - left->wall->next->x, left->p.y + iw->walls[left->wall->nextsector_wall].y - left->wall->next->y);
+	rz = get_ceil_z(iw, right->p.x + iw->walls[left->wall->nextsector_wall].x - left->wall->next->x, right->p.y + iw->walls[left->wall->nextsector_wall].y - left->wall->next->y);
 	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen + iw->p.rotup;
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen + iw->p.rotup;
 	brez_line(tmp, l);
@@ -2588,8 +2592,10 @@ int		*get_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right
 	l.x1 = right->x;
 	/*lz = get_floor_z(iw, left->wall->x, left->wall->y);
 	rz = get_floor_z(iw, right->wall->x, right->wall->y);*/
-	lz = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
-	rz = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
+	// lz = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
+	// rz = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
+	lz = get_floor_z(iw, left->p.x + iw->walls[left->wall->nextsector_wall].x - left->wall->next->x, left->p.y + iw->walls[left->wall->nextsector_wall].y - left->wall->next->y);
+	rz = get_floor_z(iw, right->p.x + iw->walls[left->wall->nextsector_wall].x - left->wall->next->x, right->p.y + iw->walls[left->wall->nextsector_wall].y - left->wall->next->y);
 	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen + iw->p.rotup;
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen + iw->p.rotup;
 	brez_line(bottom, l);
@@ -2597,8 +2603,10 @@ int		*get_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right
 
 	/*lz = get_ceil_z(iw, left->wall->x, left->wall->y);
 	rz = get_ceil_z(iw, right->wall->x, right->wall->y);*/
-	lz = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
-	rz = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
+	// lz = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
+	// rz = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
+	lz = get_ceil_z(iw, left->p.x + iw->walls[left->wall->nextsector_wall].x - left->wall->next->x, left->p.y + iw->walls[left->wall->nextsector_wall].y - left->wall->next->y);
+	rz = get_ceil_z(iw, right->p.x + iw->walls[left->wall->nextsector_wall].x - left->wall->next->x, right->p.y + iw->walls[left->wall->nextsector_wall].y - left->wall->next->y);
 	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen + iw->p.rotup;
 	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen + iw->p.rotup;
 	brez_line(*top, l);
@@ -3259,6 +3267,100 @@ void	draw_skybox(t_sdl *iw)
 	}
 }
 
+int		get_max(int i1, int i2)
+{
+	if (i1 > i2)
+		return (i1);
+	else
+		return (i2);
+}
+
+// int		get_min(int i1, int i2)
+// {
+// 	if (i1 < i2)
+// 		return (i1);
+// 	else
+// 		return (i2);
+// }
+
+int		find_point(t_save_wall_pairs *tmp,t_sprite *tmp1)
+{
+	int i;
+	int ax;
+	int ay;
+	int bx;
+	int by;
+
+	ax = tmp->right->p.x-tmp->left->p.x;
+	ay = tmp->right->p.y-tmp->left->p.y;
+	bx = tmp1->x - tmp->left->p.x;
+	by = tmp1->y - tmp->left->p.y;
+	i = ax * by - ay * bx;
+	if (i > 0)
+		return (0);
+	else
+		return (1);
+}
+
+void	check_sprites(t_sdl *iw, t_save_wall_pairs	*tmp)
+{
+	t_sprite	*tmp1;
+	int			j;
+
+	tmp1 = iw->sectors[iw->d.cs].s;
+	while(tmp1 != 0)
+	{
+		if ((tmp1->sx >= tmp->left->x && tmp1->sx <= tmp->right->x) ||
+			(tmp1->ex >= tmp->left->x && tmp1->ex<= tmp->right->x) ||
+			(tmp1->sx <= tmp->left->x && tmp1->ex >= tmp->right->x))
+		{
+			if(find_point(tmp,tmp1) == 1)
+			{
+				j = get_max(tmp1->sx, get_max(tmp->left->x, iw->d.screen_left));
+				while (j <= tmp1->ex && j <= tmp->right->x && j <= iw->d.screen_right)
+				{
+					if (tmp1->top[j] == -1)
+					{
+						tmp1->top[j] = iw->d.top[j];
+						tmp1->bottom[j] = iw->d.bottom[j];
+					}
+					j++;
+				}
+			}
+		}
+		
+		tmp1 = tmp1->next;	
+	}
+}
+
+void	fill_sprites_in_sector(t_sdl *iw)
+{
+	t_sprite	*tmp1;
+	float		lang;
+	float		rang;
+	int			j;
+
+	tmp1 = iw->sectors[iw->d.cs].s;
+	while (tmp1)
+	{
+		lang = get_vectors_angle(iw->d.left_point.x - (float)iw->p.x, iw->d.left_point.y - (float)iw->p.y,
+			(float)(tmp1->x - iw->p.x ), (float)(tmp1->y - iw->p.y ));
+		rang = get_vectors_angle(iw->d.right_point.x - (float)iw->p.x, iw->d.right_point.y - (float)iw->p.y,
+			(float)(tmp1->x - iw->p.x ), (float)(tmp1->y - iw->p.y ));
+		tmp1->x_s = (int)(lang * (float)WINDOW_W / (2.0f * iw->v.angle));
+		if (rang > 2.0f * iw->v.angle)
+			tmp1->x_s = -tmp1->x_s;
+		tmp1->plen = sqrtf(powf((float)(iw->p.x - tmp1->x), 2.0f) +  powf((float)(iw->p.y - tmp1->y), 2.0f));
+		tmp1->spritewidth = (int)(abs((float)(WINDOW_W * iw->t[tmp1->t]->w) * tmp1->width_scale / tmp1->plen));
+		tmp1->sx = tmp1->x_s - tmp1->spritewidth;
+		tmp1->ex = tmp1->x_s + tmp1->spritewidth;
+		j = get_max(tmp1->sx, iw->d.screen_left);
+		while (j <= iw->d.screen_right && j <= tmp1->ex)
+			tmp1->top[j++] = -1;
+		tmp1 = tmp1->next;	
+	}
+}
+
 void	draw_start(t_sdl *iw)
 {
 	t_save_wall *left;
@@ -3304,6 +3406,7 @@ void	draw_start(t_sdl *iw)
 	tmp = iw->d.vwp;
 	while (tmp != 0)
 	{
+		check_sprites(iw, tmp);
 		draw_left_right(iw, tmp->left, tmp->right);
 		tmp = tmp->next;
 		// iw->k.ret = clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_sur, CL_TRUE, 0,

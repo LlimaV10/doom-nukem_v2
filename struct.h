@@ -72,8 +72,8 @@ typedef struct	s_sprite
 	int y;
 	int z;
 	int x_s;
-	double plen;
-	double dist;
+	float plen;
+	float dist;
 	int spritewidth;
 	int spriteheight;
 	int sy;
@@ -84,6 +84,9 @@ typedef struct	s_sprite
 	int num_sec;
 	int			*top;
 	int			*bottom;
+
+	float	width_scale;
+
 	struct s_sprite *next;
 }           t_sprite;
 
