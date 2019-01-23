@@ -507,6 +507,12 @@ typedef struct	s_level
 	int		skybox;
 }				t_level;
 
+typedef struct	s_visited_portal
+{
+	t_wall	*wall;
+	struct	s_visited_portal	*next;
+}				t_visited_portal;
+
 typedef struct	s_sdl
 {
 	SDL_Window	*win;
@@ -528,6 +534,7 @@ typedef struct	s_sdl
 	t_kernel	k;
 	int			loop_update_time;
 	TTF_Font	*arial_font;
+	t_visited_portal	*visited_portals;
 }				t_sdl;
 
 #endif
