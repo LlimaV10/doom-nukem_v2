@@ -1,10 +1,10 @@
 #ifndef __DEFINES_H
 # define __DEFINES_H
 
-# define WINDOW_W 1000
-# define WINDOW_H 550
+# define WINDOW_W 2000
+# define WINDOW_H 1100
 # define MAX_SOURCE_SIZE 0x100000
-# define TEXTURES_COUNT 17
+# define TEXTURES_COUNT 19
 # define G1 0.01745329
 # define G90 1.5707963f
 # define G180 3.1415926f
@@ -23,6 +23,10 @@
 # define MAX_INCLINED_FC_XY 15
 # define ANIMATION_TIME_SEC 1
 # define MAX_FPS 500
+
+# define SPRITE_W 180
+# define SPRITE_H 250
+# define NUMSPRITES 2
 
 #ifdef __APPLE__
 # define CLKS_P_S (CLOCKS_PER_SEC * 2)

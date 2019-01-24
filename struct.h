@@ -65,31 +65,6 @@ typedef struct	s_vector
 	int		d;
 }				t_vector;
 
-typedef struct	s_sprite
-{
-	int x;
-	int t;
-	int y;
-	int z;
-	int x_s;
-	float plen;
-	float dist;
-	int spritewidth;
-	int spriteheight;
-	int sy;
-	int sx;
-	int ey;
-	int ex;
-	int i;
-	int num_sec;
-	int			*top;
-	int			*bottom;
-
-	float	width_scale;
-
-	struct s_sprite *next;
-}           t_sprite;
-
 typedef struct	s_sector_fc
 {
 	// X coordinate of floor|ceil
@@ -114,8 +89,9 @@ typedef struct	s_sector
 	t_sector_fc	fr;
 	// Sector Ceil
 	t_sector_fc	cl;
-	// Sprites inside of this sector
-	t_sprite	*s;
+	// // Sprites inside of this sector
+	// t_sprite	*s;
+	//int			visited;
 }				t_sector;
 
 typedef struct	s_anim_portal_rotate
@@ -396,6 +372,28 @@ typedef struct	s_draw_info
 // 	int		lr;
 // }				t_save_wall_pairs_closest;
 
+typedef struct	s_sprite
+{
+	int x;
+	int t;
+	int y;
+	int z;
+	int x_s;
+	double plen;
+	double dist;
+	int spritewidth;
+	int spriteheight;
+	int sy;
+	int sx;
+	int ey;
+	int ex;
+	int i;
+	int num_sec;
+	int			top[WINDOW_W + 1];
+	int			bottom[WINDOW_W + 1];
+	struct s_sprite *next;
+}           t_sprite;
+
 typedef struct	s_draw
 {
 	int			top[WINDOW_W + 1];
@@ -507,11 +505,17 @@ typedef struct	s_level
 	int		skybox;
 }				t_level;
 
-typedef struct	s_visited_portal
+// typedef struct	s_visited_portal
+// {
+// 	t_wall	*wall;
+// 	struct	s_visited_portal	*next;
+// }				t_visited_portal;
+
+typedef struct	s_visited_sector
 {
-	t_wall	*wall;
-	struct	s_visited_portal	*next;
-}				t_visited_portal;
+	int		sec;
+	struct	s_visited_sector	*next;
+}				t_visited_sector;
 
 typedef struct	s_sdl
 {
@@ -534,7 +538,10 @@ typedef struct	s_sdl
 	t_kernel	k;
 	int			loop_update_time;
 	TTF_Font	*arial_font;
-	t_visited_portal	*visited_portals;
+	// t_visited_portal	*visited_portals;
+	t_visited_sector	*visited_sectors;
+	// Sprites
+	t_sprite 	**sprite;
 }				t_sdl;
 
 #endif
