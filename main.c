@@ -2812,6 +2812,8 @@ void	draw_next_sector_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, i
 
 	if (left->wall->glass >= 0)
 	{
+		if (iw->sectors[iw2.d.cs].cl.t < 0)
+			draw_skybox_kernel(&iw2);
 		change_saved_top_bot_between_lines(iw, len, left->x);
 		draw_glass_tex_kernel(iw, left, right, len);
 		/*clReleaseMemObject(iw->k.m_save_bottom);
@@ -3629,3 +3631,6 @@ int		main(void)
 	// system("PAUSE");
 	return (0);
 }
+
+
+// Ќужно изменить visited_portals в одной рекурсии на visited sectors!!! и протестить!

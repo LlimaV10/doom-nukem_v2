@@ -871,13 +871,14 @@ void	draw_inclined_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wa
 
 void	draw_skybox_kernel(t_sdl *iw)
 {
-	int		cint[4];
+	int		cint[5];
 	float	cfloat[4];
 
 	cint[0] = WINDOW_H;
 	cint[1] = WINDOW_W;
 	cint[2] = iw->t[iw->l.skybox]->w;
 	cint[3] = iw->t[iw->l.skybox]->h;
+	cint[4] = iw->d.screen_left;
 	cfloat[2] = iw->p.rot;
 	cfloat[3] = iw->v.angle;
 
@@ -885,7 +886,7 @@ void	draw_skybox_kernel(t_sdl *iw)
 		(iw->t[iw->l.skybox]->h)) / (4 * WINDOW_H);
 	cfloat[1] = (float)iw->t[iw->l.skybox]->h / (float)(4 * WINDOW_H);
 
-	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 4 * sizeof(int), cint, 0, NULL, NULL);
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 5 * sizeof(int), cint, 0, NULL, NULL);
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cfloat, CL_TRUE, 0, 4 * sizeof(float), cfloat, 0, NULL, NULL);
 
 	iw->k.kernel = clCreateKernel(iw->k.program, "draw_skybox_kernel", &iw->k.ret);
@@ -897,7 +898,7 @@ void	draw_skybox_kernel(t_sdl *iw)
 	iw->k.ret = clSetKernelArg(iw->k.kernel, 4, sizeof(cl_mem), (void *)&iw->k.m_cint);
 	iw->k.ret = clSetKernelArg(iw->k.kernel, 5, sizeof(cl_mem), (void *)&iw->k.m_cfloat);
 
-	size_t global_item_size = WINDOW_W;
+	size_t global_item_size = iw->d.screen_right - iw->d.screen_left;
 	size_t local_item_size = 1;
 
 	iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel, 1, NULL,

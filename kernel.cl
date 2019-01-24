@@ -1199,6 +1199,8 @@ __kernel void draw_inclined_floor_ceil_tex_kernel(
 //2 - sky_width
 //3 - sky_height
 
+//4 - screen_left
+
 //float
 //0 - sky_y
 //1 - dy
@@ -1218,7 +1220,7 @@ __kernel void draw_skybox_kernel(
 	int		j;
 	int		tp;
 
-	j = get_global_id(0);
+	j = get_global_id(0) + cint[4];
 	rot = cfloat[2] - cfloat[3] + cfloat[3] * 2.0f * (float)j / (float)cint[1];
 	if (rot < 0.0f)
 		rot += 6.2831852f;
@@ -1235,6 +1237,7 @@ __kernel void draw_skybox_kernel(
 		wpixels[j + i * cint[1]] = (int)(skypixels[tp] | skypixels[tp + 1] << 8 | skypixels[tp + 2] << 16);
 		sky_y += cfloat[1];
 	}
+	bottom[j] = top[j];
 }
 
 
