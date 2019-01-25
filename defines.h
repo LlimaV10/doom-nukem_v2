@@ -24,10 +24,6 @@
 # define ANIMATION_TIME_SEC 1
 # define MAX_FPS 500
 
-# define SPRITE_W 180
-# define SPRITE_H 250
-# define NUMSPRITES 2
-
 #ifdef __APPLE__
 # define CLKS_P_S (CLOCKS_PER_SEC * 2)
 #else
