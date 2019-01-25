@@ -3178,15 +3178,15 @@ int		get_max(int i1, int i2)
 		return (i2);
 }
 
-// int		get_min(int i1, int i2)
-// {
-// 	if (i1 < i2)
-// 		return (i1);
-// 	else
-// 		return (i2);
-// }
+int		get_min(int i1, int i2)
+{
+	if (i1 < i2)
+		return (i1);
+	else
+		return (i2);
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-void get_visible_spr2(t_sdl *iw,t_sprite *sprite)
+void get_visible_spr2(t_sdl *iw, t_sprite *sprite)
 {
 	t_draw_line	l;
 	l.y0 = WINDOW_H * (iw->p.z + (int)sprite->plen / 2 - sprite->z) / (int)sprite->plen + iw->p.rotup;
@@ -3195,9 +3195,7 @@ void get_visible_spr2(t_sdl *iw,t_sprite *sprite)
 	sprite->spriteheight = abs(sprite->ey - sprite->sy);
 	int i = 0;
 	int j;
-				// 	SDL_UpdateWindowSurface(iw->win);
-        		// char s[500];
-        		// read(0, s, 10);
+
 	for(int stripe = sprite->sx; stripe < sprite->ex; stripe++)
       {
 		j=0;
@@ -3282,6 +3280,62 @@ int		find_point(t_save_wall_pairs *tmp,t_sprite *tmp1)
 		return (1);
 }
 
+void	calculate_sprites_once(t_sdl *iw)
+{
+	t_sprite    *tmp1;
+
+	tmp1 = *iw->sprite;
+	while(tmp1 != 0)
+	{
+		float lang = get_vectors_angle(iw->d.left_point.x - (float)iw->p.x, iw->d.left_point.y - (float)iw->p.y,
+		(float)(tmp1->x - iw->p.x ), (float)(tmp1->y - iw->p.y ));
+		float rang = get_vectors_angle(iw->d.right_point.x - (float)iw->p.x, iw->d.right_point.y - (float)iw->p.y,
+				(float)(tmp1->x - iw->p.x ), (float)(tmp1->y - iw->p.y ));
+		tmp1->x_s = (int)(lang * (float)WINDOW_W / (2.0f * iw->v.angle));
+		if (rang > 2.0f * iw->v.angle)
+		tmp1->x_s = -tmp1->x_s;
+		tmp1->plen = sqrtf(powf((float)(iw->p.x - tmp1->x), 2.0f) +  powf((float)(iw->p.y - tmp1->y), 2.0f));
+		tmp1->spritewidth = (int)(abs(WINDOW_W * SPRITE_W / tmp1->plen));
+		tmp1->sx = tmp1->x_s - tmp1->spritewidth;
+		tmp1->ex = tmp1->x_s + tmp1->spritewidth;
+		tmp1 = tmp1->next;
+	}
+}
+
+void	get_sprites_top_bottom(t_sdl *iw, t_save_wall_pairs	*tmp)
+{
+	t_sprite    *tmp1;
+	int j;
+	int	jend;
+
+	if (iw->v.kernel)
+	{
+		clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_top, CL_TRUE, 0,
+			(WINDOW_W + 1) * sizeof(int), iw->d.top, 0, NULL, NULL);
+		clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_bottom, CL_TRUE, 0,
+			(WINDOW_W + 1) * sizeof(int), iw->d.bottom, 0, NULL, NULL);
+	}
+	tmp1 = *iw->sprite;
+	while(tmp1 != 0)
+	{
+		if ((tmp1->sx >= tmp->left->x && tmp1->sx <= tmp->right->x)
+			|| (tmp1->ex >= tmp->left->x && tmp1->ex<= tmp->right->x)
+			|| (tmp1->sx <= tmp->left->x && tmp1->ex >= tmp->right->x))
+			if(find_point(tmp,tmp1) == 1)
+			{
+				j = get_max(tmp1->sx, get_max(tmp->left->x, iw->d.screen_left)) - 1;
+				jend = get_min(tmp1->ex, get_min(tmp->right->x, iw->d.screen_right));
+				while (++j <= jend)
+					if (tmp1->top[j] == -1)
+					{
+						tmp1->top[j] = iw->d.top[j];
+						tmp1->bottom[j] = iw->d.bottom[j];
+					}
+			}
+		tmp1 = tmp1->next;	
+	}
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 void	draw_start(t_sdl *iw)
 {
@@ -3328,52 +3382,11 @@ void	draw_start(t_sdl *iw)
 	}
 	printf("\n\n");*/
 	/////
+	calculate_sprites_once(iw);
 	tmp = iw->d.vwp;
 	while (tmp != 0)
 	{
-		tmp1 = *iw->sprite;
-		while(tmp1 != 0)
-		{
-			float lang = get_vectors_angle(iw->d.left_point.x - (float)iw->p.x, iw->d.left_point.y - (float)iw->p.y,
-			(float)(tmp1->x - iw->p.x ), (float)(tmp1->y - iw->p.y ));
-			float rang = get_vectors_angle(iw->d.right_point.x - (float)iw->p.x, iw->d.right_point.y - (float)iw->p.y,
-					(float)(tmp1->x - iw->p.x ), (float)(tmp1->y - iw->p.y ));
-			tmp1->x_s = (int)(lang * (float)WINDOW_W / (2.0f * iw->v.angle));
-			if (rang > 2.0f * iw->v.angle)
-			tmp1->x_s = -tmp1->x_s;
-			tmp1->plen = sqrtf(powf((float)(iw->p.x - tmp1->x), 2.0f) +  powf((float)(iw->p.y - tmp1->y), 2.0f));
-			tmp1->spritewidth = (int)(abs(WINDOW_W * SPRITE_W / tmp1->plen));
-			tmp1->sx = tmp1->x_s - tmp1->spritewidth;
-			tmp1->ex = tmp1->x_s + tmp1->spritewidth;
-			if ((tmp1->sx >= tmp->left->x && tmp1->sx <= tmp->right->x) || (tmp1->ex >= tmp->left->x && tmp1->ex<= tmp->right->x) || (tmp1->sx <= tmp->left->x && tmp1->ex >= tmp->right->x))
-			{
-					// SDL_UpdateWindowSurface(iw->win);
-	        		// char s[500];
-	        		// read(0, s, 10);
-				if(find_point(tmp,tmp1) == 1)
-				{
-					j = get_max(tmp1->sx, get_max(tmp->left->x, iw->d.screen_left));
-					while (j <= tmp1->ex && j <= tmp->right->x && j <= iw->d.screen_right)
-					{
-						if (tmp1->top[j] == -1)
-						{
-							tmp1->top[j] = iw->d.top[j];
-							tmp1->bottom[j] = iw->d.bottom[j];
-						}
-						j++;
-					}
-					//draw_left_right(iw, tmp->left, tmp->right);
-					tmp1 = tmp1->next;
-				}
-				else 
-					//draw_left_right(iw, tmp->left, tmp->right);
-					tmp1 = tmp1->next;
-			}
-			else 
-				//draw_left_right(iw, tmp->left, tmp->right);
-			tmp1 = tmp1->next;	
-		}
-
+		get_sprites_top_bottom(iw, tmp);
 		draw_left_right(iw, tmp->left, tmp->right);
 		tmp = tmp->next;
 		// iw->k.ret = clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_sur, CL_TRUE, 0,
