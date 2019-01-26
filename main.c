@@ -3188,13 +3188,17 @@ int		get_min(int i1, int i2)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 void get_visible_spr2(t_sdl *iw, t_sprite *sprite)
 {
-	t_draw_line	l;
-	l.y0 = WINDOW_H * (iw->p.z + (int)sprite->plen / 2 - sprite->z) / (int)sprite->plen + iw->p.rotup;
-	sprite->sy = l.y0;
-	sprite->ey = WINDOW_H * iw->t[sprite->t]->h * 2/sprite->plen+l.y0;
-	sprite->spriteheight = abs(sprite->ey - sprite->sy);
+	//t_draw_line	l;
+
+	sprite->spriteheight = 2 * sprite->spritewidth * iw->t[sprite->t]->h / iw->t[sprite->t]->w;
+
+	sprite->ey = WINDOW_H * (iw->p.z + (int)sprite->pplen / 2 - sprite->z) / (int)sprite->pplen + iw->p.rotup;
+
+	sprite->sy = sprite->ey - sprite->spriteheight;
+	//sprite->ey = WINDOW_H * iw->t[sprite->t]->h * 2 / sprite->plen + sprite->ey;
+	/*sprite->spriteheight = abs(sprite->ey - sprite->sy);
 	sprite->sy -= sprite->spriteheight;
-	sprite->ey -= sprite->spriteheight;
+	sprite->ey -= sprite->spriteheight;*/
 	int i = 0;
 	int j;
 
@@ -3204,7 +3208,10 @@ void get_visible_spr2(t_sdl *iw, t_sprite *sprite)
 		double koef = (double)sprite->spritewidth*2/iw->t[sprite->t]->w;
 		int texX = (int)abs(i/koef);
 		//printf("%d %d\n",sprite->top[stripe],sprite->bottom[stripe]);
-		if (((sprite->sx > 0 || sprite->ex  < WINDOW_W)) && (stripe > 0 && stripe < WINDOW_W ) && (sprite->top[stripe] < sprite->bottom[stripe]) && sprite->top[stripe] != -1 )
+		if (((sprite->sx > 0 || sprite->ex  < WINDOW_W))
+			&& (stripe > 0 && stripe < WINDOW_W ) &&
+			(sprite->top[stripe] < sprite->bottom[stripe])
+			&& sprite->top[stripe] != -1 )
 		{
 				for(int y = sprite->sy; y < sprite->ey; y++)
 				{
@@ -3214,7 +3221,7 @@ void get_visible_spr2(t_sdl *iw, t_sprite *sprite)
 							koef =(double)sprite->spriteheight/iw->t[sprite->t]->h;
 							int texY = (int)(j/ koef);
 							int colour = get_pixel(iw->t[sprite->t], texX,texY);
-							if (colour != 0xFFFFFF)
+							if (colour != 0x010000)
 							set_pixel(iw->sur, stripe, y, get_pixel(iw->t[sprite->t], texX,texY));
 					}
 				j++;
@@ -3296,8 +3303,10 @@ void	calculate_sprites_once(t_sdl *iw)
 		tmp1->x_s = (int)(lang * (float)WINDOW_W / (2.0f * iw->v.angle));
 		if (rang > 2.0f * iw->v.angle)
 		tmp1->x_s = -tmp1->x_s;
-		tmp1->plen = sqrtf(powf((float)(iw->p.x - tmp1->x), 2.0f) +  powf((float)(iw->p.y - tmp1->y), 2.0f));
-		tmp1->spritewidth = (int)(abs(WINDOW_W * iw->t[tmp1->t]->w / tmp1->plen));
+		tmp1->plen = sqrtf(powf((float)(iw->p.x - tmp1->x), 2.0f) +  powf((float)(iw->p.y - tmp1->y), 2.0f)) + 1.0f;
+		tmp1->pplen = fabsf(iw->d.screen.a * (float)tmp1->x + iw->d.screen.b * (float)tmp1->y + iw->d.screen.c) /
+			sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b) + 1.0f;
+		tmp1->spritewidth = (int)(fabsf((float)(WINDOW_W * iw->t[tmp1->t]->w) / tmp1->pplen) * tmp1->scale);
 		tmp1->sx = tmp1->x_s - tmp1->spritewidth;
 		tmp1->ex = tmp1->x_s + tmp1->spritewidth;
 		tmp1 = tmp1->next;
@@ -3537,8 +3546,8 @@ void	read_textures(t_sdl *iw)
 	iw->tsz[16] = 1.0f;
 	iw->t[17] = SDL_LoadBMP("textures/17.bmp");
 	iw->tsz[17] = 1.0f;
-	iw->t[18] = SDL_LoadBMP("textures/19.bmp");
-	iw->tsz[18] = 1.0f;
+	//iw->t[18] = SDL_LoadBMP("textures/19.bmp");
+	//iw->tsz[18] = 1.0f;
 	//Uint8 *target_pixel = (Uint8 *)(iw->t)[0]->pixels;
 	//set_pixel((iw->t)[0], 0, 0, 0xFF0000);
 	//printf("%d\n", read_pixel((iw->t)[0], 2, 0));
@@ -3555,6 +3564,7 @@ void add_sprite(t_sdl *iw,int x,int y, int z, int t, int num)
 	tmp->t = t;
 	tmp->num_sec = num;
 	tmp->next = *iw->sprite;
+	tmp->scale = 0.3f;
 	(*iw->sprite) = tmp;
 }
 
@@ -3617,8 +3627,8 @@ void	get_def(t_sdl *iw)
 	iw->sprite = (t_sprite **)malloc(sizeof(t_sprite *));
 	*iw->sprite = 0;
 	add_sprite(iw,7240,2640,200,17,1);
-	add_sprite(iw,8640,2200,400,18,1);
-	add_sprite(iw,6520,2298,200,18,1);
+	add_sprite(iw,8640,2200,400,17,1);
+	add_sprite(iw,6520,2298,200,17,1);
 }
 
 void	get_kernel_mem(t_sdl *iw)
