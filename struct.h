@@ -91,7 +91,7 @@ typedef struct	s_sector
 	t_sector_fc	cl;
 	// // Sprites inside of this sector
 	// t_sprite	*s;
-	//int			visited;
+	int			visited;
 }				t_sector;
 
 typedef struct	s_anim_portal_rotate
@@ -374,27 +374,30 @@ typedef struct	s_draw_info
 
 typedef struct	s_sprite
 {
-	int x;
-	int t;
-	int y;
-	int z;
-	int x_s;
-	float plen;
+	int		x;
+	int		t;
+	int		y;
+	int		z;
+	int		x_s;
+	float	plen;
 	float	pplen;
-	float dist;
-	int spritewidth;
-	int spriteheight;
-	int sy;
-	int sx;
-	int ey;
-	int ex;
-	int i;
-	int num_sec;
-	int			top[WINDOW_W + 1];
-	int			bottom[WINDOW_W + 1];
+	float	dist;
+	int		spritewidth;
+	int		spriteheight;
+	int		sy;
+	int		sx;
+	int		ey;
+	int		ex;
+	int		i;
+	int		num_sec;
+	int		top[WINDOW_W + 1];
+	int		bottom[WINDOW_W + 1];
 
 	float	scale;
-	struct s_sprite *next;
+	struct s_sprite	*next;
+
+	int		draweble;
+	int		type;
 }           t_sprite;
 
 typedef struct	s_draw
@@ -545,6 +548,8 @@ typedef struct	s_sdl
 	t_visited_sector	*visited_sectors;
 	// Sprites
 	t_sprite 	**sprite;
+	// Sprite textures
+	SDL_Surface	*(st)[SPRITES_TEXTURES_COUNT];
 }				t_sdl;
 
 #endif

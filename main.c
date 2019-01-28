@@ -639,32 +639,32 @@ t_wall	*is_wall_portal(t_sdl *iw, int dx, int dy)
 	return (0);
 }
 
-void	move_collisions(t_sdl *iw, int dx, int dy)
+void	move_collisions(t_sdl *iw, int dx, int dy, int tmp)
 {
 	int		dd;
 	int		i;
 
-	if (in_sec_xy(iw, iw->d.cs, iw->p.x + dx * PL_COL_SZ, iw->p.y) &&
+	if (in_sec_xy(iw, iw->d.cs, iw->p.x + dx * tmp, iw->p.y) &&
 		in_sec_xy(iw, iw->d.cs, iw->p.x + dx, iw->p.y))
 	{
 		dd = dy / 20 * 2;
 		dy = 0;
 		i = -1;
 		while (++i < 10 &&
-			in_sec_xy(iw, iw->d.cs, iw->p.x + dx * PL_COL_SZ, iw->p.y + dy * PL_COL_SZ)
+			in_sec_xy(iw, iw->d.cs, iw->p.x + dx * tmp, iw->p.y + dy * tmp)
 			&& in_sec_xy(iw, iw->d.cs, iw->p.x + dx, iw->p.y + dy))
 			dy += dd;
 		iw->p.x += dx;
 		iw->p.y += dy - dd;
 	}
-	else if (in_sec_xy(iw, iw->d.cs, iw->p.x, iw->p.y + dy * PL_COL_SZ) &&
+	else if (in_sec_xy(iw, iw->d.cs, iw->p.x, iw->p.y + dy * tmp) &&
 		in_sec_xy(iw, iw->d.cs, iw->p.x, iw->p.y + dy))
 	{
 		dd = dx / 20 * 2;
 		dx = 0;
 		i = -1;
 		while (++i < 10 &&
-			in_sec_xy(iw, iw->d.cs, iw->p.x + dx * PL_COL_SZ, iw->p.y + dy * PL_COL_SZ)
+			in_sec_xy(iw, iw->d.cs, iw->p.x + dx * tmp, iw->p.y + dy * tmp)
 			&& in_sec_xy(iw, iw->d.cs, iw->p.x + dx, iw->p.y + dy))
 			dx += dd;
 		iw->p.x += dx - dd;
@@ -672,7 +672,7 @@ void	move_collisions(t_sdl *iw, int dx, int dy)
 	}
 }
 
-void	move_in_portal(t_sdl *iw, int dx, int dy, t_wall *sw)
+int		check_moving_in_portal_z(t_sdl *iw, int dx, int dy, t_wall *sw)
 {
 	int		nx;
 	int		ny;
@@ -690,63 +690,152 @@ void	move_in_portal(t_sdl *iw, int dx, int dy, t_wall *sw)
 	nszd = get_floor_z(iw, nx, ny);
 	iw->d.cs = savecs;
 	if (nszu - nszd >= PLAYER_HEIGHT + PLAYER_HEAD_SIZE
-		&& nszd - iw->p.z + PLAYER_HEIGHT < MAX_CLIMB_HEIGHT
+		&& (nszd < iw->p.z || nszd - iw->p.z + PLAYER_HEIGHT < MAX_CLIMB_HEIGHT)
+		&& in_sec_xy(iw, sw->nextsector, nx, ny))
+		return (1);
+	return (0);
+}
+
+void	move_in_portal(t_sdl *iw, int dx, int dy, t_wall *sw, int tmp)
+{
+	int		nx;
+	int		ny;
+	int		savecs;
+	int		nszu;
+	int		nszd;
+
+	/*iw2.p.x += iw->walls[left->wall->nextsector_wall].x - left->wall->next->x;
+	iw2.p.y += iw->walls[left->wall->nextsector_wall].y - left->wall->next->y;*/
+	nx = iw->p.x + dx + iw->walls[sw->nextsector_wall].x - sw->next->x;
+	ny = iw->p.y + dy + iw->walls[sw->nextsector_wall].y - sw->next->y;
+	savecs = iw->d.cs;
+	iw->d.cs = sw->nextsector;
+	nszu = get_ceil_z(iw, nx, ny);
+	nszd = get_floor_z(iw, nx, ny);
+	iw->d.cs = savecs;
+	if (nszu - nszd >= PLAYER_HEIGHT + PLAYER_HEAD_SIZE
+		&& (nszd < iw->p.z || nszd - iw->p.z + PLAYER_HEIGHT < MAX_CLIMB_HEIGHT)
 		&& in_sec_xy(iw, sw->nextsector, nx, ny))
 	{
 		iw->p.x = nx;
 		iw->p.y = ny;
 	}
 	else
-		move_collisions(iw, dx, dy);
+		move_collisions(iw, dx, dy, tmp);
 }
 
 void	move(t_sdl *iw, int pl, int *time)
 {
-	int		ang;
+	float		ang;
 	int		dx;
 	int		dy;
 	float	speed;
 	t_wall	*sw;
+	int	tmp;
 
-	ang = (iw->p.introt + pl) % 360;
+	ang = (iw->p.rot + (float)pl * G1);
+	while (ang >= G360)
+		ang -= G360;
 	speed = MOVING_SPEED_PER_HALF_SEC * (float)(clock() - *time) / (float)CLKS_P_S;
 	*time = clock();
 	if (ang < 90)
 	{
-		dx = (int)(speed * cosf((float)ang * G1)) * 2;
-		dy = (int)(-speed * sinf((float)ang * G1)) * 2;
+		dx = (int)(speed * cosf(ang)) * 2;
+		dy = (int)(-speed * sinf(ang)) * 2;
 	}
 	else if (ang < 180)
 	{
-		dx = (int)(-speed * cosf(G180 - (float)ang * G1)) * 2;
-		dy = (int)(-speed * sinf(G180 - (float)ang * G1)) * 2;
+		dx = (int)(-speed * cosf(G180 - ang)) * 2;
+		dy = (int)(-speed * sinf(G180 - ang)) * 2;
 	}
 	else if (ang < 270)
 	{
-		dx = (int)(speed * cosf((float)ang * G1) - G180) * 2;
-		dy = (int)(-speed * sinf((float)ang * G1) - G180) * 2;
+		dx = (int)(speed * cosf(ang) - G180) * 2;
+		dy = (int)(-speed * sinf(ang) - G180) * 2;
 	}
 	else
 	{
-		dx = (int)(speed * cosf(G360 - (float)ang * G1)) * 2;
-		dy = (int)(speed * sinf(G360 - (float)ang * G1)) * 2;
+		dx = (int)(speed * cosf(G360 - ang)) * 2;
+		dy = (int)(speed * sinf(G360 - ang)) * 2;
 	}
+	tmp = COLLISION_SIZE / (int)(sqrtf(powf((float)dx, 2.0f) + powf((float)dy, 2.0f)) + 1.1f);
 	if (in_sec_xy(iw, iw->d.cs, iw->p.x + dx, iw->p.y + dy))
 	{
-		if (in_sec_xy(iw, iw->d.cs, iw->p.x + dx * PL_COL_SZ, iw->p.y + dy * PL_COL_SZ)
-			|| ((sw = is_wall_portal(iw, dx * PL_COL_SZ, dy * PL_COL_SZ)) != 0 && sw->glass < 0))
+		if (in_sec_xy(iw, iw->d.cs, iw->p.x + dx * tmp , iw->p.y + dy * tmp)
+			|| ((sw = is_wall_portal(iw, dx * tmp, dy * tmp)) != 0 && sw->glass < 0))
 		{
 			iw->p.x += dx;
 			iw->p.y += dy;
 		}
 		else
-			move_collisions(iw, dx, dy);
+			move_collisions(iw, dx, dy, tmp);
 	}
-	else if ((sw = is_wall_portal(iw, dx, dy)) == 0 || sw->glass >= 0)
-		move_collisions(iw, dx, dy);
+	else if ((sw = is_wall_portal(iw, dx, dy)) == 0 || sw->glass >= 0)// || !check_moving_in_portal_z(iw, dx, dy, sw))
+		move_collisions(iw, dx, dy, tmp);
 	else
-		move_in_portal(iw, dx, dy, sw);
+		move_in_portal(iw, dx, dy, sw, tmp);
 }
+
+// t_wall	*get_col_wall(t_sdl *iw, int dx, int dy)
+// {
+// 	int		w;
+// 	float	len;
+
+// 	w = iw->sectors[iw->d.cs].sw - 1;
+// 	while (++w < iw->sectors[iw->d.cs].sw + iw->sectors[iw->d.cs].nw)
+// 	{
+// 		len = fabsf(iw->walls[w].l.a * (float)(iw->p.x + dx) + iw->walls[w].l.b * (float)(iw->p.y + dy)
+// 			+ iw->walls[w].l.c) / sqrtf(powf(iw->walls[w].l.a, 2.0f) + powf(iw->walls[w].l.b, 2.0f));
+// 		if (len < COLLISION_SIZE)
+// 			return (&iw->walls[w]);
+// 	}
+// 	return (0);
+// }
+
+// void	move2(t_sdl *iw, int pl, int *time)
+// {
+// 	float		ang;
+// 	int		dx;
+// 	int		dy;
+// 	float	speed;
+// 	t_wall	*sw;
+// 	//int	tmp;
+
+// 	ang = (iw->p.rot + (float)pl * G1);
+// 	while (ang >= G360)
+// 		ang -= G360;
+// 	speed = MOVING_SPEED_PER_HALF_SEC * (float)(clock() - *time) / (float)CLKS_P_S;
+// 	*time = clock();
+// 	if (ang < 90)
+// 	{
+// 		dx = (int)(speed * cosf(ang)) * 2;
+// 		dy = (int)(-speed * sinf(ang)) * 2;
+// 	}
+// 	else if (ang < 180)
+// 	{
+// 		dx = (int)(-speed * cosf(G180 - ang)) * 2;
+// 		dy = (int)(-speed * sinf(G180 - ang)) * 2;
+// 	}
+// 	else if (ang < 270)
+// 	{
+// 		dx = (int)(speed * cosf(ang) - G180) * 2;
+// 		dy = (int)(-speed * sinf(ang) - G180) * 2;
+// 	}
+// 	else
+// 	{
+// 		dx = (int)(speed * cosf(G360 - ang)) * 2;
+// 		dy = (int)(speed * sinf(G360 - ang)) * 2;
+// 	}
+// 	//tmp = COLLISION_SIZE / (int)(sqrtf(powf((float)dx, 2.0f) + powf((float)dy, 2.0f)) + 1.1f);
+// 	if (in_sec_xy(iw, iw->d.cs, iw->p.x + dx, iw->p.y + dy))
+// 	{
+// 		if (get_col_wall(iw, dx, dy) == 0)
+// 		{
+// 			iw->p.x += dx;
+// 			iw->p.y += dy;
+// 		}
+// 	}
+// }
 
 void	get_wall_line2(t_wall *wall)
 {
@@ -2559,7 +2648,7 @@ void	fill_tb_by_slsr(t_sdl *iw)
 		iw->d.top[i] = iw->d.bottom[i];
 }
 
-void	change_saved_top_bot_between_lines(t_sdl *iw, int len, int left_x)
+void	change_saved_top_bot_between_lines(t_sdl *iw, int len)
 {
 	int		j;
 
@@ -2741,6 +2830,7 @@ void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	iw2.d.prev_sector = iw->d.cs;
 	iw2.d.prev_sector_wall = left->wall;
 
+	iw->sectors[iw2.d.cs].visited = 1;
 	tmp = (t_visited_sector *)malloc(sizeof(t_visited_sector));
 	tmp->sec = iw2.d.cs;
 	tmp->next = iw2.visited_sectors;
@@ -2753,7 +2843,7 @@ void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	{
 		if (iw->sectors[iw2.d.cs].cl.t < 0)
 			draw_skybox(&iw2);
-		change_saved_top_bot_between_lines(iw, right->x - left->x + 1, left->x);
+		change_saved_top_bot_between_lines(iw, right->x - left->x + 1);
 		draw_glass_tex(iw, left, right, right->x - left->x + 1);
 	}
 	free(iw->d.save_bot_betw);
@@ -2817,6 +2907,7 @@ void	draw_next_sector_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, i
 			iw->k.m_save_bottom, 0, 0, WINDOW_W * sizeof(int), 0, NULL, NULL);
 	}
 
+	iw->sectors[iw2.d.cs].visited = 1;
 	tmp = (t_visited_sector *)malloc(sizeof(t_visited_sector));
 	tmp->sec = iw2.d.cs;
 	tmp->next = iw2.visited_sectors;
@@ -2829,7 +2920,7 @@ void	draw_next_sector_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, i
 	{
 		if (iw->sectors[iw2.d.cs].cl.t < 0)
 			draw_skybox_kernel(&iw2);
-		change_saved_top_bot_between_lines(iw, len, left->x);
+		change_saved_top_bot_between_lines(iw, len);
 		draw_glass_tex_kernel(iw, left, right, len);
 		/*clReleaseMemObject(iw->k.m_save_bottom);
 		clReleaseMemObject(iw->k.m_save_top);*/
@@ -2932,8 +3023,6 @@ void	draw_pictures(t_sdl *iw, t_save_wall *left)
 
 void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 {
-	int		i;
-
 	if (left->wall->nextsector == -1)
 	{
 		/*draw_ceil_tex(iw, left, right, len);
@@ -3188,47 +3277,59 @@ int		get_min(int i1, int i2)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 void get_visible_spr2(t_sdl *iw, t_sprite *sprite)
 {
-	//t_draw_line	l;
+	int		i;
+	int		j;
+	int		stripe;
+	int		y;
+	float	koef;
+	int		texX;
+	int		texY;
+	int		colour;
 
-	sprite->spriteheight = 2 * sprite->spritewidth * iw->t[sprite->t]->h / iw->t[sprite->t]->w;
-
+	sprite->spriteheight = 2 * sprite->spritewidth * iw->st[sprite->t]->h / iw->st[sprite->t]->w;
 	sprite->ey = WINDOW_H * (iw->p.z + (int)sprite->pplen / 2 - sprite->z) / (int)sprite->pplen + iw->p.rotup;
-
 	sprite->sy = sprite->ey - sprite->spriteheight;
-	//sprite->ey = WINDOW_H * iw->t[sprite->t]->h * 2 / sprite->plen + sprite->ey;
-	/*sprite->spriteheight = abs(sprite->ey - sprite->sy);
-	sprite->sy -= sprite->spriteheight;
-	sprite->ey -= sprite->spriteheight;*/
-	int i = 0;
-	int j;
-
-	for(int stripe = sprite->sx; stripe < sprite->ex; stripe++)
-      {
-		j=0;
-		double koef = (double)sprite->spritewidth*2/iw->t[sprite->t]->w;
-		int texX = (int)abs(i/koef);
-		//printf("%d %d\n",sprite->top[stripe],sprite->bottom[stripe]);
+	i = 0;
+	stripe = sprite->sx - 1;
+	while (++stripe < sprite->ex)
+	{
+		j = 0;
+		koef = (float)sprite->spritewidth * 2 / iw->st[sprite->t]->w;
+		texX = (int)fabsf((float)i / koef);
 		if (((sprite->sx > 0 || sprite->ex  < WINDOW_W))
-			&& (stripe > 0 && stripe < WINDOW_W ) &&
+			&& (stripe > 0 && stripe < WINDOW_W) &&
 			(sprite->top[stripe] < sprite->bottom[stripe])
-			&& sprite->top[stripe] != -1 )
+			&& sprite->top[stripe] != -1)
 		{
-				for(int y = sprite->sy; y < sprite->ey; y++)
+			y = sprite->sy - 1;
+			while (++y < sprite->ey)
+			{
+				if (sprite->sy < WINDOW_H && sprite->bottom[stripe] >y && sprite->top[stripe] < y)
 				{
-					//printf("%d %d\n",sprite.top[stripe],sprite.bottom[stripe]);
-					if(sprite->sy < WINDOW_H && sprite->bottom[stripe] >y && sprite->top[stripe] < y)
-					{
-							koef =(double)sprite->spriteheight/iw->t[sprite->t]->h;
-							int texY = (int)(j/ koef);
-							int colour = get_pixel(iw->t[sprite->t], texX,texY);
-							if (colour != 0x010000)
-							set_pixel(iw->sur, stripe, y, get_pixel(iw->t[sprite->t], texX,texY));
-					}
-				j++;
+					koef = (float)sprite->spriteheight / iw->st[sprite->t]->h;
+					texY = (int)(j / koef);
+					colour = get_pixel(iw->st[sprite->t], texX, texY);
+					if (colour != 0x010000)
+						set_pixel(iw->sur, stripe, y, get_pixel(iw->st[sprite->t], texX, texY));
 				}
+				j++;
+			}
 	  	}
-		  i++;
-		}
+		i++;
+	}
+}
+
+void	draw_sprites(t_sdl *iw)
+{
+	t_sprite	*tmp1;
+
+	tmp1 = *iw->sprite;
+	while (tmp1 != 0)
+	{
+		if (iw->sectors[tmp1->num_sec].visited && tmp1->draweble)
+			get_visible_spr2(iw, tmp1);
+		tmp1 = tmp1->next;
+	}
 }
 
 void        swap_values(t_sprite *tmp, t_sprite *first, t_sprite *second)
@@ -3261,13 +3362,13 @@ void        sortl(t_sprite *list)
 
     tmp_1 = list;
 	swap = (t_sprite *)ft_memalloc(sizeof(t_sprite));
-    while (tmp_1->next)
-    {
-        tmp_2 = list;
-        while (tmp_2->next)
+	while (tmp_1->next)
+	{
+		tmp_2 = list;
+		while (tmp_2->next)
         {
             if (tmp_2->dist < tmp_2->next->dist)
-                swap_values(swap,tmp_2, tmp_2->next);
+                swap_values(swap, tmp_2, tmp_2->next);
             tmp_2 = tmp_2->next;
         }
         tmp_1 = tmp_1->next;
@@ -3296,19 +3397,33 @@ void	calculate_sprites_once(t_sdl *iw)
 	tmp1 = *iw->sprite;
 	while(tmp1 != 0)
 	{
+		if (!iw->sectors[tmp1->num_sec].visited)
+		{
+			tmp1 = tmp1->next;
+			continue;
+		}
 		float lang = get_vectors_angle(iw->d.left_point.x - (float)iw->p.x, iw->d.left_point.y - (float)iw->p.y,
 		(float)(tmp1->x - iw->p.x ), (float)(tmp1->y - iw->p.y ));
 		float rang = get_vectors_angle(iw->d.right_point.x - (float)iw->p.x, iw->d.right_point.y - (float)iw->p.y,
 				(float)(tmp1->x - iw->p.x ), (float)(tmp1->y - iw->p.y ));
 		tmp1->x_s = (int)(lang * (float)WINDOW_W / (2.0f * iw->v.angle));
+		
 		if (rang > 2.0f * iw->v.angle)
-		tmp1->x_s = -tmp1->x_s;
+			tmp1->x_s = -tmp1->x_s;
+		//	printf("x_s = %d\n", tmp1->x_s);
+		
 		tmp1->plen = sqrtf(powf((float)(iw->p.x - tmp1->x), 2.0f) +  powf((float)(iw->p.y - tmp1->y), 2.0f)) + 1.0f;
 		tmp1->pplen = fabsf(iw->d.screen.a * (float)tmp1->x + iw->d.screen.b * (float)tmp1->y + iw->d.screen.c) /
 			sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b) + 1.0f;
-		tmp1->spritewidth = (int)(fabsf((float)(WINDOW_W * iw->t[tmp1->t]->w) / tmp1->pplen) * tmp1->scale);
+		//printf("div  %f\n", tmp1->pplen / tmp1->plen);
+		if (tmp1->pplen / tmp1->plen >= 0.5f)
+			tmp1->spritewidth = (int)(fabsf((float)(WINDOW_W * iw->st[tmp1->t]->w) / tmp1->pplen) * tmp1->scale);
+		else
+			tmp1->spritewidth = (int)(fabsf((float)(WINDOW_W * iw->st[tmp1->t]->w) / tmp1->plen) * tmp1->scale);
 		tmp1->sx = tmp1->x_s - tmp1->spritewidth;
 		tmp1->ex = tmp1->x_s + tmp1->spritewidth;
+		if (!(tmp1->sx > WINDOW_W || tmp1->ex < 0))
+			tmp1->draweble = 1;
 		tmp1 = tmp1->next;
 	}
 }
@@ -3329,6 +3444,11 @@ void	get_sprites_top_bottom(t_sdl *iw, t_save_wall_pairs	*tmp)
 	tmp1 = *iw->sprite;
 	while(tmp1 != 0)
 	{
+		if (!iw->sectors[tmp1->num_sec].visited || !tmp1->draweble)
+		{
+			tmp1 = tmp1->next;
+			continue;
+		}
 		if ((tmp1->sx >= tmp->left->x && tmp1->sx <= tmp->right->x)
 			|| (tmp1->ex >= tmp->left->x && tmp1->ex<= tmp->right->x)
 			|| (tmp1->sx <= tmp->left->x && tmp1->ex >= tmp->right->x))
@@ -3343,7 +3463,7 @@ void	get_sprites_top_bottom(t_sdl *iw, t_save_wall_pairs	*tmp)
 						tmp1->bottom[j] = iw->d.bottom[j];
 					}
 			}
-		tmp1 = tmp1->next;	
+		tmp1 = tmp1->next;
 	}
 }
 
@@ -3353,10 +3473,6 @@ void	draw_start(t_sdl *iw)
 	t_save_wall *left;
 	t_save_wall	*right;
 	t_save_wall_pairs	*tmp;
-
-	t_sprite    *tmp1;
-	int i = 0;
-	int j;
 
 	if (iw->d.vw == 0)
 		return;
@@ -3415,7 +3531,6 @@ void	draw(t_sdl *iw)
 {
 	t_visited_sector	*tmp;
 
-
 	t_sprite *tmp1;
 	int j;
 
@@ -3429,14 +3544,20 @@ void	draw(t_sdl *iw)
 	j = 0;
 	tmp1 = *iw->sprite;
 	while(tmp1 != 0)
-	{	j = 0;
-		while(j < WINDOW_W)
+	{
+		tmp1->draweble = 0;
+		j = 0;
+		while (j < WINDOW_W)
 		{
 			tmp1->top[j] = -1;
 			j++;
 		}
-		tmp1=tmp1->next;
+		tmp1 = tmp1->next;
 	}
+
+	j = -1;
+	while (++j < iw->v.sc)
+		iw->sectors[j].visited = 0;
 
 	set_top_bottom(iw);
 	if ((iw->d.cs = get_sector(iw)) == -1)
@@ -3479,6 +3600,7 @@ void	draw(t_sdl *iw)
 		*(iw->v.look_sector) = 0;
 		*(iw->v.look_picture) = 0;
 	}
+	iw->sectors[iw->d.cs].visited = 1;
 	tmp = (t_visited_sector *)malloc(sizeof(t_visited_sector));
 	tmp->sec = iw->d.cs;
 	tmp->next = iw->visited_sectors;
@@ -3497,15 +3619,7 @@ void	draw(t_sdl *iw)
 		iw->k.ret = clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_sur, CL_TRUE, 0,
 			WINDOW_W * WINDOW_H * sizeof(int), iw->sur->pixels, 0, NULL, NULL);
 	
-	tmp1 = *iw->sprite;
-	j = 0;
-	while (tmp1 != 0)
-	{
-		//printf("%f\n", tmp1->dist);
-		get_visible_spr2(iw,tmp1);
-		tmp1 = tmp1->next;
-		j++;
-	}
+	draw_sprites(iw);
 }
 
 void	read_textures(t_sdl *iw)
@@ -3544,13 +3658,18 @@ void	read_textures(t_sdl *iw)
 	iw->tsz[15] = 1.0f;
 	iw->t[16] = SDL_LoadBMP("textures/16.bmp");
 	iw->tsz[16] = 1.0f;
-	iw->t[17] = SDL_LoadBMP("textures/17.bmp");
-	iw->tsz[17] = 1.0f;
+	// iw->t[17] = SDL_LoadBMP("textures/17.bmp");
+	// iw->tsz[17] = 1.0f;
 	//iw->t[18] = SDL_LoadBMP("textures/19.bmp");
 	//iw->tsz[18] = 1.0f;
 	//Uint8 *target_pixel = (Uint8 *)(iw->t)[0]->pixels;
 	//set_pixel((iw->t)[0], 0, 0, 0xFF0000);
 	//printf("%d\n", read_pixel((iw->t)[0], 2, 0));
+}
+
+void	read_sprites_textures(t_sdl *iw)
+{
+	iw->st[0] = SDL_LoadBMP("sprites/0.bmp");
 }
 
 void add_sprite(t_sdl *iw,int x,int y, int z, int t, int num)
@@ -3626,9 +3745,9 @@ void	get_def(t_sdl *iw)
 
 	iw->sprite = (t_sprite **)malloc(sizeof(t_sprite *));
 	*iw->sprite = 0;
-	add_sprite(iw,7240,2640,200,17,1);
-	add_sprite(iw,8640,2200,400,17,1);
-	add_sprite(iw,6520,2298,200,17,1);
+	add_sprite(iw,7240,2640,200,0,1);
+	add_sprite(iw,8640,2200,400,0,1);
+	add_sprite(iw,6520,2298,200,0,1);
 }
 
 void	get_kernel_mem(t_sdl *iw)
@@ -3674,7 +3793,7 @@ void	get_kernel_mem(t_sdl *iw)
 		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
 }
 
-void	calculate_not_squared_wall_picture(t_sdl *iw, t_wall *wall, t_picture *pic)
+void	calculate_not_squared_wall_picture(t_wall *wall, t_picture *pic)
 {
 	float	alpha;
 
@@ -3724,7 +3843,7 @@ void	calculate_picture(t_sdl *iw, t_wall *wall, t_picture *pic)
 		}
 	}
 	else
-		calculate_not_squared_wall_picture(iw, wall, pic);
+		calculate_not_squared_wall_picture(wall, pic);
 
 	pic->zd = pic->zu - pic->tw * iw->t[pic->t]->h * 120 / iw->t[pic->t]->w / 100;
 }
@@ -3773,6 +3892,7 @@ int		main(void)
 
 	get_def(&iw);	
 	read_textures(&iw);
+	read_sprites_textures(&iw);
 	get_kernel_mem(&iw);
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();

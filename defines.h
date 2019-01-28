@@ -1,10 +1,11 @@
 #ifndef __DEFINES_H
 # define __DEFINES_H
 
-# define WINDOW_W 1000
-# define WINDOW_H 450
+# define WINDOW_W 2000
+# define WINDOW_H 1100
 # define MAX_SOURCE_SIZE 0x100000
-# define TEXTURES_COUNT 18
+# define TEXTURES_COUNT 17
+# define SPRITES_TEXTURES_COUNT 1
 # define G1 0.01745329
 # define G90 1.5707963f
 # define G180 3.1415926f
@@ -13,11 +14,14 @@
 # define ROTATION_SPEED_PER_HALF_SEC 80.0
 # define MOUSE_SENSIVITY 0.002
 # define MOUSE_UP_DOWN_SENSIVITY 2
+
 # define PLAYER_HEIGHT 400
 # define PLAYER_HEAD_SIZE 200
 # define MAX_CLIMB_HEIGHT 300
 # define JUMP_HEIGHT 1000
-# define PL_COL_SZ 10
+//# define PL_COL_SZ 10
+# define COLLISION_SIZE 400
+
 # define MENU_COLOR 0x00FF00
 # define INCLINED_FC_Z 30
 # define MAX_INCLINED_FC_XY 15
