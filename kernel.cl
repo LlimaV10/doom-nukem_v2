@@ -1308,7 +1308,7 @@ __kernel void draw_glass_tex_kernel(
 	{
 		tp = ((int)tx % cint[1]) * 3 + ((int)ty % cint[2]) * cint[1] * 3;
 		pixel = (int)(glass_pixels[tp] | glass_pixels[tp + 1] << 8 | glass_pixels[tp + 2] << 16);
-		if (pixel != 0x000000)
+		if (pixel != 0x010000)
 			wpixels[cint[0] + j + i * cint[5]] = pixel;
 		ty += dty;
 	}

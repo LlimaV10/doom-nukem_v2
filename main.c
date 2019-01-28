@@ -2755,7 +2755,7 @@ void	draw_glass_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 			d.pixel = get_pixel(iw->t[left->wall->glass],
 				(int)d.tx % iw->t[left->wall->glass]->w,
 				(int)d.ty % iw->t[left->wall->glass]->h);
-			if (d.pixel != 0x000000)
+			if (d.pixel != 0x010000)
 				set_pixel(iw->sur, left->x + j, i, d.pixel);
 			d.ty += d.dty;
 		}
@@ -3683,7 +3683,7 @@ void add_sprite(t_sdl *iw,int x,int y, int z, int t, int num)
 	tmp->t = t;
 	tmp->num_sec = num;
 	tmp->next = *iw->sprite;
-	tmp->scale = 0.3f;
+	tmp->scale = 0.1f;
 	(*iw->sprite) = tmp;
 }
 
