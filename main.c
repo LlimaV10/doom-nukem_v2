@@ -3,7 +3,7 @@
 
 void	set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 {
-	if (x >= 0 && x < WINDOW_W && y >= 0 && y < WINDOW_H + 200)
+	if (x >= 0 && x < WINDOW_W && y >= 0 && y < WINDOW_H + 300)
 	{
 		Uint8 *target_pixel = (Uint8 *)surface->pixels + y * surface->pitch + x * 4;
 		*(Uint32 *)target_pixel = pixel;
@@ -259,6 +259,10 @@ void	draw_menu(t_sdl *iw)
 	else
 		draw_text(iw, "F", 15, WINDOW_H + 135);
 	draw_text(iw, "R", 210, WINDOW_H + 135);
+	draw_text(iw, "Sprites:", 250, WINDOW_H + 135);
+	draw_text(iw, "Decor.", 335, WINDOW_H + 105);
+	draw_text(iw, "Pickup", 335, WINDOW_H + 135);
+	draw_text(iw, "Enemies", 335, WINDOW_H + 165);
 }
 
 void	ft_scaled_blit(SDL_Surface *tex, SDL_Surface *winsur, SDL_Rect *rect)
@@ -3275,7 +3279,7 @@ int		get_min(int i1, int i2)
 		return (i2);
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-void get_visible_spr2(t_sdl *iw, t_sprite *sprite)
+void	draw_sprite(t_sdl *iw, t_sprite *sprite)
 {
 	int		i;
 	int		j;
@@ -3286,31 +3290,39 @@ void get_visible_spr2(t_sdl *iw, t_sprite *sprite)
 	int		texY;
 	int		colour;
 
-	sprite->spriteheight = 2 * sprite->spritewidth * iw->st[sprite->t]->h / iw->st[sprite->t]->w;
+	sprite->spriteheight = 2 * sprite->spritewidth * sprite->t->h / sprite->t->w;
 	sprite->ey = WINDOW_H * (iw->p.z + (int)sprite->pplen / 2 - sprite->z) / (int)sprite->pplen + iw->p.rotup;
 	sprite->sy = sprite->ey - sprite->spriteheight;
 	i = 0;
 	stripe = sprite->sx - 1;
-	while (++stripe < sprite->ex)
+	if (stripe < -1)
+	{
+		i -= stripe + 1;
+		stripe = -1;
+	}
+	while (++stripe < sprite->ex && stripe < WINDOW_W)
 	{
 		j = 0;
-		koef = (float)sprite->spritewidth * 2 / iw->st[sprite->t]->w;
+		koef = (float)sprite->spritewidth * 2.0f / (float)sprite->t->w;
 		texX = (int)fabsf((float)i / koef);
-		if (((sprite->sx > 0 || sprite->ex  < WINDOW_W))
-			&& (stripe > 0 && stripe < WINDOW_W) &&
-			(sprite->top[stripe] < sprite->bottom[stripe])
+		if ((sprite->top[stripe] < sprite->bottom[stripe])
 			&& sprite->top[stripe] != -1)
 		{
 			y = sprite->sy - 1;
-			while (++y < sprite->ey)
+			if (y < -1)
+			{
+				j -= y + 1;
+				y = -1;
+			}
+			while (++y < sprite->ey && y < WINDOW_H)
 			{
 				if (sprite->sy < WINDOW_H && sprite->bottom[stripe] >y && sprite->top[stripe] < y)
 				{
-					koef = (float)sprite->spriteheight / iw->st[sprite->t]->h;
+					koef = (float)sprite->spriteheight / sprite->t->h;
 					texY = (int)(j / koef);
-					colour = get_pixel(iw->st[sprite->t], texX, texY);
+					colour = get_pixel(sprite->t, texX, texY);
 					if (colour != 0x010000)
-						set_pixel(iw->sur, stripe, y, get_pixel(iw->st[sprite->t], texX, texY));
+						set_pixel(iw->sur, stripe, y, get_pixel(sprite->t, texX, texY));
 				}
 				j++;
 			}
@@ -3327,7 +3339,7 @@ void	draw_sprites(t_sdl *iw)
 	while (tmp1 != 0)
 	{
 		if (iw->sectors[tmp1->num_sec].visited && tmp1->draweble)
-			get_visible_spr2(iw, tmp1);
+			draw_sprite(iw, tmp1);
 		tmp1 = tmp1->next;
 	}
 }
@@ -3339,19 +3351,25 @@ void        swap_values(t_sprite *tmp, t_sprite *first, t_sprite *second)
 	tmp->z = first->z;
 	tmp->dist = first->dist;
 	tmp->t = first->t;
+	tmp->t_kernel = first->t_kernel;
 	tmp->num_sec = first->num_sec;
+	tmp->scale = first->scale;
     first->x = second->x;
     first->y = second->y;
 	first->z = second->z;
 	first->dist = second->dist;
 	first->t = second->t;
+	first->t_kernel = second->t_kernel;
 	first->num_sec = second->num_sec;
+	first->scale = second->scale;
     second->x = tmp->x;
     second->y = tmp->y;
 	second->z = tmp->z;
 	second->dist = tmp->dist;
 	second->t = tmp->t;
+	second->t_kernel = tmp->t_kernel;
 	second->num_sec = tmp->num_sec;
+	second->scale = tmp->scale;
 }
 
 void        sortl(t_sprite *list)
@@ -3417,9 +3435,9 @@ void	calculate_sprites_once(t_sdl *iw)
 			sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b) + 1.0f;
 		//printf("div  %f\n", tmp1->pplen / tmp1->plen);
 		if (tmp1->pplen / tmp1->plen >= 0.5f)
-			tmp1->spritewidth = (int)(fabsf((float)(WINDOW_W * iw->st[tmp1->t]->w) / tmp1->pplen) * tmp1->scale);
+			tmp1->spritewidth = (int)(fabsf((float)(WINDOW_W * tmp1->t->w) / tmp1->pplen) * tmp1->scale);
 		else
-			tmp1->spritewidth = (int)(fabsf((float)(WINDOW_W * iw->st[tmp1->t]->w) / tmp1->plen) * tmp1->scale);
+			tmp1->spritewidth = (int)(fabsf((float)(WINDOW_W * tmp1->t->w) / tmp1->plen) * tmp1->scale);
 		tmp1->sx = tmp1->x_s - tmp1->spritewidth;
 		tmp1->ex = tmp1->x_s + tmp1->spritewidth;
 		if (!(tmp1->sx > WINDOW_W || tmp1->ex < 0))
@@ -3616,10 +3634,15 @@ void	draw(t_sdl *iw)
 		draw_skybox_kernel(iw);
 
 	if (iw->v.kernel)
+		draw_sprites_kernel(iw);
+	else
+		draw_sprites(iw);
+	
+	if (iw->v.kernel)
 		iw->k.ret = clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_sur, CL_TRUE, 0,
 			WINDOW_W * WINDOW_H * sizeof(int), iw->sur->pixels, 0, NULL, NULL);
 	
-	draw_sprites(iw);
+	
 }
 
 void	read_textures(t_sdl *iw)
@@ -3669,10 +3692,15 @@ void	read_textures(t_sdl *iw)
 
 void	read_sprites_textures(t_sdl *iw)
 {
-	iw->st[0] = SDL_LoadBMP("sprites/0.bmp");
+	iw->t_decor[0] = SDL_LoadBMP("sprites/decorations/0.bmp");
+
+	iw->t_enemies[0] = SDL_LoadBMP("sprites/enemies/0.bmp");
+
+	iw->t_pickup[0] = SDL_LoadBMP("sprites/to_pick_up/0.bmp");
+	iw->t_pickup[1] = SDL_LoadBMP("sprites/to_pick_up/1.bmp");
 }
 
-void add_sprite(t_sdl *iw,int x,int y, int z, int t, int num)
+void add_sprite(t_sdl *iw, int x, int y, int z, int t, int num, int type, float scale)
 {
 	t_sprite *tmp;
 
@@ -3680,11 +3708,28 @@ void add_sprite(t_sdl *iw,int x,int y, int z, int t, int num)
 	tmp->x = x;
 	tmp->y = y;
 	tmp->z = z;
-	tmp->t = t;
+	//tmp->t = t;
 	tmp->num_sec = num;
 	tmp->next = *iw->sprite;
-	tmp->scale = 0.1f;
+	tmp->type = type;
+	tmp->scale = scale;
 	(*iw->sprite) = tmp;
+	if (type == 0)
+	{
+		tmp->t = iw->t_decor[t];
+		tmp->t_kernel = &iw->k.m_t_decor[t];
+	}
+	else if (type == 1)
+	{
+		tmp->t = iw->t_pickup[t];
+		tmp->t_kernel = &iw->k.m_t_pickup[t];
+	}
+	else if (type == 2)
+	{
+		tmp->t = iw->t_enemies[t];
+		tmp->t_kernel = &iw->k.m_t_enemies[t];
+	}
+	
 }
 
 void	get_def(t_sdl *iw)
@@ -3745,9 +3790,6 @@ void	get_def(t_sdl *iw)
 
 	iw->sprite = (t_sprite **)malloc(sizeof(t_sprite *));
 	*iw->sprite = 0;
-	add_sprite(iw,7240,2640,200,0,1);
-	add_sprite(iw,8640,2200,400,0,1);
-	add_sprite(iw,6520,2298,200,0,1);
 }
 
 void	get_kernel_mem(t_sdl *iw)
@@ -3757,13 +3799,34 @@ void	get_kernel_mem(t_sdl *iw)
 	i = -1;
 	while (++i < TEXTURES_COUNT)
 	{
-		/*if (i != 1)
-		{*/
 		iw->k.m_t[i] = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
 			iw->t[i]->w * iw->t[i]->h * 3, NULL, &iw->k.ret);
 		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t[i], CL_TRUE, 0,
 			iw->t[i]->w * iw->t[i]->h * 3, iw->t[i]->pixels, 0, NULL, NULL);
-		//}
+	}
+	i = -1;
+	while (++i < DECOR_TEXTURES_COUNT)
+	{
+		iw->k.m_t_decor[i] = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
+			iw->t_decor[i]->w * iw->t_decor[i]->h * iw->t_decor[i]->format->BytesPerPixel, NULL, &iw->k.ret);
+		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t_decor[i], CL_TRUE, 0,
+			iw->t_decor[i]->w * iw->t_decor[i]->h * iw->t_decor[i]->format->BytesPerPixel, iw->t_decor[i]->pixels, 0, NULL, NULL);
+	}
+	i = -1;
+	while (++i < ENEMIES_TEXTURES_COUNT)
+	{
+		iw->k.m_t_enemies[i] = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
+			iw->t_enemies[i]->w * iw->t_enemies[i]->h * iw->t_enemies[i]->format->BytesPerPixel, NULL, &iw->k.ret);
+		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t_enemies[i], CL_TRUE, 0,
+			iw->t_enemies[i]->w * iw->t_enemies[i]->h * iw->t_enemies[i]->format->BytesPerPixel, iw->t_enemies[i]->pixels, 0, NULL, NULL);
+	}
+	i = -1;
+	while (++i < PICK_UP_TEXTURES_COUNT)
+	{
+		iw->k.m_t_pickup[i] = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
+			iw->t_pickup[i]->w * iw->t_pickup[i]->h * iw->t_pickup[i]->format->BytesPerPixel, NULL, &iw->k.ret);
+		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t_pickup[i], CL_TRUE, 0,
+			iw->t_pickup[i]->w * iw->t_pickup[i]->h * iw->t_pickup[i]->format->BytesPerPixel, iw->t_pickup[i]->pixels, 0, NULL, NULL);
 	}
 	iw->k.m_top = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE,
 		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
@@ -3890,16 +3953,21 @@ int		main(void)
 {
 	t_sdl	iw;
 
-	get_def(&iw);	
+	get_def(&iw);
 	read_textures(&iw);
 	read_sprites_textures(&iw);
 	get_kernel_mem(&iw);
+	
+	add_sprite(&iw,7240,2640,200,0,1, 0, 0.5f);
+	add_sprite(&iw,8640,2200,400,0,1, 1, 0.1f);
+	add_sprite(&iw,6520,2298,200,0,1, 2, 0.5f);
+
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
 	iw.arial_font = TTF_OpenFont("fonts/ARIAL.TTF", 24);
 	SDL_SetRelativeMouseMode(iw.v.mouse_mode);
 	iw.win = SDL_CreateWindow("SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		WINDOW_W, WINDOW_H + 100 + 100, SDL_WINDOW_SHOWN);
+		WINDOW_W, WINDOW_H + 100 + 100 + 100, SDL_WINDOW_SHOWN);
 	//iw.ren = SDL_CreateRenderer(iw.win, -1, 0);
 	iw.sur = SDL_GetWindowSurface(iw.win);
 	draw_tex_to_select(&iw);

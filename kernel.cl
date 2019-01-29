@@ -1372,3 +1372,64 @@ __kernel void draw_picture_kernel(
 		pic_y += dy_plus;
 	}
 }
+
+//cint
+//0 - sprite->sx
+//1 - sprite->spritewidth
+//2 - ->t->w
+//3 - ->sy
+//4 - ->ey
+//5 - WINDOW_H
+//6 - ->spriteheight
+//7 - ->t->h
+//8 - WINDOW_W
+//9 - bpp
+//10 - pitch
+//11 - left_plus
+
+__kernel void draw_sprite_kernel(
+	__global int *top, __global int *bottom,
+	__global int *wpixels, __global const uchar *sprite_pixels,
+	__global const int *cint
+)
+{
+	int		i;
+	int		j;
+	int		stripe;
+	int		y;
+	float	koef;
+	int		texX;
+	int		texY;
+	int		colour;
+	int		tp;
+
+	i = get_global_id(0) + cint[11];
+	stripe = i + cint[0];
+
+	j = 0;
+	koef = (float)cint[1] * 2.0f / (float)cint[2];
+	texX = (int)fabsf((float)i / koef);
+
+	if (top[stripe] < bottom[stripe] && top[stripe] != -1)
+	{
+		y = cint[3] - 1;
+		if (y < -1)
+		{
+			j -= y + 1;
+			y = -1;
+		}
+		while (++y < cint[4] && y < cint[5])
+		{
+			if (cint[3] < cint[5] && bottom[stripe] > y && top[stripe] < y)
+			{
+				koef = (float)cint[6] / cint[7];
+				texY = (int)(j / koef);
+				tp = texX * cint[9] + texY * cint[10];
+				colour = (int)(sprite_pixels[tp] | sprite_pixels[tp + 1] << 8 | sprite_pixels[tp + 2] << 16);
+				if (colour != 0x010000)
+					wpixels[stripe + y * cint[8]] = colour;
+			}
+			j++;
+		}
+	}
+}

@@ -1102,3 +1102,63 @@ void	draw_pictures_kernel(t_sdl *iw, t_save_wall *left)
 		pic = pic->next;
 	}
 }
+
+void	draw_sprite_kernel(t_sdl *iw, t_sprite *sprite)
+{
+	int		cint[12];
+
+	sprite->spriteheight = 2 * sprite->spritewidth * sprite->t->h / sprite->t->w;
+	sprite->ey = WINDOW_H * (iw->p.z + (int)sprite->pplen / 2 - sprite->z) / (int)sprite->pplen + iw->p.rotup;
+	sprite->sy = sprite->ey - sprite->spriteheight;
+
+	cint[0] = sprite->sx;
+	cint[1] = sprite->spritewidth;
+	cint[2] = sprite->t->w;
+	cint[3] = sprite->sy;
+	cint[4] = sprite->ey;
+	cint[5] = WINDOW_H;
+	cint[6] = sprite->spriteheight;
+	cint[7] = sprite->t->h;
+	cint[8] = WINDOW_W;
+	cint[9] = sprite->t->format->BytesPerPixel;
+	cint[10] = sprite->t->pitch;
+	if (sprite->sx < 0)
+		cint[11] = -sprite->sx;
+	else
+		cint[11] = 0;
+		
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 12 * sizeof(int), cint, 0, NULL, NULL);
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_top, CL_TRUE, 0, (WINDOW_W + 1) * sizeof(int), sprite->top, 0, NULL, NULL);
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_bottom, CL_TRUE, 0, (WINDOW_W + 1) * sizeof(int), sprite->bottom, 0, NULL, NULL);
+
+	iw->k.kernel = clCreateKernel(iw->k.program, "draw_sprite_kernel", &iw->k.ret);
+
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 0, sizeof(cl_mem), (void *)&iw->k.m_top);
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 1, sizeof(cl_mem), (void *)&iw->k.m_bottom);
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 2, sizeof(cl_mem), (void *)&iw->k.m_sur);
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 3, sizeof(cl_mem), (void *)sprite->t_kernel);
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 4, sizeof(cl_mem), (void *)&iw->k.m_cint);
+
+	size_t global_item_size = get_min(WINDOW_W, sprite->ex) - get_max(0, sprite->sx);//sprite->ex - sprite->sx;
+	size_t local_item_size = 1;
+
+	iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel, 1, NULL,
+		&global_item_size, &local_item_size, 0, NULL, NULL);
+	
+	clFlush(iw->k.command_queue);
+	clFinish(iw->k.command_queue);
+	clReleaseKernel(iw->k.kernel);
+}
+
+void	draw_sprites_kernel(t_sdl *iw)
+{
+	t_sprite	*tmp1;
+
+	tmp1 = *iw->sprite;
+	while (tmp1 != 0)
+	{
+		if (iw->sectors[tmp1->num_sec].visited && tmp1->draweble)
+			draw_sprite_kernel(iw, tmp1);
+		tmp1 = tmp1->next;
+	}
+}

@@ -375,7 +375,9 @@ typedef struct	s_draw_info
 typedef struct	s_sprite
 {
 	int		x;
-	int		t;
+	//int		t;
+	SDL_Surface	*t;
+	cl_mem		*t_kernel;
 	int		y;
 	int		z;
 	int		x_s;
@@ -456,6 +458,10 @@ typedef struct	s_kernel
 	cl_mem		m_save_bottom;
 	cl_mem		m_save_top2;
 	cl_mem		m_save_bottom2;
+	
+	cl_mem		m_t_decor[DECOR_TEXTURES_COUNT];
+	cl_mem		m_t_enemies[ENEMIES_TEXTURES_COUNT];
+	cl_mem		m_t_pickup[PICK_UP_TEXTURES_COUNT];
 }				t_kernel;
 
 typedef struct	s_variables
@@ -549,7 +555,10 @@ typedef struct	s_sdl
 	// Sprites
 	t_sprite 	**sprite;
 	// Sprite textures
-	SDL_Surface	*(st)[SPRITES_TEXTURES_COUNT];
+	//SDL_Surface	*(st)[SPRITES_TEXTURES_COUNT];
+	SDL_Surface	*(t_decor)[DECOR_TEXTURES_COUNT];
+	SDL_Surface	*(t_enemies)[ENEMIES_TEXTURES_COUNT];
+	SDL_Surface	*(t_pickup)[PICK_UP_TEXTURES_COUNT];
 }				t_sdl;
 
 #endif
