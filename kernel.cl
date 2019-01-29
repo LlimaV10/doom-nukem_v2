@@ -1408,7 +1408,7 @@ __kernel void draw_sprite_kernel(
 
 	j = 0;
 	koef = (float)cint[1] * 2.0f / (float)cint[2];
-	texX = (int)fabsf((float)i / koef);
+	texX = (int)fabs((float)i / koef);
 
 	if (top[stripe] < bottom[stripe] && top[stripe] != -1)
 	{

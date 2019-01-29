@@ -383,7 +383,7 @@ typedef struct	s_sprite
 	int		x_s;
 	float	plen;
 	float	pplen;
-	float	dist;
+	//float	dist;
 	int		spritewidth;
 	int		spriteheight;
 	int		sy;

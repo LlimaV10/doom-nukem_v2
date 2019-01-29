@@ -3344,55 +3344,55 @@ void	draw_sprites(t_sdl *iw)
 	}
 }
 
-void        swap_values(t_sprite *tmp, t_sprite *first, t_sprite *second)
-{
-    tmp->x = first->x;
-    tmp->y = first->y;
-	tmp->z = first->z;
-	tmp->dist = first->dist;
-	tmp->t = first->t;
-	tmp->t_kernel = first->t_kernel;
-	tmp->num_sec = first->num_sec;
-	tmp->scale = first->scale;
-    first->x = second->x;
-    first->y = second->y;
-	first->z = second->z;
-	first->dist = second->dist;
-	first->t = second->t;
-	first->t_kernel = second->t_kernel;
-	first->num_sec = second->num_sec;
-	first->scale = second->scale;
-    second->x = tmp->x;
-    second->y = tmp->y;
-	second->z = tmp->z;
-	second->dist = tmp->dist;
-	second->t = tmp->t;
-	second->t_kernel = tmp->t_kernel;
-	second->num_sec = tmp->num_sec;
-	second->scale = tmp->scale;
-}
+//void        swap_values(t_sprite *tmp, t_sprite *first, t_sprite *second)
+//{
+//    tmp->x = first->x;
+//    tmp->y = first->y;
+//	tmp->z = first->z;
+//	tmp->dist = first->dist;
+//	tmp->t = first->t;
+//	tmp->t_kernel = first->t_kernel;
+//	tmp->num_sec = first->num_sec;
+//	tmp->scale = first->scale;
+//    first->x = second->x;
+//    first->y = second->y;
+//	first->z = second->z;
+//	first->dist = second->dist;
+//	first->t = second->t;
+//	first->t_kernel = second->t_kernel;
+//	first->num_sec = second->num_sec;
+//	first->scale = second->scale;
+//    second->x = tmp->x;
+//    second->y = tmp->y;
+//	second->z = tmp->z;
+//	second->dist = tmp->dist;
+//	second->t = tmp->t;
+//	second->t_kernel = tmp->t_kernel;
+//	second->num_sec = tmp->num_sec;
+//	second->scale = tmp->scale;
+//}
 
-void        sortl(t_sprite *list)
-{
-    t_sprite    *tmp_1;
-    t_sprite    *tmp_2;
-    t_sprite    *swap;
-
-    tmp_1 = list;
-	swap = (t_sprite *)ft_memalloc(sizeof(t_sprite));
-	while (tmp_1->next)
-	{
-		tmp_2 = list;
-		while (tmp_2->next)
-        {
-            if (tmp_2->dist < tmp_2->next->dist)
-                swap_values(swap, tmp_2, tmp_2->next);
-            tmp_2 = tmp_2->next;
-        }
-        tmp_1 = tmp_1->next;
-    }
-	free(swap);
-}
+//void        sortl(t_sprite *list)
+//{
+//    t_sprite    *tmp_1;
+//    t_sprite    *tmp_2;
+//    t_sprite    *swap;
+//
+//    tmp_1 = list;
+//	swap = (t_sprite *)ft_memalloc(sizeof(t_sprite));
+//	while (tmp_1->next)
+//	{
+//		tmp_2 = list;
+//		while (tmp_2->next)
+//        {
+//            if (tmp_2->dist < tmp_2->next->dist)
+//                swap_values(swap, tmp_2, tmp_2->next);
+//            tmp_2 = tmp_2->next;
+//        }
+//        tmp_1 = tmp_1->next;
+//    }
+//	free(swap);
+//}
 
 int		find_point(t_save_wall_pairs *tmp,t_sprite *tmp1)
 {
@@ -3413,9 +3413,9 @@ void	calculate_sprites_once(t_sdl *iw)
 	t_sprite    *tmp1;
 
 	tmp1 = *iw->sprite;
-	while(tmp1 != 0)
+	while (tmp1 != 0)
 	{
-		if (!iw->sectors[tmp1->num_sec].visited)
+		if (!iw->sectors[tmp1->num_sec].visited || tmp1->draweble == 1)
 		{
 			tmp1 = tmp1->next;
 			continue;
@@ -3440,7 +3440,7 @@ void	calculate_sprites_once(t_sdl *iw)
 			tmp1->spritewidth = (int)(fabsf((float)(WINDOW_W * tmp1->t->w) / tmp1->plen) * tmp1->scale);
 		tmp1->sx = tmp1->x_s - tmp1->spritewidth;
 		tmp1->ex = tmp1->x_s + tmp1->spritewidth;
-		if (!(tmp1->sx > WINDOW_W || tmp1->ex < 0))
+		if (!(tmp1->sx > iw->d.screen_right || tmp1->ex < iw->d.screen_left))
 			tmp1->draweble = 1;
 		tmp1 = tmp1->next;
 	}
@@ -3483,6 +3483,64 @@ void	get_sprites_top_bottom(t_sdl *iw, t_save_wall_pairs	*tmp)
 			}
 		tmp1 = tmp1->next;
 	}
+}
+
+void	switch_nexts_sprites(t_sprite *s1, t_sprite *s2)
+{
+	t_sprite	*tmp;
+	t_sprite	*tmp2;
+
+	if (!s1 || !s2)
+		return;
+	if (s2->next == s1)
+	{
+		s2->next = s2->next->next;
+		s1->next = s1->next->next;
+		s2->next->next = s1;
+	}
+	else
+	{
+		tmp = s1->next->next;
+		s1->next->next = s2->next->next;
+		tmp2 = s2->next;
+		s2->next = s1->next;
+		s1->next = tmp2;
+		tmp2->next = tmp;
+	}
+}
+
+void	sort_sprites(t_sdl *iw)
+{
+	t_sprite	head;
+	t_sprite	*tmp1;
+	t_sprite	*tmp2;
+	t_sprite	*max;
+
+	if (!*iw->sprite)
+		return;
+	head.next = *iw->sprite;
+	tmp1 = &head;
+	while (tmp1->next->next != 0)
+	{
+		if (!iw->sectors[tmp1->next->num_sec].visited || !tmp1->next->draweble)
+		{
+			tmp1 = tmp1->next;
+			continue;
+		}
+		max = 0;
+		tmp2 = tmp1->next;
+		while (tmp2->next != 0)
+		{
+			if (iw->sectors[tmp2->next->num_sec].visited && tmp2->next->draweble)
+				//if (max == 0 || max->next->plen < tmp2->next->plen)
+				if (tmp2->next->plen > tmp1->next->plen && (max == 0 || max->next->plen < tmp2->next->plen))
+					max = tmp2;
+			tmp2 = tmp2->next;
+		}
+		switch_nexts_sprites(max, tmp1);
+		tmp1 = tmp1->next;
+	}
+	*iw->sprite = head.next;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3552,13 +3610,6 @@ void	draw(t_sdl *iw)
 	t_sprite *tmp1;
 	int j;
 
-	tmp1 = *iw->sprite;
-	while (tmp1 != 0)
-	{
-		tmp1->dist = sqrtf(powf((float)(iw->p.x - tmp1->x), 2.0f) +  powf((float)(iw->p.y - tmp1->y), 2.0f));
-		tmp1 = tmp1->next;
-	}
-	sortl(*iw->sprite);
 	j = 0;
 	tmp1 = *iw->sprite;
 	while(tmp1 != 0)
@@ -3633,6 +3684,7 @@ void	draw(t_sdl *iw)
 	else
 		draw_skybox_kernel(iw);
 
+	sort_sprites(iw);
 	if (iw->v.kernel)
 		draw_sprites_kernel(iw);
 	else
