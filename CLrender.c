@@ -62,9 +62,13 @@ void	draw_inclined_wall_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left, t_sa
 	// cl_mem	m_wallBot;
 	// cl_mem	m_cint;
 	// cl_mem	m_cfloat;
-	int		cint[24];
+	int		cint[25];
 	float	cfloat[17];
 
+	if (iw->sectors[iw->d.cs].light == 0 || iw->sectors[iw->d.cs].light->t != 18)
+		cint[24] = 1;
+	else
+		cint[24] = 0;
 	if (left->wall->t >= 0)
 	{
 		cint[0] = iw->t[left->wall->t]->w;
@@ -150,7 +154,7 @@ void	draw_inclined_wall_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left, t_sa
 
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallTop, CL_TRUE, 0, len * sizeof(int), iw->d.wallTop, 0, NULL, NULL);
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallBot, CL_TRUE, 0, len * sizeof(int), iw->d.wallBot, 0, NULL, NULL);
-	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 24 * sizeof(int), cint, 0, NULL, NULL);
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 25 * sizeof(int), cint, 0, NULL, NULL);
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cfloat, CL_TRUE, 0, 17 * sizeof(float), cfloat, 0, NULL, NULL);
 
 	iw->k.kernel = clCreateKernel(iw->k.program, "draw_inclined_wall_floor_ceil_tex_kernel", &iw->k.ret);
@@ -217,9 +221,13 @@ void	draw_wall_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *
 	// cl_mem	m_wallBot;
 	// cl_mem	m_cint;
 	// cl_mem	m_cfloat;
-	int		cint[15];
+	int		cint[16];
 	float	cfloat[17];
 
+	if (iw->sectors[iw->d.cs].light == 0 || iw->sectors[iw->d.cs].light->t != 18)
+		cint[15] = 1;
+	else
+		cint[15] = 0;
 	if (left->wall->t >= 0)
 	{
 		cint[0] = iw->t[left->wall->t]->w;
@@ -274,7 +282,7 @@ void	draw_wall_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *
 
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallTop, CL_TRUE, 0, len * sizeof(int), iw->d.wallTop, 0, NULL, NULL);
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallBot, CL_TRUE, 0, len * sizeof(int), iw->d.wallBot, 0, NULL, NULL);
-	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 15 * sizeof(int), cint, 0, NULL, NULL);
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 16 * sizeof(int), cint, 0, NULL, NULL);
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cfloat, CL_TRUE, 0, 17 * sizeof(float), cfloat, 0, NULL, NULL);
 
 	iw->k.kernel = clCreateKernel(iw->k.program, "draw_wall_floor_ceil_tex_kernel", &iw->k.ret);
@@ -342,9 +350,13 @@ void	draw_inclined_floor_ceil_betw_tex_kernel(t_sdl *iw, t_save_wall *left, t_sa
 	// cl_mem	m_cfloat;
 	// cl_mem	m_top_betw;
 	// cl_mem	m_bot_betw;
-	int		cint[25];
+	int		cint[26];
 	float	cfloat[19];
 
+	if (iw->sectors[iw->d.cs].light == 0 || iw->sectors[iw->d.cs].light->t != 18)
+		cint[25] = 1;
+	else
+		cint[25] = 0;
 	cint[0] = iw->t[left->wall->t]->w;
 	cint[1] = iw->t[left->wall->t]->h;
 	cint[2] = iw->t[iw->sectors[iw->d.cs].fr.t]->w;
@@ -435,7 +447,7 @@ void	draw_inclined_floor_ceil_betw_tex_kernel(t_sdl *iw, t_save_wall *left, t_sa
 
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallTop, CL_TRUE, 0, len * sizeof(int), iw->d.wallTop, 0, NULL, NULL);
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallBot, CL_TRUE, 0, len * sizeof(int), iw->d.wallBot, 0, NULL, NULL);
-	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 25 * sizeof(int), cint, 0, NULL, NULL);
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 26 * sizeof(int), cint, 0, NULL, NULL);
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cfloat, CL_TRUE, 0, 19 * sizeof(float), cfloat, 0, NULL, NULL);
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_top_betw, CL_TRUE, 0, len * sizeof(int), iw->d.save_top_betw, 0, NULL, NULL);
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_bot_betw, CL_TRUE, 0, len * sizeof(int), iw->d.save_bot_betw, 0, NULL, NULL);
@@ -506,9 +518,13 @@ void	draw_floor_ceil_betw_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *
 	// cl_mem	m_cfloat;
 	// cl_mem	m_top_betw;
 	// cl_mem	m_bot_betw;
-	int		cint[16];
+	int		cint[17];
 	float	cfloat[19];
 
+	if (iw->sectors[iw->d.cs].light == 0 || iw->sectors[iw->d.cs].light->t != 18)
+		cint[16] = 1;
+	else
+		cint[16] = 0;
 	cint[0] = iw->t[left->wall->t]->w;
 	cint[1] = iw->t[left->wall->t]->h;
 	cint[2] = iw->t[iw->sectors[iw->d.cs].fr.t]->w;
@@ -566,7 +582,7 @@ void	draw_floor_ceil_betw_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *
 
 	clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallTop, CL_TRUE, 0, len * sizeof(int), iw->d.wallTop, 0, NULL, NULL);
 	clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallBot, CL_TRUE, 0, len * sizeof(int), iw->d.wallBot, 0, NULL, NULL);
-	clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 16 * sizeof(int), cint, 0, NULL, NULL);
+	clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 17 * sizeof(int), cint, 0, NULL, NULL);
 	clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cfloat, CL_TRUE, 0, 19 * sizeof(float), cfloat, 0, NULL, NULL);
 	clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_top_betw, CL_TRUE, 0, len * sizeof(int), iw->d.save_top_betw, 0, NULL, NULL);
 	clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_bot_betw, CL_TRUE, 0, len * sizeof(int), iw->d.save_bot_betw, 0, NULL, NULL);
@@ -995,13 +1011,14 @@ void	draw_glass_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, int
 int		draw_picture_kernel(t_sdl *iw, t_picture *pic)
 {
 	t_draw_picture	d;
-	int		cint[6];
+	int		cint[8];
 	float	cfloat[6];
 
 	cint[1] = iw->t[pic->t]->h;
 	cint[4] = iw->t[pic->t]->w;
 	cint[5] = WINDOW_W;
-
+	cint[6] = iw->t[pic->t]->format->BytesPerPixel;
+	cint[7] = iw->t[pic->t]->pitch;
 
 	d.lang = get_vectors_angle(iw->d.left_point.x - (float)iw->p.x, iw->d.left_point.y - (float)iw->p.y,
 		(float)(pic->x0 - iw->p.x), (float)(pic->y0 - iw->p.y));
@@ -1055,7 +1072,7 @@ int		draw_picture_kernel(t_sdl *iw, t_picture *pic)
 		cint[0] = 0;
 	}
 
-	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 6 * sizeof(int), cint, 0, NULL, NULL);
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 8 * sizeof(int), cint, 0, NULL, NULL);
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cfloat, CL_TRUE, 0, 6 * sizeof(float), cfloat, 0, NULL, NULL);
 
 	iw->k.kernel = clCreateKernel(iw->k.program, "draw_picture_kernel", &iw->k.ret);

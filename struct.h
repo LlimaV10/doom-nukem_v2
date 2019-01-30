@@ -89,9 +89,10 @@ typedef struct	s_sector
 	t_sector_fc	fr;
 	// Sector Ceil
 	t_sector_fc	cl;
-	// // Sprites inside of this sector
-	// t_sprite	*s;
+	// Visited on draw or not
 	int			visited;
+	//Light trigger
+	t_picture	*light;
 }				t_sector;
 
 typedef struct	s_anim_portal_rotate
@@ -510,6 +511,8 @@ typedef struct	s_variables
 	// int		edit_mode;
 	t_picture	*picture_changing;
 	t_wall		*wall_picture_changing;
+	int		f_button_mode;
+	void	*f_button_pointer;
 }				t_variables;
 
 typedef struct	s_level

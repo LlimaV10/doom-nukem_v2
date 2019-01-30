@@ -1,3 +1,15 @@
+int		get_light_color(int color, int light)
+{
+	if (light == 1)
+		return (color);
+	else
+	return ((((int)((float)(color >> 16) * 0.2f)) << 16) +
+		(((int)((float)((color >> 8) - (color >> 16 << 8))
+		* 0.2f)) << 8) + (int)((float)(color - (color
+		>> 8 << 8)) * 0.2f));
+}
+
+
 //int
 //0 - wall_width
 //1 - wall_height
@@ -25,6 +37,7 @@
 //22 - screen_right
 
 //23 - ceil->t
+//24 - light
 
 //float
 //0 - dang
@@ -114,7 +127,7 @@ __kernel void draw_inclined_wall_floor_ceil_tex_kernel(
 				(cint[11] * (int)(floorx * 1000.0f) + cint[12] * (int)(floory * 1000.0f) + cint[14]) / cint[13] * -1 + frcoef) / 2.0f;
 			tp = ((floorx < 0.0f) ? (((int)(floorx * (float)cint[2]) % cint[2]) + cint[2] - 1) : ((int)(floorx * (float)cint[2]) % cint[2])) * 3
 				+ ((floory < 0.0f) ? (((int)(floory * (float)cint[3]) % cint[3]) + cint[3] - 1) : ((int)(floory * (float)cint[3]) % cint[3])) * 3 * cint[2];
-			wpixels[cint[8] + j + i * cint[6]] = (int)(floorpixels[tp] | floorpixels[tp + 1] << 8 | floorpixels[tp + 2] << 16);
+			wpixels[cint[8] + j + i * cint[6]] = get_light_color((int)(floorpixels[tp] | floorpixels[tp + 1] << 8 | floorpixels[tp + 2] << 16), cint[24]);
 		}
 		bottom[j] = wallBot[j];
 	}
@@ -137,7 +150,7 @@ __kernel void draw_inclined_wall_floor_ceil_tex_kernel(
 				(cint[11] * (int)(floorx * 1000.0f) + cint[12] * (int)(floory * 1000.0f) + cint[14]) / cint[13] * -1 + clcoef) / 2.0f;
 			tp = ((floorx < 0.0f) ? (((int)(floorx * (float)cint[4]) % cint[4]) + cint[4] - 1) : ((int)(floorx * (float)cint[4]) % cint[4])) * 3
 				+ ((floory < 0.0f) ? (((int)(floory * (float)cint[5]) % cint[5]) + cint[5] - 1) : ((int)(floory * (float)cint[5]) % cint[5])) * 3 * cint[4];
-			wpixels[cint[8] + j + i * cint[6]] = (int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16);
+			wpixels[cint[8] + j + i * cint[6]] = get_light_color((int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16), cint[24]);
 		}
 		top[j] = wallTop[j];
 	}
@@ -167,7 +180,7 @@ __kernel void draw_inclined_wall_floor_ceil_tex_kernel(
 		while (++i < bottom[j])
 		{
 			tp = ((int)tx % cint[0]) * 3 + ((int)ty % cint[1]) * 3 * cint[0];
-			wpixels[cint[8] + j + i * cint[6]] = (int)(wallpixels[tp] | wallpixels[tp + 1] << 8 | wallpixels[tp + 2] << 16);
+			wpixels[cint[8] + j + i * cint[6]] = get_light_color((int)(wallpixels[tp] | wallpixels[tp + 1] << 8 | wallpixels[tp + 2] << 16), cint[24]);
 			ty += dty;
 		}
 		//top[j] = cint[7] + 1;
@@ -195,6 +208,8 @@ __kernel void draw_inclined_wall_floor_ceil_tex_kernel(
 //12 - screen_left
 //13 - screen_right
 //14 - ceil->t
+
+//15 - light
 
 //float
 //0 - dang
@@ -277,7 +292,7 @@ __kernel void draw_wall_floor_ceil_tex_kernel(
 			floory = weight * ry + (1.0f - weight) * cfloat[12];
 			tp = ((floorx < 0.0f) ? (((int)(floorx * (float)cint[2]) % cint[2]) + cint[2] - 1) : ((int)(floorx * (float)cint[2]) % cint[2])) * 3
 				+ ((floory < 0.0f) ? (((int)(floory * (float)cint[3]) % cint[3]) + cint[3] - 1) : ((int)(floory * (float)cint[3]) % cint[3])) * 3 * cint[2];
-			wpixels[cint[8] + j + i * cint[6]] = (int)(floorpixels[tp] | floorpixels[tp + 1] << 8 | floorpixels[tp + 2] << 16);
+			wpixels[cint[8] + j + i * cint[6]] = get_light_color((int)(floorpixels[tp] | floorpixels[tp + 1] << 8 | floorpixels[tp + 2] << 16), cint[15]);
 		}
 		bottom[j] = wallBot[j];
 	}
@@ -298,7 +313,7 @@ __kernel void draw_wall_floor_ceil_tex_kernel(
 			floory = weight * ry + (1.0f - weight) * cfloat[12];
 			tp = ((floorx < 0.0f) ? (((int)(floorx * (float)cint[4]) % cint[4]) + cint[4] - 1) : ((int)(floorx * (float)cint[4]) % cint[4])) * 3
 				+ ((floory < 0.0f) ? (((int)(floory * (float)cint[5]) % cint[5]) + cint[5] - 1) : ((int)(floory * (float)cint[5]) % cint[5])) * 3 * cint[4];
-			wpixels[cint[8] + j + i * cint[6]] = (int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16);
+			wpixels[cint[8] + j + i * cint[6]] = get_light_color((int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16), cint[15]);
 		}
 		top[j] = wallTop[j];
 	}
@@ -323,7 +338,7 @@ __kernel void draw_wall_floor_ceil_tex_kernel(
 		while (++i < bottom[j])
 		{
 			tp = ((int)tx % cint[0]) * 3 + ((int)ty % cint[1]) * 3 * cint[0];
-			wpixels[cint[8] + j + i * cint[6]] = (int)(wallpixels[tp] | wallpixels[tp + 1] << 8 | wallpixels[tp + 2] << 16);
+			wpixels[cint[8] + j + i * cint[6]] = get_light_color((int)(wallpixels[tp] | wallpixels[tp + 1] << 8 | wallpixels[tp + 2] << 16), cint[15]);
 			ty += dty;
 		}
 		//top[j] = cint[7] + 1;
@@ -361,6 +376,8 @@ __kernel void draw_wall_floor_ceil_tex_kernel(
 
 //23 - ceil->t
 //24 - rotup
+
+//25 - light
 
 //float
 //0 - dang
@@ -460,7 +477,7 @@ __kernel void draw_inclined_floor_ceil_betw_walls_tex_kernel(
 				(cint[11] * (int)(floorx * 1000.0f) + cint[12] * (int)(floory * 1000.0f) + cint[14]) / cint[13] * -1 + frcoef) / 2.0f;
 			tp = ((floorx < 0.0f) ? (((int)(floorx * (float)cint[2]) % cint[2]) + cint[2] - 1) : ((int)(floorx * (float)cint[2]) % cint[2])) * 3
 				+ ((floory < 0.0f) ? (((int)(floory * (float)cint[3]) % cint[3]) + cint[3] - 1) : ((int)(floory * (float)cint[3]) % cint[3])) * 3 * cint[2];
-			wpixels[cint[8] + j + i * cint[6]] = (int)(floorpixels[tp] | floorpixels[tp + 1] << 8 | floorpixels[tp + 2] << 16);
+			wpixels[cint[8] + j + i * cint[6]] = get_light_color((int)(floorpixels[tp] | floorpixels[tp + 1] << 8 | floorpixels[tp + 2] << 16), cint[25]);
 		}
 		bottom[j] = wallBot[j];
 	}
@@ -497,7 +514,7 @@ __kernel void draw_inclined_floor_ceil_betw_walls_tex_kernel(
 					(cint[11] * (int)(floorx * 1000.0f) + cint[12] * (int)(floory * 1000.0f) + cint[14]) / cint[13] * -1 + clcoef) / 2.0f;
 				tp = ((floorx < 0.0f) ? (((int)(floorx * (float)cint[4]) % cint[4]) + cint[4] - 1) : ((int)(floorx * (float)cint[4]) % cint[4])) * 3
 					+ ((floory < 0.0f) ? (((int)(floory * (float)cint[5]) % cint[5]) + cint[5] - 1) : ((int)(floory * (float)cint[5]) % cint[5])) * 3 * cint[4];
-				wpixels[cint[8] + j + i * cint[6]] = (int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16);
+				wpixels[cint[8] + j + i * cint[6]] = get_light_color((int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16), cint[25]);
 			}
 			
 		}
@@ -570,7 +587,7 @@ __kernel void draw_inclined_floor_ceil_betw_walls_tex_kernel(
 		while (++i < bottom[j])
 		{
 			tp = ((int)tx % cint[0]) * 3 + ((int)ty % cint[1]) * 3 * cint[0];
-			wpixels[cint[8] + j + i * cint[6]] = (int)(wallpixels[tp] | wallpixels[tp + 1] << 8 | wallpixels[tp + 2] << 16);
+			wpixels[cint[8] + j + i * cint[6]] = get_light_color((int)(wallpixels[tp] | wallpixels[tp + 1] << 8 | wallpixels[tp + 2] << 16), cint[25]);
 			ty += dty;
 		}
 		bottom[j] = bottom_betw[j];
@@ -591,7 +608,7 @@ __kernel void draw_inclined_floor_ceil_betw_walls_tex_kernel(
 		while (++i < top_betw[j] && i < bottom[j])
 		{
 			tp = ((int)tx % cint[0]) * 3 + ((int)ty % cint[1]) * 3 * cint[0];
-			wpixels[cint[8] + j + i * cint[6]] = (int)(wallpixels[tp] | wallpixels[tp + 1] << 8 | wallpixels[tp + 2] << 16);
+			wpixels[cint[8] + j + i * cint[6]] = get_light_color((int)(wallpixels[tp] | wallpixels[tp + 1] << 8 | wallpixels[tp + 2] << 16), cint[25]);
 			ty += dty;
 		}
 		top[j] = top_betw[j];
@@ -617,6 +634,7 @@ __kernel void draw_inclined_floor_ceil_betw_walls_tex_kernel(
 
 //14 - ceil->t
 //15 - rotup
+//16 - light
 
 //float
 //0 - dang
@@ -706,7 +724,7 @@ __kernel void draw_floor_ceil_betw_walls_tex_kernel(
 			floory = weight * ry + (1.0f - weight) * cfloat[12];
 			tp = ((floorx < 0.0f) ? (((int)(floorx * (float)cint[2]) % cint[2]) + cint[2] - 1) : ((int)(floorx * (float)cint[2]) % cint[2])) * 3
 				+ ((floory < 0.0f) ? (((int)(floory * (float)cint[3]) % cint[3]) + cint[3] - 1) : ((int)(floory * (float)cint[3]) % cint[3])) * 3 * cint[2];
-			wpixels[cint[8] + j + i * cint[6]] = (int)(floorpixels[tp] | floorpixels[tp + 1] << 8 | floorpixels[tp + 2] << 16);
+			wpixels[cint[8] + j + i * cint[6]] = get_light_color((int)(floorpixels[tp] | floorpixels[tp + 1] << 8 | floorpixels[tp + 2] << 16), cint[16]);
 		}
 		bottom[j] = wallBot[j];
 	}
@@ -741,7 +759,7 @@ __kernel void draw_floor_ceil_betw_walls_tex_kernel(
 				floory = weight * ry + (1.0f - weight) * cfloat[12];
 				tp = ((floorx < 0.0f) ? (((int)(floorx * (float)cint[4]) % cint[4]) + cint[4] - 1) : ((int)(floorx * (float)cint[4]) % cint[4])) * 3
 					+ ((floory < 0.0f) ? (((int)(floory * (float)cint[5]) % cint[5]) + cint[5] - 1) : ((int)(floory * (float)cint[5]) % cint[5])) * 3 * cint[4];
-				wpixels[cint[8] + j + i * cint[6]] = (int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16);
+				wpixels[cint[8] + j + i * cint[6]] = get_light_color((int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16), cint[16]);
 			}
 		}
 		else
@@ -789,7 +807,7 @@ __kernel void draw_floor_ceil_betw_walls_tex_kernel(
 		while (++i < bottom[j])
 		{
 			tp = ((int)tx % cint[0]) * 3 + ((int)ty % cint[1]) * 3 * cint[0];
-			wpixels[cint[8] + j + i * cint[6]] = (int)(wallpixels[tp] | wallpixels[tp + 1] << 8 | wallpixels[tp + 2] << 16);
+			wpixels[cint[8] + j + i * cint[6]] = get_light_color((int)(wallpixels[tp] | wallpixels[tp + 1] << 8 | wallpixels[tp + 2] << 16), cint[16]);
 			ty += dty;
 		}
 		bottom[j] = bottom_betw[j];
@@ -810,7 +828,7 @@ __kernel void draw_floor_ceil_betw_walls_tex_kernel(
 		while (++i < top_betw[j] && i < bottom[j])
 		{
 			tp = ((int)tx % cint[0]) * 3 + ((int)ty % cint[1]) * 3 * cint[0];
-			wpixels[cint[8] + j + i * cint[6]] = (int)(wallpixels[tp] | wallpixels[tp + 1] << 8 | wallpixels[tp + 2] << 16);
+			wpixels[cint[8] + j + i * cint[6]] = get_light_color((int)(wallpixels[tp] | wallpixels[tp + 1] << 8 | wallpixels[tp + 2] << 16), cint[16]);
 			ty += dty;
 		}
 		top[j] = top_betw[j];
@@ -1322,6 +1340,9 @@ __kernel void draw_glass_tex_kernel(
 //4 - tw
 //5 - WINDOW_W
 
+//6 - bpp
+//7 - pitch
+
 //float
 //0 - start_pic_x
 //1 - dpic_x
@@ -1367,7 +1388,7 @@ __kernel void draw_picture_kernel(
 	}
 	while (j++ <= cint[2] + (int)dy_down && j <= bottom[i] && (int)pic_y < cint[1])
 	{
-		tp = (int)pic_x * 3 + (int)pic_y * 3 * cint[4];
+		tp = (int)pic_x * cint[6] + (int)pic_y * cint[7];//* 3 * cint[4];
 		wpixels[i + j * cint[5]] = (int)(picture_pixels[tp] | picture_pixels[tp + 1] << 8 | picture_pixels[tp + 2] << 16);
 		pic_y += dy_plus;
 	}
