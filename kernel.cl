@@ -836,382 +836,6 @@ __kernel void draw_floor_ceil_betw_walls_tex_kernel(
 }
 
 //int
-	//0 - wall_width - NULL
-	//1 - wall_height - NULL
-//2 - floor_width
-//3 - floor_height
-//4 - ceil_width
-//5 - ceil_height
-//6 - WINDOW_W
-//7 - WINDOW_H
-//8 - left_x
-//9 - left_px
-//10 - left_py
-//11 - frcoef
-//12 - screen_left
-//13 - screen_right
-
-//14 - ceil->t
-//15 - rotup
-
-//float
-//0 - dang
-//1 - lenpl
-//2 - sing
-//3 - d.rv.x
-//4 - d.rv.y
-//5 - screenA
-//6 - screenB
-//7 - screenC
-//8 - screen_len
-//9 - frpl
-//10 - clpl
-//11 - px
-//12 - py
-
-//13 - p.rot
-//14 - v.angle
-
-
-// top && bottom + left->x
-
-__kernel void draw_floor_ceil_tex_kernel(
-	__global int *top, __global int *bottom,
-	__global int *wpixels,
-	__global const uchar *floorpixels, __global const uchar *ceilpixels,
-	__global const int *wallTop, __global const int *wallBot,
-	__global const int *cint, __global const float *cfloat
-)
-{
-	int		i;
-	int		j;
-	int		tp;
-	float	left_len;
-	float	nang;
-	float	rx;
-	float	ry;
-	float	wall_dist;
-	float	k;
-	float	weight;
-	float	floorx;
-	float	floory;
-
-	float	rot;
-	float	sky_x;
-	float	sky_y;
-	float	dy;
-
-	//printf("5");
-	j = get_global_id(0);
-	top += cint[8];
-	bottom += cint[8];
-	if (top[j] >= bottom[j] || cint[8] + j < cint[12] ||
-		cint[8] + j >= cint[13])
-		return;
-	nang = cfloat[0] * (float)j;
-	left_len = sin(nang) * cfloat[1] / sin(cfloat[2] - nang);
-	rx = (float)cint[9] + cfloat[3] * left_len;
-	ry = (float)cint[10] + cfloat[4] * left_len;
-	wall_dist = (float)cint[7] * cfloat[8] /
-		(cfloat[5] * rx + cfloat[6] * ry + cfloat[7]) * (float)cint[11];
-	if (wall_dist < 0)
-		wall_dist *= -1.0f;
-
-	rx /= 1000.0f;
-	ry /= 1000.0f;
-	if (wallBot[j] < bottom[j])
-	{
-		if (wallBot[j] < top[j])
-			i = top[j] - 1;
-		else
-			i = wallBot[j] - 1;
-		k = (float)(wallBot[j] - wallTop[j]) +
-			cfloat[9] * (float)(i + 1 - wallBot[j]);
-		while (++i < bottom[j])
-		{
-			weight = wall_dist / k;
-			k += cfloat[9];
-			floorx = weight * rx + (1.0f - weight) * cfloat[11];
-			floory = weight * ry + (1.0f - weight) * cfloat[12];
-			tp = ((floorx < 0.0f) ? (((int)(floorx * (float)cint[2]) % cint[2]) + cint[2] - 1) : ((int)(floorx * (float)cint[2]) % cint[2])) * 3
-				+ ((floory < 0.0f) ? (((int)(floory * (float)cint[3]) % cint[3]) + cint[3] - 1) : ((int)(floory * (float)cint[3]) % cint[3])) * 3 * cint[2];
-			wpixels[cint[8] + j + i * cint[6]] = (int)(floorpixels[tp] | floorpixels[tp + 1] << 8 | floorpixels[tp + 2] << 16);
-		}
-		bottom[j] = wallBot[j];
-	}
-
-	if (cint[14] < 0)
-	{
-		rot = (cfloat[13] - cfloat[14]) + (float)(cint[8] + j) /
-			(float)cint[6] * cfloat[14] * 2.0f;
-		if (rot < 0.0f)
-			rot += 6.2831852f;
-		else if (rot > 6.2831852f)
-			rot -= 6.2831852f;
-		sky_x = rot * (float)cint[4] / 6.2831852f;
-		dy = (float)cint[5] / (float)(4 * cint[7]);
-	}
-
-	if (wallTop[j] > top[j])
-	{
-		if (cint[14] >= 0)
-		{
-			if (wallTop[j] < bottom[j])
-				i = wallTop[j] + 1;
-			else
-				i = bottom[j] + 1;
-			k = (float)(wallBot[j] - wallTop[j]) +
-				cfloat[10] * (float)(wallTop[j] - i + 1);
-			while (--i >= top[j])
-			{
-				weight = wall_dist / k;
-				k += cfloat[10];
-				floorx = weight * rx + (1.0f - weight) * cfloat[11];
-				floory = weight * ry + (1.0f - weight) * cfloat[12];
-				tp = ((floorx < 0.0f) ? (((int)(floorx * (float)cint[4]) % cint[4]) + cint[4] - 1) : ((int)(floorx * (float)cint[4]) % cint[4])) * 3
-					+ ((floory < 0.0f) ? (((int)(floory * (float)cint[5]) % cint[5]) + cint[5] - 1) : ((int)(floory * (float)cint[5]) % cint[5])) * 3 * cint[4];
-				wpixels[cint[8] + j + i * cint[6]] = (int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16);
-			}
-		}
-		else
-		{
-			sky_y = ((-cint[15] + 2 * cint[7]) * cint[5]) / (4 * cint[7]) +
-				dy * top[j];
-			i = top[j] - 1;
-			while (++i < wallTop[j] && i < bottom[j])
-			{
-				tp = (int)sky_x * 3 + (int)sky_y * 3 * cint[4];
-				wpixels[cint[8] + j + i * cint[6]] = (int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16);
-				sky_y += dy;
-			}
-		}
-		top[j] = wallTop[j];
-	}
-
-	/*if (bottom[j] > bottom_betw[j] || top[j] < top_betw[j])
-	{
-		tx = (cfloat[13] + left_len) *
-			(float)cint[0] * cfloat[14] / 1000.0f;
-		dty = ((float)(cfloat[15] - cfloat[16]) *
-			(float)cint[1] / 1000.0f) /
-			(float)(wallBot[j] - wallTop[j]) * cfloat[14];
-	}
-
-	if (bottom[j] > bottom_betw[j])
-	{
-		if (wallTop[j] < bottom_betw[j])
-			ty = cfloat[15] + cfloat[14] *
-			(cfloat[15] - cfloat[16]) *
-			(float)(bottom_betw[j] - wallTop[j]) /
-			(float)(wallBot[j] - wallTop[j]);
-		else
-			ty = cfloat[15];
-		ty = ty * (float)cint[1] / 1000.0f;
-
-		i = bottom_betw[j] - 1;
-		while (++i < bottom[j])
-		{
-			tp = ((int)tx % cint[0]) * 3 + ((int)ty % cint[1]) * 3 * cint[0];
-			wpixels[cint[8] + j + i * cint[6]] = (int)(wallpixels[tp] | wallpixels[tp + 1] << 8 | wallpixels[tp + 2] << 16);
-			ty += dty;
-		}
-		bottom[j] = bottom_betw[j];
-	}
-
-	if (top[j] < top_betw[j])
-	{
-		if (wallTop[j] < top_betw[j])
-			ty = cfloat[15] + cfloat[14] *
-			(cfloat[15] - cfloat[16]) *
-			(float)(top[j] - wallTop[j]) /
-			(float)(wallBot[j] - wallTop[j]);
-		else
-			ty = cfloat[15];
-		ty = ty * (float)cint[1] / 1000.0f;
-		i = top[j] - 1;
-		while (++i < top_betw[j] && i < bottom[j])
-		{
-			tp = ((int)tx % cint[0]) * 3 + ((int)ty % cint[1]) * 3 * cint[0];
-			wpixels[cint[8] + j + i * cint[6]] = (int)(wallpixels[tp] | wallpixels[tp + 1] << 8 | wallpixels[tp + 2] << 16);
-			ty += dty;
-		}
-		top[j] = top_betw[j];
-	}*/
-}
-
-//int
-	//0 - wall_width - NULL
-	//1 - wall_height - NULL
-//2 - floor_width
-//3 - floor_height
-//4 - ceil_width
-//5 - ceil_height
-//6 - WINDOW_W
-//7 - WINDOW_H
-//8 - left_x
-//9 - left_px
-//10 - left_py
-//11 - floorA
-//12 - floorB
-//13 - floorC
-//14 - floorD
-//15 - ceilA
-//16 - ceilB
-//17 - ceilC
-//18 - ceilD
-	//19 - left_zu
-	//20 - left_zd
-//21 - screen_left - 19
-//22 - screen_right - 20
-
-//14 - ceil->t - 21
-//15 - rotup - 22
-
-
-//float
-//0 - dang
-//1 - lenpl
-//2 - sing
-//3 - d.rv.x
-//4 - d.rv.y
-//5 - screenA
-//6 - screenB
-//7 - screenC
-//8 - screen_len
-//9 - frpl
-//10 - clpl
-//11 - px
-//12 - py
-
-//13 - p.rot
-//14 - v.angle
-
-// top && bottom + left->x
-
-__kernel void draw_inclined_floor_ceil_tex_kernel(
-	__global int *top, __global int *bottom,
-	__global int *wpixels,
-	__global const uchar *floorpixels, __global const uchar *ceilpixels,
-	__global const int *wallTop, __global const int *wallBot,
-	__global const int *cint, __global const float *cfloat
-)
-{
-	int		i;
-	int		j;
-	int		tp;
-	float	left_len;
-	float	nang;
-	float	rx;
-	float	ry;
-	int		frcoef;
-	int		clcoef;
-	float	wall_dist;
-	float	k;
-	float	weight;
-	float	floorx;
-	float	floory;
-
-	float	rot;
-	float	sky_x;
-	float	sky_y;
-	float	dy;
-
-	//printf("6");
-	j = get_global_id(0);
-	top += cint[8];
-	bottom += cint[8];
-	if (top[j] >= bottom[j] || cint[8] + j < cint[19] ||
-		cint[8] + j >= cint[20])
-		return;
-	nang = cfloat[0] * (float)j;
-	left_len = sin(nang) * cfloat[1] / sin(cfloat[2] - nang);
-	rx = (float)cint[9] + cfloat[3] * left_len;
-	ry = (float)cint[10] + cfloat[4] * left_len;
-	frcoef = (cint[15] * (int)rx + cint[16] * (int)ry + cint[18]) / cint[17] * -1 -
-		(cint[11] * (int)rx + cint[12] * (int)ry + cint[14]) / cint[13] * -1;
-	clcoef = frcoef;
-	wall_dist = (float)cint[7] * cfloat[8] /
-		(cfloat[5] * rx + cfloat[6] * ry + cfloat[7]);
-	if (wall_dist < 0)
-		wall_dist *= -1.0f;
-
-	rx /= 1000.0f;
-	ry /= 1000.0f;
-	if (wallBot[j] < bottom[j])
-	{
-		if (wallBot[j] < top[j])
-			i = top[j] - 1;
-		else
-			i = wallBot[j] - 1;
-		k = (float)(wallBot[j] - wallTop[j]) +
-			cfloat[9] * (float)(i + 1 - wallBot[j]);
-		while (++i < bottom[j])
-		{
-			weight = wall_dist * frcoef / k;
-			k += cfloat[9];
-			floorx = weight * rx + (1.0f - weight) * cfloat[11];
-			floory = weight * ry + (1.0f - weight) * cfloat[12];
-			frcoef = ((cint[15] * (int)(floorx * 1000.0f) + cint[16] * (int)(floory * 1000.0f) + cint[18]) / cint[17] * -1 -
-				(cint[11] * (int)(floorx * 1000.0f) + cint[12] * (int)(floory * 1000.0f) + cint[14]) / cint[13] * -1 + frcoef) / 2.0f;
-			tp = ((floorx < 0.0f) ? (((int)(floorx * (float)cint[2]) % cint[2]) + cint[2] - 1) : ((int)(floorx * (float)cint[2]) % cint[2])) * 3
-				+ ((floory < 0.0f) ? (((int)(floory * (float)cint[3]) % cint[3]) + cint[3] - 1) : ((int)(floory * (float)cint[3]) % cint[3])) * 3 * cint[2];
-			wpixels[cint[8] + j + i * cint[6]] = (int)(floorpixels[tp] | floorpixels[tp + 1] << 8 | floorpixels[tp + 2] << 16);
-		}
-		bottom[j] = wallBot[j];
-	}
-
-	if (cint[21] < 0)
-	{
-		rot = (cfloat[13] - cfloat[14]) + (float)(cint[8] + j) /
-			(float)cint[6] * cfloat[14] * 2.0f;
-		if (rot < 0.0f)
-			rot += 6.2831852f;
-		else if (rot > 6.2831852f)
-			rot -= 6.2831852f;
-		sky_x = rot * (float)cint[4] / 6.2831852f;
-		dy = (float)cint[5] / (float)(4 * cint[7]);
-	}
-
-	if (wallTop[j] > top[j])
-	{
-		if (cint[21] >= 0)
-		{
-			if (wallTop[j] < bottom[j])
-				i = wallTop[j] + 1;
-			else
-				i = bottom[j] + 1;
-			k = (float)(wallBot[j] - wallTop[j]) +
-				cfloat[10] * (float)(wallTop[j] - i + 1);
-			while (--i >= top[j])
-			{
-				weight = wall_dist * clcoef / k;
-				k += cfloat[10];
-				floorx = weight * rx + (1.0f - weight) * cfloat[11];
-				floory = weight * ry + (1.0f - weight) * cfloat[12];
-				clcoef = ((cint[15] * (int)(floorx * 1000.0f) + cint[16] * (int)(floory * 1000.0f) + cint[18]) / cint[17] * -1 -
-					(cint[11] * (int)(floorx * 1000.0f) + cint[12] * (int)(floory * 1000.0f) + cint[14]) / cint[13] * -1 + clcoef) / 2.0f;
-				tp = ((floorx < 0.0f) ? (((int)(floorx * (float)cint[4]) % cint[4]) + cint[4] - 1) : ((int)(floorx * (float)cint[4]) % cint[4])) * 3
-					+ ((floory < 0.0f) ? (((int)(floory * (float)cint[5]) % cint[5]) + cint[5] - 1) : ((int)(floory * (float)cint[5]) % cint[5])) * 3 * cint[4];
-				wpixels[cint[8] + j + i * cint[6]] = (int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16);
-			}
-		}
-		else
-		{
-			sky_y = ((-cint[22] + 2 * cint[7]) * cint[5]) / (4 * cint[7]) +
-				dy * top[j];
-			i = top[j] - 1;
-			while (++i < wallTop[j] && i < bottom[j])
-			{
-				tp = (int)sky_x * 3 + (int)sky_y * 3 * cint[4];
-				wpixels[cint[8] + j + i * cint[6]] = (int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16);
-				sky_y += dy;
-			}
-		}
-		top[j] = wallTop[j];
-	}
-}
-
-//int
 //0 - WINDOW_H
 //1 - WINDOW_W
 //2 - sky_width
@@ -1266,6 +890,7 @@ __kernel void draw_skybox_kernel(
 //3 - nleft_zu
 //4 - nleft_zd
 //5 - WINDOW_W
+//6 - light
 
 //float
 //0 - dang
@@ -1327,7 +952,7 @@ __kernel void draw_glass_tex_kernel(
 		tp = ((int)tx % cint[1]) * 3 + ((int)ty % cint[2]) * cint[1] * 3;
 		pixel = (int)(glass_pixels[tp] | glass_pixels[tp + 1] << 8 | glass_pixels[tp + 2] << 16);
 		if (pixel != 0x010000)
-			wpixels[cint[0] + j + i * cint[5]] = pixel;
+			wpixels[cint[0] + j + i * cint[5]] = get_light_color(pixel, cint[6]);
 		ty += dty;
 	}
 }
@@ -1339,9 +964,9 @@ __kernel void draw_glass_tex_kernel(
 //3 - ry1_up
 //4 - tw
 //5 - WINDOW_W
-
 //6 - bpp
 //7 - pitch
+//8 - light
 
 //float
 //0 - start_pic_x
@@ -1389,7 +1014,9 @@ __kernel void draw_picture_kernel(
 	while (j++ <= cint[2] + (int)dy_down && j <= bottom[i] && (int)pic_y < cint[1])
 	{
 		tp = (int)pic_x * cint[6] + (int)pic_y * cint[7];//* 3 * cint[4];
-		wpixels[i + j * cint[5]] = (int)(picture_pixels[tp] | picture_pixels[tp + 1] << 8 | picture_pixels[tp + 2] << 16);
+		tp = (int)(picture_pixels[tp] | picture_pixels[tp + 1] << 8 | picture_pixels[tp + 2] << 16);
+		if (tp != 0x010000)
+			wpixels[i + j * cint[5]] = get_light_color(tp, cint[8]);
 		pic_y += dy_plus;
 	}
 }
@@ -1407,6 +1034,7 @@ __kernel void draw_picture_kernel(
 //9 - bpp
 //10 - pitch
 //11 - left_plus
+//12 - light
 
 __kernel void draw_sprite_kernel(
 	__global int *top, __global int *bottom,
@@ -1448,7 +1076,7 @@ __kernel void draw_sprite_kernel(
 				tp = texX * cint[9] + texY * cint[10];
 				colour = (int)(sprite_pixels[tp] | sprite_pixels[tp + 1] << 8 | sprite_pixels[tp + 2] << 16);
 				if (colour != 0x010000)
-					wpixels[stripe + y * cint[8]] = colour;
+					wpixels[stripe + y * cint[8]] = get_light_color(colour, cint[12]);
 			}
 			j++;
 		}

@@ -334,6 +334,7 @@ typedef struct	s_draw_picture
 	float pic_x;
 	float pic_y;
 	float	dy_plus;
+	int		pixel;
 }				t_draw_picture;
 
 typedef struct	s_save_wall

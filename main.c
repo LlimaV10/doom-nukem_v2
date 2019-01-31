@@ -460,6 +460,8 @@ void	key_down_repeat(int code, t_sdl *iw)
 
 void	mouse_move(int xrel, int yrel, t_sdl *iw)
 {
+	int		len;
+
 	if (iw->v.mouse_mode == 0)
 		return;
 	//printf("xrel %d yrel %d\n", xrel, yrel);
@@ -481,6 +483,12 @@ void	mouse_move(int xrel, int yrel, t_sdl *iw)
 	else
 	{
 		iw->v.picture_changing->left_plus += xrel;
+		if (iw->v.picture_changing->left_plus < 0)
+			iw->v.picture_changing->left_plus = 0;
+		else if (iw->v.picture_changing->left_plus + iw->v.picture_changing->tw >
+			(len = (int)sqrtf(powf(iw->v.wall_picture_changing->next->x - iw->v.wall_picture_changing->x, 2.0f)
+				+ powf(iw->v.wall_picture_changing->next->y - iw->v.wall_picture_changing->y, 2.0f))))
+			iw->v.picture_changing->left_plus = len - iw->v.picture_changing->tw;
 		iw->v.picture_changing->zu -= yrel;
 		calculate_picture(iw, iw->v.wall_picture_changing, iw->v.picture_changing);
 	}
@@ -2650,9 +2658,10 @@ int		draw_picture(t_sdl *iw, t_picture *pic)
 			}
 			while (j++ <= d.ry1_down + (float)d.dy_down && j <= iw->d.bottom_save[i])
 			{
-				set_pixel(iw->sur, i, j,
-					get_light_color(get_pixel(iw->t[pic->t], (int)d.pic_x, (int)d.pic_y), 
-					iw->sectors[iw->d.cs].light));
+				d.pixel = get_pixel(iw->t[pic->t], (int)d.pic_x, (int)d.pic_y);
+				if (d.pixel != 0x010000)
+					set_pixel(iw->sur, i, j, get_light_color(d.pixel, 
+						iw->sectors[iw->d.cs].light));
 				d.pic_y += d.dy_plus;
 			}
 			d.pic_x += iw->t[pic->t]->w / d.dx;
