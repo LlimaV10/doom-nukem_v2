@@ -54,6 +54,7 @@ void	exit_x(t_sdl *iw)
 {
 	SDL_FreeSurface(iw->sur);
 	SDL_DestroyWindow(iw->win);
+	TTF_Quit();
 	SDL_Quit();
 	system("leaks doom-nukem");
 	exit(0);
@@ -115,6 +116,76 @@ void	draw_crosshair(t_sdl *iw)
 		set_pixel(iw->sur, j, i, 0x00FF00);
 }
 
+int		get_sector_by_pointer(t_sdl *iw, t_sector *sec)
+{
+	int		i;
+
+	i = -1;
+	while (++i < iw->v.sc)
+		if (&iw->sectors[i] == sec)
+			return (i);
+	return (0);
+}
+
+void	add_sector_animation(t_sdl *iw)
+{
+	t_sector_animation	*tmp;
+
+	tmp = (t_sector_animation *)malloc(sizeof(t_sector_animation));
+	tmp->trigger = (t_picture *)iw->v.f_button_pointer;
+	tmp->sector = get_sector_by_pointer(iw, *(iw->v.look_sector));
+	tmp->speed = 1;
+	tmp->dy = 0;
+	tmp->status = 0;
+	tmp->curr_dy = 0;
+	iw->v.sector_anim = tmp;
+}
+
+void	do_sector_animation_step(t_sdl *iw, t_sector_animation *a, int dz)
+{
+	int			w;
+	t_picture	*p;
+	int			i;
+
+	if (a->type == 0)
+	{
+		iw->sectors[a->sector].fr.z += dz;
+		iw->sectors[a->sector].cl.z += dz;
+		w = iw->sectors[a->sector].sw - 1;
+		while (++w < iw->sectors[a->sector].sw + iw->sectors[a->sector].nw)
+		{
+			p = iw->walls[w].p;
+			while (p)
+			{
+				p->zu += dz;
+				p->zd += dz;
+				p = p->next;
+			}
+		}
+	}
+	else if (a->type == 1)
+		iw->sectors[a->sector].fr.z += dz;
+	else if (a->type == 2)
+		iw->sectors[a->sector].cl.z += dz;
+	i = a->sector;
+	if (iw->sectors[i].fr.n != 0)
+		iw->sectors[i].fr.n->d = -iw->sectors[i].fr.n->a * iw->sectors[i].fr.x -
+		iw->sectors[i].fr.n->b * iw->sectors[i].fr.y - iw->sectors[i].fr.n->c * iw->sectors[i].fr.z;
+	if (iw->sectors[i].cl.n != 0)
+		iw->sectors[i].cl.n->d = -iw->sectors[i].cl.n->a * iw->sectors[i].cl.x -
+		iw->sectors[i].cl.n->b * iw->sectors[i].cl.y - iw->sectors[i].cl.n->c * iw->sectors[i].cl.z;
+}
+
+void	exit_editing_sector_animation(t_sdl *iw)
+{
+	if (iw->v.submenu_mode == 2 || iw->v.submenu_mode == 3)
+		do_sector_animation_step(iw, iw->v.sector_anim, -iw->v.sector_anim->dy);
+	free(iw->v.sector_anim);
+	iw->v.sector_anim = 0;
+	iw->v.submenu_mode = 0;
+	draw_submenu(iw);
+}
+
 void	add_picture(t_sdl *iw, t_wall *wall)
 {
 	t_picture	*tmp;
@@ -129,6 +200,11 @@ void	add_picture(t_sdl *iw, t_wall *wall)
 	if (iw->v.tex_to_fill == 17 || iw->v.tex_to_fill == 18)
 	{
 		iw->v.f_button_mode = 1;
+		iw->v.f_button_pointer = (void *)tmp;
+	}
+	else if (iw->v.tex_to_fill == 19)
+	{
+		iw->v.f_button_mode = 2;
 		iw->v.f_button_pointer = (void *)tmp;
 	}
 	calculate_picture(iw, wall, tmp);
@@ -219,6 +295,11 @@ void	draw_some_info(t_sdl *iw)
 	if (iw->v.f_button_mode == 1)
 	{
 		draw_text(iw, "Select Sectors to control light by pressing F", 50, 100);
+		draw_text(iw, "Press G to exit this mode", 50, 125);
+	}
+	else if (iw->v.f_button_mode == 2)
+	{
+		draw_text(iw, "Select Sector to be animated by pressing F", 50, 100);
 		draw_text(iw, "Press G to exit this mode", 50, 125);
 	}
 	// if (iw->v.edit_mode == 0)
@@ -339,6 +420,52 @@ void	draw_selected_tex(t_sdl *iw)
 	ft_scaled_blit(iw->t[iw->v.tex_to_fill], iw->sur, &rect);
 }
 
+void	draw_submenu(t_sdl *iw)
+{
+	SDL_Rect	rect;
+	char		*s;
+
+	rect.x = WINDOW_W - 500;
+	rect.y = WINDOW_H + 100;
+	rect.w = 500;
+	rect.h = 100;
+	SDL_FillRect(iw->sur, &rect, 0x000000);
+	if (iw->v.submenu_mode == 1)
+	{
+		draw_text(iw, "Choose type of sector animation:", WINDOW_W - 500, WINDOW_H + 110);
+		draw_text(iw, "F  C  FC    Exit", WINDOW_W - 450, WINDOW_H + 135);
+	}
+	else if (iw->v.submenu_mode == 2)
+	{
+		draw_text(iw, "Set DY of sector animation:", WINDOW_W - 500, WINDOW_H + 110);
+		draw_text(iw, "+100  -100  OK  Exit", WINDOW_W - 450, WINDOW_H + 135);
+	}
+	else if (iw->v.submenu_mode == 3)
+	{
+		draw_text(iw, "Set speed of sector animation:", WINDOW_W - 500, WINDOW_H + 110);
+		draw_text(iw, "Speed:", WINDOW_W - 450, WINDOW_H + 135);
+		draw_text(iw, (s = ft_itoa(iw->v.sector_anim->speed)), WINDOW_W - 370, WINDOW_H + 135);
+		free(s);
+		draw_text(iw, "+  -  OK  Exit", WINDOW_W - 340, WINDOW_H + 135);
+	}
+}
+
+void	change_sector_animation_status(t_sdl *iw, t_picture *p)
+{
+	t_sector_animation	*tmp;
+
+	tmp = iw->sector_animations;
+	while (tmp)
+	{
+		if (tmp->trigger == p)
+		{
+			tmp->status = ((tmp->status == 0) ? 1 : 0);
+			return;
+		}
+		tmp = tmp->next;
+	}
+}
+
 void	update(t_sdl *iw)
 {
 	SDL_FillRect(iw->sur, &iw->winrect, 0x000000);
@@ -355,10 +482,24 @@ void	button_f_up(t_sdl *iw)
 {
 	if (iw->v.f_button_mode == 1 && *(iw->v.look_sector) != 0)
 		(*(iw->v.look_sector))->light = (t_picture *)iw->v.f_button_pointer;
+	else if (iw->v.f_button_mode == 2 && *(iw->v.look_sector) != 0)
+	{
+		iw->v.submenu_mode = 1;
+		add_sector_animation(iw);
+		iw->v.f_button_mode = 0;
+		iw->v.f_button_pointer = 0;
+		draw_submenu(iw);
+	}
 	else if (iw->v.f_button_mode == 0 && *(iw->v.look_picture) != 0 && (*(iw->v.look_picture))->t == 17)
 		(*(iw->v.look_picture))->t = 18;
 	else if (iw->v.f_button_mode == 0 && *(iw->v.look_picture) != 0 && (*(iw->v.look_picture))->t == 18)
 		(*(iw->v.look_picture))->t = 17;
+	else if (iw->v.f_button_mode == 0 && *(iw->v.look_picture) != 0
+		&& ((*(iw->v.look_picture))->t == 19 || (*(iw->v.look_picture))->t == 20))
+	{
+		(*(iw->v.look_picture))->t = (((*(iw->v.look_picture))->t == 19) ? 20 : 19);
+		change_sector_animation_status(iw, *(iw->v.look_picture));
+	}
 }
 
 void	key_up(int code, t_sdl *iw)
@@ -388,7 +529,7 @@ void	key_up(int code, t_sdl *iw)
 		add_picture(iw, *(iw->v.look_wall));
 	else if (code == 9) // F
 		button_f_up(iw);
-	else if (code == 10)
+	else if (code == 10) // G
 	{
 		iw->v.f_button_mode = 0;
 		iw->v.f_button_pointer = 0;
@@ -609,6 +750,74 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 				free((*(iw->v.look_sector))->fr.n);
 				(*(iw->v.look_sector))->fr.n = 0;
 			}
+		}
+		else if (iw->v.submenu_mode == 1 && x > WINDOW_W - 450)
+		{
+			if (x < WINDOW_W - 430)
+			{
+				iw->v.sector_anim->type = 1;
+				iw->v.submenu_mode = 2;
+				draw_submenu(iw);
+			}
+			else if (x < WINDOW_W - 395)
+			{
+				iw->v.sector_anim->type = 2;
+				iw->v.submenu_mode = 2;
+				draw_submenu(iw);
+			}
+			else if (x < WINDOW_W - 355)
+			{
+				iw->v.sector_anim->type = 0;
+				iw->v.submenu_mode = 2;
+				draw_submenu(iw);
+			}
+			else if (x > WINDOW_W - 335 && x < WINDOW_W - 280)
+				exit_editing_sector_animation(iw);
+		}
+		else if (iw->v.submenu_mode == 2 && x > WINDOW_W - 450)
+		{
+			if (x < WINDOW_W - 390)
+			{
+				do_sector_animation_step(iw, iw->v.sector_anim, 100);
+				iw->v.sector_anim->dy += 100;
+			}
+			else if (x < WINDOW_W - 330)
+			{
+				do_sector_animation_step(iw, iw->v.sector_anim, -100);
+				iw->v.sector_anim->dy -= 100;
+			}
+			else if (x < WINDOW_W - 280)
+			{
+				do_sector_animation_step(iw, iw->v.sector_anim, -iw->v.sector_anim->dy);
+				iw->v.submenu_mode = 3;
+				draw_submenu(iw);
+			}
+			else if (x < WINDOW_W - 220)
+				exit_editing_sector_animation(iw);
+		}
+		else if (iw->v.submenu_mode == 3 && x > WINDOW_W - 340)
+		{
+			if (x < WINDOW_W - 320)
+			{
+				iw->v.sector_anim->speed += ((iw->v.sector_anim->speed < 9) ? 1 : 0);
+				draw_submenu(iw);
+			}
+			else if (x < WINDOW_W - 295)
+			{
+				iw->v.sector_anim->speed -= ((iw->v.sector_anim->speed > 1) ? 1 : 0);
+				draw_submenu(iw);
+			}
+			else if (x < WINDOW_W - 245)
+			{
+				iw->v.sector_anim->next = iw->sector_animations;
+				iw->v.submenu_mode = 0;
+				draw_submenu(iw);
+				iw->v.sector_anim->prev_clock = clock();
+				iw->sector_animations = iw->v.sector_anim;
+				iw->v.sector_anim = 0;
+			}
+			else if (x < WINDOW_W - 200)
+				exit_editing_sector_animation(iw);
 		}
 	}
 	else if (iw->v.mouse_mode == 1 && *(iw->v.look_picture) != 0 && *(iw->v.look_wall) != 0)
@@ -905,6 +1114,30 @@ void	get_wall_line2(t_wall *wall)
 		wall->x * wall->next->y);
 }
 
+void	do_sector_animations(t_sdl *iw)
+{
+	t_sector_animation	*tmp;
+
+	tmp = iw->sector_animations;
+	while (tmp)
+	{
+		if (clock() - tmp->prev_clock > CLKS_P_S / 200)
+		{
+			if (tmp->status == 1 && abs(tmp->curr_dy) < abs(tmp->dy))//tmp->curr_dy != tmp->dy)
+			{
+				do_sector_animation_step(iw, tmp, ((tmp->dy > 0) ? tmp->speed : -tmp->speed) * 10);
+				tmp->curr_dy += ((tmp->dy > 0) ? tmp->speed : -tmp->speed) * 10;
+			}
+			else if (tmp->status == 0 && tmp->curr_dy != 0)
+			{
+				do_sector_animation_step(iw, tmp, ((tmp->dy < 0) ? tmp->speed : -tmp->speed) * 10);
+				tmp->curr_dy += ((tmp->dy < 0) ? tmp->speed : -tmp->speed) * 10;
+			}
+		}
+		tmp = tmp->next;
+	}
+}
+
 void	loop(t_sdl *iw)
 {
 	int		t;
@@ -1001,6 +1234,7 @@ void	loop(t_sdl *iw)
 	}
 	else
 		iw->v.fall = -1;
+	do_sector_animations(iw);
 	update(iw);
 	iw->v.fps = (double)CLKS_P_S / (double)(clock() - iw->loop_update_time);
 	iw->loop_update_time = clock();
@@ -3401,6 +3635,10 @@ void	read_textures(t_sdl *iw)
 	iw->tsz[17] = 1.0f;
 	iw->t[18] = SDL_LoadBMP("textures/18.bmp");
 	iw->tsz[18] = 1.0f;
+	iw->t[19] = SDL_LoadBMP("textures/19.bmp");
+	iw->tsz[19] = 1.0f;
+	iw->t[20] = SDL_LoadBMP("textures/20.bmp");
+	iw->tsz[20] = 1.0f;
 	// iw->t[17] = SDL_LoadBMP("textures/17.bmp");
 	// iw->tsz[17] = 1.0f;
 	//iw->t[18] = SDL_LoadBMP("textures/19.bmp");
@@ -3512,6 +3750,9 @@ void	get_def(t_sdl *iw)
 	*iw->sprite = 0;
 
 	iw->v.f_button_mode = 0;
+	iw->sector_animations = 0;
+	iw->v.submenu_mode = 0;
+	iw->v.sector_anim = 0;
 }
 
 void	get_kernel_mem(t_sdl *iw)
@@ -3680,9 +3921,9 @@ int		main(void)
 	read_sprites_textures(&iw);
 	get_kernel_mem(&iw);
 	
-	add_sprite(&iw,7240,2640,200,0,1, 0, 0.5f);
+	/*add_sprite(&iw,7240,2640,200,0,1, 0, 0.5f);
 	add_sprite(&iw,8640,2200,400,0,1, 1, 0.1f);
-	add_sprite(&iw,6520,2298,200,0,1, 2, 0.5f);
+	add_sprite(&iw,6520,2298,200,0,1, 2, 0.5f);*/
 
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
@@ -3704,6 +3945,7 @@ int		main(void)
 	main_loop(&iw);
 	SDL_FreeSurface(iw.sur);
 	SDL_DestroyWindow(iw.win);
+	TTF_Quit();
 	SDL_Quit();
 	// system("PAUSE");
 	return (0);

@@ -45,5 +45,6 @@ void	calculate_picture(t_sdl *iw, t_wall *wall, t_picture *pic);
 void	draw_sprites_kernel(t_sdl *iw);
 int		get_max(int i1, int i2);
 int		get_min(int i1, int i2);
+void	draw_submenu(t_sdl *iw);
 
 #endif

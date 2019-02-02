@@ -295,13 +295,13 @@ void	get_map2(t_sdl *iw)
 	iw->walls[i].next = &iw->walls[12];
 	printf("asfdasga\n\n\n\n");
 }
-
-void	get_animation(t_sdl *iw)
-{
-	iw->v.count_portal_rot_anim = 1;
-	iw->anim = (t_anim_portal_rotate *)malloc(sizeof(t_anim_portal_rotate));
-	iw->anim[0].start_wall = 22;
-	iw->anim[0].angle = 2;
-	iw->anim[0].anim_status = 0;
-	iw->anim[0].time = -1;
-}
+//
+//void	get_animation(t_sdl *iw)
+//{
+//	iw->v.count_portal_rot_anim = 1;
+//	iw->anim = (t_anim_portal_rotate *)malloc(sizeof(t_anim_portal_rotate));
+//	iw->anim[0].start_wall = 22;
+//	iw->anim[0].angle = 2;
+//	iw->anim[0].anim_status = 0;
+//	iw->anim[0].time = -1;
+//}

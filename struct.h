@@ -95,16 +95,16 @@ typedef struct	s_sector
 	t_picture	*light;
 }				t_sector;
 
-typedef struct	s_anim_portal_rotate
-{
-	int		start_wall;
-	int		angle;
-	// 0 - in standart, 1 - rotated
-	int		anim_status;
-	// -1 - static, else - begin time
-	int		time;
-	//struct s_anim_portal_rotate *next;
-}				t_anim_portal_rotate;
+//typedef struct	s_anim_portal_rotate
+//{
+//	int		start_wall;
+//	int		angle;
+//	// 0 - in standart, 1 - rotated
+//	int		anim_status;
+//	// -1 - static, else - begin time
+//	int		time;
+//	//struct s_anim_portal_rotate *next;
+//}				t_anim_portal_rotate;
 
 typedef struct	s_player
 {
@@ -404,6 +404,26 @@ typedef struct	s_sprite
 	int		type;
 }           t_sprite;
 
+typedef struct	s_sector_animation
+{
+	// 0 - FC, 1 - F, 2 - C
+	int		type;
+	// The value to which to change
+	int		dy;
+	// Current changed y
+	int		curr_dy;
+	// Change value for a 10000 clocks
+	int		speed;
+	// Previous change time
+	clock_t	prev_clock;
+	// Sector to be animated
+	int		sector;
+	// 0 - not animated, 1 - animated
+	int		status;
+	t_picture	*trigger;
+	struct	s_sector_animation	*next;
+}				t_sector_animation;
+
 typedef struct	s_draw
 {
 	int			top[WINDOW_W + 1];
@@ -507,13 +527,15 @@ typedef struct	s_variables
 	// 0 - floor, 1 - ceil
 	int		changing_fc;
 	SDL_Rect	chang_fc_rect;
-	int		count_portal_rot_anim;
+	//int		count_portal_rot_anim;
 	// 0 - Walls texture editing, 1 - Pictures editing
 	// int		edit_mode;
 	t_picture	*picture_changing;
 	t_wall		*wall_picture_changing;
 	int		f_button_mode;
 	void	*f_button_pointer;
+	int		submenu_mode;
+	t_sector_animation	*sector_anim;
 }				t_variables;
 
 typedef struct	s_level
@@ -541,7 +563,6 @@ typedef struct	s_sdl
 	char		quit;
 	t_wall		*walls;
 	t_sector	*sectors;
-	t_anim_portal_rotate	*anim;
 	// Player
 	t_player	p;
 	t_variables	v;
@@ -563,6 +584,8 @@ typedef struct	s_sdl
 	SDL_Surface	*(t_decor)[DECOR_TEXTURES_COUNT];
 	SDL_Surface	*(t_enemies)[ENEMIES_TEXTURES_COUNT];
 	SDL_Surface	*(t_pickup)[PICK_UP_TEXTURES_COUNT];
+
+	t_sector_animation	*sector_animations;
 }				t_sdl;
 
 #endif
