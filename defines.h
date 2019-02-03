@@ -24,12 +24,13 @@
 # define JUMP_HEIGHT 1000
 //# define PL_COL_SZ 10
 # define COLLISION_SIZE 400
-
+# define BUTTON_PRESS_DIST 1000
 # define MENU_COLOR 0x00FF00
 # define INCLINED_FC_Z 30
 # define MAX_INCLINED_FC_XY 15
 # define ANIMATION_TIME_SEC 1
 # define MAX_FPS 500
+# define COUNT_WALLS_TO_ANIM 10
 
 #ifdef __APPLE__
 # define CLKS_P_S (CLOCKS_PER_SEC * 2)

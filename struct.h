@@ -410,9 +410,9 @@ typedef struct	s_sector_animation
 	int		type;
 	// The value to which to change
 	int		dy;
-	// Current changed y
+	// Current changed Z
 	int		curr_dy;
-	// Change value for a 10000 clocks
+	// Change value for a some clocks
 	int		speed;
 	// Previous change time
 	clock_t	prev_clock;
@@ -423,6 +423,41 @@ typedef struct	s_sector_animation
 	t_picture	*trigger;
 	struct	s_sector_animation	*next;
 }				t_sector_animation;
+
+//typedef struct	s_animated_walls
+//{
+//	t_wall	*wall;
+//	struct	s_animated_walls	*next;
+//}				t_animated_walls;
+
+typedef struct	s_wall_animation
+{
+	// 0 - Same, 1 - Inverse by X, 2 - Inverse by Y
+	int		moving_type;
+	// 0 - DX->DY, 1 - DY->DX
+	int		priority;
+	// The value to which to change X
+	int		dx;
+	// The value to which to change Y
+	int		dy;
+	// Current changed X
+	int		curr_dx;
+	// Current changed Y
+	int		curr_dy;
+	// Change value for a some clocks
+	int		speed;
+	// 0 - not animated, 1 - animated
+	int		status;
+	// Previous change time
+	clock_t	prev_clock;
+	// Count wall to be animated
+	int		count_walls;
+	// Walls to be animated
+	int		walls[COUNT_WALLS_TO_ANIM];
+	//t_animated_walls	*walls;
+	t_picture			*trigger;
+	struct	s_wall_animation	*next;
+}				t_wall_animation;
 
 typedef struct	s_draw
 {
@@ -536,6 +571,7 @@ typedef struct	s_variables
 	void	*f_button_pointer;
 	int		submenu_mode;
 	t_sector_animation	*sector_anim;
+	t_wall_animation	*wall_anim;
 }				t_variables;
 
 typedef struct	s_level
@@ -586,6 +622,8 @@ typedef struct	s_sdl
 	SDL_Surface	*(t_pickup)[PICK_UP_TEXTURES_COUNT];
 
 	t_sector_animation	*sector_animations;
+	t_wall_animation	*wall_animations;
+	t_save_wall			**vw_save;
 }				t_sdl;
 
 #endif

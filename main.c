@@ -127,6 +127,18 @@ int		get_sector_by_pointer(t_sdl *iw, t_sector *sec)
 	return (0);
 }
 
+int		get_wall_by_pointer(t_sdl *iw, t_sector *sec, t_wall *w)
+{
+	int		i;
+
+
+	i = sec->sw - 1;
+	while (++i < sec->sw + sec->nw)
+		if (&iw->walls[i] == w)
+			return (i);
+	return (0);
+}
+
 void	add_sector_animation(t_sdl *iw)
 {
 	t_sector_animation	*tmp;
@@ -176,6 +188,80 @@ void	do_sector_animation_step(t_sdl *iw, t_sector_animation *a, int dz)
 		iw->sectors[i].cl.n->b * iw->sectors[i].cl.y - iw->sectors[i].cl.n->c * iw->sectors[i].cl.z;
 }
 
+void	draw_selected_walls_to_be_animated(t_sdl *iw)
+{
+	t_save_wall	*tmp;
+	int			i;
+	int			y;
+
+	tmp = *(iw->vw_save);
+	while (tmp)
+	{
+		i = -1;
+		while (++i < iw->v.wall_anim->count_walls)
+			if (&iw->walls[iw->v.wall_anim->walls[i]] == tmp->wall ||
+				iw->walls[iw->v.wall_anim->walls[i]].next == tmp->wall)
+			{
+				y = 0;
+				while (++y < WINDOW_H)
+					set_pixel(iw->sur, tmp->x, y, 0xFF0000);
+				break;
+			}
+		tmp = tmp->next;
+	}
+}
+
+void	add_wall_to_wall_animation2(t_sdl *iw)
+{
+	int		i;
+	t_wall_animation	*tmp;
+	int		add_wall;
+
+	add_wall = get_wall_by_pointer(iw, *(iw->v.look_sector), *(iw->v.look_wall));
+	tmp = iw->v.wall_anim;
+	i = -1;
+	while (++i < tmp->count_walls)
+		if (add_wall == tmp->walls[i]/* || *(iw->v.look_wall) == iw->walls[tmp->walls[i]].next
+			|| (*(iw->v.look_wall))->next == &iw->walls[tmp->walls[i]]*/)
+			return;
+	tmp->walls[tmp->count_walls] = add_wall;
+	tmp->count_walls++;
+	if (tmp->count_walls == COUNT_WALLS_TO_ANIM)
+	{
+		iw->v.f_button_mode = 0;
+		iw->v.f_button_pointer = 0;
+		iw->v.submenu_mode = 5;
+		draw_submenu(iw);
+	}
+}
+
+void	add_wall_to_wall_animation(t_sdl *iw)
+{
+	t_wall_animation	*tmp;
+
+	if (iw->v.wall_anim == 0)
+	{
+		tmp = (t_wall_animation *)malloc(sizeof(t_wall_animation));
+		tmp->dx = 0;
+		tmp->dy = 0;
+		tmp->curr_dx = 0;
+		tmp->curr_dy = 0;
+		tmp->speed = 1;
+		tmp->status = 0;
+		tmp->count_walls = 1;
+		tmp->walls[0] = get_wall_by_pointer(iw, *(iw->v.look_sector), *(iw->v.look_wall));
+		tmp->trigger = (t_picture *)iw->v.f_button_pointer;
+		iw->v.wall_anim = tmp;
+	}
+	else
+		add_wall_to_wall_animation2(iw);
+}
+
+void	do_wall_animation_step_dx(t_sdl *iw, t_wall_animation *a, int dx)
+{
+	////////////////////////
+}
+
 void	exit_editing_sector_animation(t_sdl *iw)
 {
 	if (iw->v.submenu_mode == 2 || iw->v.submenu_mode == 3)
@@ -186,10 +272,21 @@ void	exit_editing_sector_animation(t_sdl *iw)
 	draw_submenu(iw);
 }
 
+void	exit_editing_wall_animation(t_sdl *iw)
+{
+	///////////////////////
+	free(iw->v.wall_anim);
+	iw->v.wall_anim = 0;
+	iw->v.submenu_mode = 0;
+	draw_submenu(iw);
+}
+
 void	add_picture(t_sdl *iw, t_wall *wall)
 {
 	t_picture	*tmp;
 
+	if (iw->v.submenu_mode != 0 || iw->v.f_button_mode != 0)
+		return;
 	tmp = (t_picture *)malloc(sizeof(t_picture));
 	tmp->left_plus = 500;
 	tmp->zu = get_ceil_z(iw, wall->x, wall->y) - 100;
@@ -204,27 +301,47 @@ void	add_picture(t_sdl *iw, t_wall *wall)
 	}
 	else if (iw->v.tex_to_fill == 19)
 	{
-		iw->v.f_button_mode = 2;
+		iw->v.submenu_mode = 4;
+		draw_submenu(iw);
 		iw->v.f_button_pointer = (void *)tmp;
 	}
 	calculate_picture(iw, wall, tmp);
 }
 
-void	delete_sectors_pointers_to_pictures(t_sdl *iw, t_picture *pic)
+void	delete_light_and_animations(t_sdl *iw, t_picture *pic)
 {
 	int		sec;
+	t_sector_animation	a;
+	t_sector_animation	*tmp;
+	t_sector_animation	*tmp2;
 
 	sec = -1;
 	while (++sec < iw->v.sc)
 		if (iw->sectors[sec].light == pic)
 			iw->sectors[sec].light = 0;
+	a.next = iw->sector_animations;
+	tmp = &a;
+	while (tmp->next)
+	{
+		if (tmp->next->trigger == pic)
+		{
+			tmp2 = tmp->next;
+			tmp->next = tmp->next->next;
+			free(tmp2);
+		}
+		else
+			tmp = tmp->next;
+	}
+	iw->sector_animations = a.next;
 }
 
 void	delete_picture(t_wall *wall, t_picture *pic, t_sdl *iw)
 {
 	t_picture	*tmp;
 
-	delete_sectors_pointers_to_pictures(iw, pic);
+	if (iw->v.submenu_mode != 0 || iw->v.f_button_mode != 0)
+		return;
+	delete_light_and_animations(iw, pic);
 	if (pic == wall->p)
 	{
 		wall->p = wall->p->next;
@@ -280,6 +397,7 @@ void	draw_text(t_sdl *iw, const char *s, int x, int y)
 void	draw_some_info(t_sdl *iw)
 {
 	t_draw_info	d;
+	char		*s;
 
 	d.col.r = 0;
 	d.col.g = 255;
@@ -301,6 +419,17 @@ void	draw_some_info(t_sdl *iw)
 	{
 		draw_text(iw, "Select Sector to be animated by pressing F", 50, 100);
 		draw_text(iw, "Press G to exit this mode", 50, 125);
+	}
+	else if (iw->v.f_button_mode == 3)
+	{
+		draw_text(iw, "Select walls to be animated by pressing F", 50, 100);
+		draw_text(iw, "Press G to exit this mode", 50, 125);
+		if (iw->v.wall_anim != 0)
+		{
+			draw_text(iw, "Selected walls: ", 50, 150);
+			draw_text(iw, (s = ft_itoa(iw->v.wall_anim->count_walls)), 250, 150);
+			free(s);
+		}
 	}
 	// if (iw->v.edit_mode == 0)
 	// 	draw_text(iw, "Wall texture editing mode", 0, 50);
@@ -437,7 +566,7 @@ void	draw_submenu(t_sdl *iw)
 	}
 	else if (iw->v.submenu_mode == 2)
 	{
-		draw_text(iw, "Set DY of sector animation:", WINDOW_W - 500, WINDOW_H + 110);
+		draw_text(iw, "Set DZ of sector animation:", WINDOW_W - 500, WINDOW_H + 110);
 		draw_text(iw, "+100  -100  OK  Exit", WINDOW_W - 450, WINDOW_H + 135);
 	}
 	else if (iw->v.submenu_mode == 3)
@@ -447,6 +576,26 @@ void	draw_submenu(t_sdl *iw)
 		draw_text(iw, (s = ft_itoa(iw->v.sector_anim->speed)), WINDOW_W - 370, WINDOW_H + 135);
 		free(s);
 		draw_text(iw, "+  -  OK  Exit", WINDOW_W - 340, WINDOW_H + 135);
+	}
+	else if (iw->v.submenu_mode == 4)
+	{
+		draw_text(iw, "Choose animation:", WINDOW_W - 500, WINDOW_H + 110);
+		draw_text(iw, "Sector  Walls   Exit", WINDOW_W - 450, WINDOW_H + 135);
+	}
+	else if (iw->v.submenu_mode == 5)
+	{
+		draw_text(iw, "Select walls moving type:", WINDOW_W - 500, WINDOW_H + 110);
+		draw_text(iw, "Same  Inv_X  Inv_Y   Exit", WINDOW_W - 450, WINDOW_H + 135);
+	}
+	else if (iw->v.submenu_mode == 6)
+	{
+		draw_text(iw, "Select walls moving priority:", WINDOW_W - 500, WINDOW_H + 110);
+		draw_text(iw, "DXDY  DYDX   Exit", WINDOW_W - 450, WINDOW_H + 135);
+	}
+	else if (iw->v.submenu_mode == 7)
+	{
+		draw_text(iw, "Set DX of sector animation:", WINDOW_W - 500, WINDOW_H + 110);
+		draw_text(iw, "+100  -100  OK  Exit", WINDOW_W - 450, WINDOW_H + 135);
 	}
 }
 
@@ -478,6 +627,13 @@ void	update(t_sdl *iw)
 	//printf("update ret %d\n", ret);
 }
 
+int		get_picture_dist(t_sdl *iw, t_picture *pic)
+{
+	return ((int)sqrtf(powf((pic->x0 + pic->x1) / 2 - iw->p.x, 2.0f) +
+		powf((pic->y0 + pic->y1) / 2 - iw->p.y, 2.0f) +
+		powf((pic->zu + pic->zd) / 2 - iw->p.z, 2.0f)));
+}
+
 void	button_f_up(t_sdl *iw)
 {
 	if (iw->v.f_button_mode == 1 && *(iw->v.look_sector) != 0)
@@ -490,12 +646,17 @@ void	button_f_up(t_sdl *iw)
 		iw->v.f_button_pointer = 0;
 		draw_submenu(iw);
 	}
-	else if (iw->v.f_button_mode == 0 && *(iw->v.look_picture) != 0 && (*(iw->v.look_picture))->t == 17)
+	else if (iw->v.f_button_mode == 3 && *(iw->v.look_wall) != 0)
+		add_wall_to_wall_animation(iw);
+	else if (iw->v.f_button_mode == 0 && *(iw->v.look_picture) != 0 && (*(iw->v.look_picture))->t == 17
+		&& get_picture_dist(iw, *(iw->v.look_picture)) < BUTTON_PRESS_DIST)
 		(*(iw->v.look_picture))->t = 18;
-	else if (iw->v.f_button_mode == 0 && *(iw->v.look_picture) != 0 && (*(iw->v.look_picture))->t == 18)
+	else if (iw->v.f_button_mode == 0 && *(iw->v.look_picture) != 0 && (*(iw->v.look_picture))->t == 18
+		&& get_picture_dist(iw, *(iw->v.look_picture)) < BUTTON_PRESS_DIST)
 		(*(iw->v.look_picture))->t = 17;
 	else if (iw->v.f_button_mode == 0 && *(iw->v.look_picture) != 0
-		&& ((*(iw->v.look_picture))->t == 19 || (*(iw->v.look_picture))->t == 20))
+		&& ((*(iw->v.look_picture))->t == 19 || (*(iw->v.look_picture))->t == 20)
+		&& get_picture_dist(iw, *(iw->v.look_picture)) < BUTTON_PRESS_DIST)
 	{
 		(*(iw->v.look_picture))->t = (((*(iw->v.look_picture))->t == 19) ? 20 : 19);
 		change_sector_animation_status(iw, *(iw->v.look_picture));
@@ -531,6 +692,11 @@ void	key_up(int code, t_sdl *iw)
 		button_f_up(iw);
 	else if (code == 10) // G
 	{
+		if (iw->v.f_button_mode == 3 && iw->v.wall_anim != 0)
+		{
+			iw->v.submenu_mode = 5;
+			draw_submenu(iw);
+		}
 		iw->v.f_button_mode = 0;
 		iw->v.f_button_pointer = 0;
 	}
@@ -818,6 +984,84 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 			}
 			else if (x < WINDOW_W - 200)
 				exit_editing_sector_animation(iw);
+		}
+		else if (iw->v.submenu_mode == 4 && x > WINDOW_W - 450)
+		{
+			if (x < WINDOW_W - 375)
+			{
+				iw->v.f_button_mode = 2;
+				iw->v.submenu_mode = 0;
+				draw_submenu(iw);
+			}
+			else if (x < WINDOW_W - 300)
+			{
+				iw->v.f_button_mode = 3;
+				iw->v.submenu_mode = 0;
+				draw_submenu(iw);
+			}
+			else if (x < WINDOW_W - 240)
+			{
+				iw->v.submenu_mode = 0;
+				iw->v.f_button_pointer = 0;
+				draw_submenu(iw);
+			}
+		}
+		else if (iw->v.submenu_mode == 5 && x > WINDOW_W - 450)
+		{
+			if (x < WINDOW_W - 380)
+			{
+				iw->v.wall_anim->moving_type = 0;
+				iw->v.submenu_mode = 6;
+				draw_submenu(iw);
+			}
+			else if (x < WINDOW_W - 305)
+			{
+				iw->v.wall_anim->moving_type = 1;
+				iw->v.submenu_mode = 6;
+				draw_submenu(iw);
+			}
+			else if (x < WINDOW_W - 225)
+			{
+				iw->v.wall_anim->moving_type = 2;
+				iw->v.submenu_mode = 6;
+				draw_submenu(iw);
+			}
+			else if (x < WINDOW_W - 165)
+				exit_editing_wall_animation(iw);
+		}
+		else if (iw->v.submenu_mode == 6 && x > WINDOW_W - 450)
+		{
+			if (x < WINDOW_W - 380)
+			{
+				iw->v.wall_anim->priority = 0;
+				iw->v.submenu_mode = 7;
+				draw_submenu(iw);
+			}
+			else if (x < WINDOW_W - 300)
+			{
+				iw->v.wall_anim->priority = 1;
+				iw->v.submenu_mode = 7;
+				draw_submenu(iw);
+			}
+			else if (x < WINDOW_W - 225)
+				exit_editing_wall_animation(iw);
+		}
+		else if (iw->v.submenu_mode == 7 && x > WINDOW_W - 450)
+		{
+			if (x < WINDOW_W - 390)
+			{
+				// +100
+			}
+			else if (x < WINDOW_W - 330)
+			{
+				// -100
+			}
+			else if (x < WINDOW_W - 280)
+			{
+				// OK
+			}
+			else if (x < WINDOW_W - 220)
+				exit_editing_wall_animation(iw);
 		}
 	}
 	else if (iw->v.mouse_mode == 1 && *(iw->v.look_picture) != 0 && *(iw->v.look_wall) != 0)
@@ -1739,10 +1983,6 @@ void	brez_line(int *wall_y, t_draw_line line)
 	}
 }
 
-
-
-
-
 void	draw_between_sectors_bot_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int *tmp)
 {
 	int		i;
@@ -1815,8 +2055,6 @@ void	draw_between_sectors_bot_tex(t_sdl *iw, t_save_wall *left, t_save_wall *rig
 			d.tx -= (float)iw->t[left->wall->t]->w;
 	}
 }
-
-
 
 void	draw_between_sectors_top_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int *tmp)
 {
@@ -2695,6 +2933,7 @@ void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 {
 	t_sdl	iw2;
 	t_visited_sector	*tmp;
+	int					i;
 
 	//printf("next_sector\n");
 	iw2 = *iw;
@@ -2705,7 +2944,12 @@ void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	iw2.d.cs = left->wall->nextsector;
 	iw->d.save_bot_betw = get_between_sectors_walls(&iw2, left, right, &iw->d.save_top_betw);
 	draw_between_sectors_walls(&iw2, left, right);
-
+	i = left->x - 1;
+	while (++i < right->x)
+	{
+		iw->d.top[i] = iw2.d.top[i];
+		iw->d.bottom[i] = iw2.d.bottom[i];
+	}
 	if (sector_visited(iw, iw2.d.cs))
 	{
 		free(iw->d.save_bot_betw);
@@ -3442,6 +3686,21 @@ void	sort_sprites(t_sdl *iw)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void	save_walls(t_sdl *iw)
+{
+	t_save_wall	*tmp;
+
+	if (!iw->d.vw)
+		return;
+	tmp = iw->d.vw;
+	while (tmp->next)
+		tmp = tmp->next;
+	tmp->next = *(iw->vw_save);
+	*(iw->vw_save) = iw->d.vw;
+	iw->d.vw = 0;
+}
+
 void	draw_start(t_sdl *iw)
 {
 	t_save_wall *left;
@@ -3497,7 +3756,9 @@ void	draw_start(t_sdl *iw)
 		// read(0, s, 10);
 		//system("PAUSE");
 	}
-	free_walls(iw);
+
+	save_walls(iw);
+	//free_walls(iw);
 	free_pairs(iw);
 }
 
@@ -3591,8 +3852,11 @@ void	draw(t_sdl *iw)
 	if (iw->v.kernel)
 		iw->k.ret = clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_sur, CL_TRUE, 0,
 			WINDOW_W * WINDOW_H * sizeof(int), iw->sur->pixels, 0, NULL, NULL);
-	
-	
+	if (iw->v.wall_anim != 0)
+		draw_selected_walls_to_be_animated(iw);
+	iw->d.vw = *(iw->vw_save);
+	*(iw->vw_save) = 0;
+	free_walls(iw);
 }
 
 void	read_textures(t_sdl *iw)
@@ -3753,6 +4017,11 @@ void	get_def(t_sdl *iw)
 	iw->sector_animations = 0;
 	iw->v.submenu_mode = 0;
 	iw->v.sector_anim = 0;
+
+	iw->wall_animations = 0;
+	iw->v.wall_anim = 0;
+	iw->vw_save = (t_save_wall **)malloc(sizeof(t_save_wall *));
+	*(iw->vw_save) = 0;
 }
 
 void	get_kernel_mem(t_sdl *iw)
