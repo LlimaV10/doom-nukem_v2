@@ -131,10 +131,9 @@ int		get_wall_by_pointer(t_sdl *iw, t_sector *sec, t_wall *w)
 {
 	int		i;
 
-
 	i = sec->sw - 1;
 	while (++i < sec->sw + sec->nw)
-		if (&iw->walls[i] == w)
+		if (iw->walls[i].next == w)
 			return (i);
 	return (0);
 }
@@ -199,8 +198,8 @@ void	draw_selected_walls_to_be_animated(t_sdl *iw)
 	{
 		i = -1;
 		while (++i < iw->v.wall_anim->count_walls)
-			if (&iw->walls[iw->v.wall_anim->walls[i]] == tmp->wall ||
-				iw->walls[iw->v.wall_anim->walls[i]].next == tmp->wall)
+			if (iw->walls[iw->v.wall_anim->walls[i]].next == tmp->wall ||
+				iw->walls[iw->v.wall_anim->walls[i]].next->next == tmp->wall)
 			{
 				y = 0;
 				while (++y < WINDOW_H)
@@ -211,13 +210,11 @@ void	draw_selected_walls_to_be_animated(t_sdl *iw)
 	}
 }
 
-void	add_wall_to_wall_animation2(t_sdl *iw)
+void	add_wall_to_wall_animation2(t_sdl *iw, int add_wall)
 {
 	int		i;
 	t_wall_animation	*tmp;
-	int		add_wall;
 
-	add_wall = get_wall_by_pointer(iw, *(iw->v.look_sector), *(iw->v.look_wall));
 	tmp = iw->v.wall_anim;
 	i = -1;
 	while (++i < tmp->count_walls)
@@ -238,7 +235,13 @@ void	add_wall_to_wall_animation2(t_sdl *iw)
 void	add_wall_to_wall_animation(t_sdl *iw)
 {
 	t_wall_animation	*tmp;
+	int					add_wall;
 
+	add_wall = get_wall_by_pointer(iw, *(iw->v.look_sector), *(iw->v.look_wall));
+	if (iw->walls[add_wall].nextsector != -1 ||
+		iw->walls[add_wall].next->nextsector != -1 ||
+		iw->walls[add_wall].next->next->nextsector != -1)
+		return;
 	if (iw->v.wall_anim == 0)
 	{
 		tmp = (t_wall_animation *)malloc(sizeof(t_wall_animation));
@@ -249,17 +252,77 @@ void	add_wall_to_wall_animation(t_sdl *iw)
 		tmp->speed = 1;
 		tmp->status = 0;
 		tmp->count_walls = 1;
-		tmp->walls[0] = get_wall_by_pointer(iw, *(iw->v.look_sector), *(iw->v.look_wall));
+		tmp->walls[0] = add_wall;
 		tmp->trigger = (t_picture *)iw->v.f_button_pointer;
 		iw->v.wall_anim = tmp;
 	}
 	else
-		add_wall_to_wall_animation2(iw);
+		add_wall_to_wall_animation2(iw, add_wall);
+}
+
+void	calculate_pictures_list(t_sdl *iw, t_wall *wall, t_picture *p)
+{
+	while (p)
+	{
+		calculate_picture(iw, wall, p);
+		p = p->next;
+	}
 }
 
 void	do_wall_animation_step_dx(t_sdl *iw, t_wall_animation *a, int dx)
 {
-	////////////////////////
+	int		i;
+	t_picture	*p;
+
+	i = -1;
+	while (++i < a->count_walls)
+	{
+		if (a->moving_type == 1 &&
+			iw->walls[a->walls[i]].next->next->y > iw->walls[a->walls[i]].next->y)
+		{
+			iw->walls[a->walls[i]].next->x -= dx;
+			iw->walls[a->walls[i]].next->next->x -= dx;
+		}
+		else
+		{
+			iw->walls[a->walls[i]].next->x += dx;
+			iw->walls[a->walls[i]].next->next->x += dx;
+		}
+		get_wall_line2(&iw->walls[a->walls[i]]);
+		get_wall_line2(iw->walls[a->walls[i]].next);
+		get_wall_line2(iw->walls[a->walls[i]].next->next);
+		calculate_pictures_list(iw, &iw->walls[a->walls[i]], iw->walls[a->walls[i]].p);
+		calculate_pictures_list(iw, iw->walls[a->walls[i]].next, iw->walls[a->walls[i]].next->p);
+		calculate_pictures_list(iw, iw->walls[a->walls[i]].next->next, iw->walls[a->walls[i]].next->next->p);
+	}
+}
+
+void	do_wall_animation_step_dy(t_sdl *iw, t_wall_animation *a, int dy)
+{
+	int		i;
+	t_picture	*p;
+
+	i = -1;
+	while (++i < a->count_walls)
+	{
+		if (a->moving_type == 2 &&
+			iw->walls[a->walls[i]].next->next->x > iw->walls[a->walls[i]].next->x)
+		{
+			iw->walls[a->walls[i]].next->y -= dy;
+			iw->walls[a->walls[i]].next->next->y -= dy;
+		}
+		else
+		{
+			iw->walls[a->walls[i]].next->y += dy;
+			iw->walls[a->walls[i]].next->next->y += dy;
+		}
+		get_wall_line2(&iw->walls[a->walls[i]]);
+		get_wall_line2(iw->walls[a->walls[i]].next);
+		get_wall_line2(iw->walls[a->walls[i]].next->next);
+		calculate_pictures_list(iw, &iw->walls[a->walls[i]], iw->walls[a->walls[i]].p);
+		calculate_pictures_list(iw, iw->walls[a->walls[i]].next, iw->walls[a->walls[i]].next->p);
+		calculate_pictures_list(iw, iw->walls[a->walls[i]].next->next, iw->walls[a->walls[i]].next->next->p);
+	}
 }
 
 void	exit_editing_sector_animation(t_sdl *iw)
@@ -275,6 +338,11 @@ void	exit_editing_sector_animation(t_sdl *iw)
 void	exit_editing_wall_animation(t_sdl *iw)
 {
 	///////////////////////
+	if (iw->v.submenu_mode >= 7)
+	{
+		do_wall_animation_step_dx(iw, iw->v.wall_anim, -iw->v.wall_anim->dx);
+		do_wall_animation_step_dy(iw, iw->v.wall_anim, -iw->v.wall_anim->dy);
+	}
 	free(iw->v.wall_anim);
 	iw->v.wall_anim = 0;
 	iw->v.submenu_mode = 0;
@@ -308,6 +376,40 @@ void	add_picture(t_sdl *iw, t_wall *wall)
 	calculate_picture(iw, wall, tmp);
 }
 
+void	delete_wall_animation(t_sdl *iw, t_picture *pic)
+{
+	t_wall_animation	*tmp;
+	t_wall_animation	*tmp2;
+
+	if (iw->wall_animations == 0)
+		return;
+	if (iw->wall_animations->trigger == pic)
+	{
+		tmp2 = iw->wall_animations;
+		do_wall_animation_step_dx(iw, tmp2, -tmp2->curr_dx);
+		do_wall_animation_step_dy(iw, tmp2, -tmp2->curr_dy);
+		iw->wall_animations = iw->wall_animations->next;
+		free(tmp2);
+	}
+	else
+	{
+		tmp = iw->wall_animations;
+		while (tmp->next)
+		{
+			if (tmp->next->trigger == pic)
+			{
+				tmp2 = tmp->next;
+				do_wall_animation_step_dx(iw, tmp2, -tmp2->curr_dx);
+				do_wall_animation_step_dy(iw, tmp2, -tmp2->curr_dy);
+				tmp->next = tmp->next->next;
+				free(tmp2);
+				return;
+			}
+			tmp = tmp->next;
+		}
+	}
+}
+
 void	delete_light_and_animations(t_sdl *iw, t_picture *pic)
 {
 	int		sec;
@@ -327,12 +429,14 @@ void	delete_light_and_animations(t_sdl *iw, t_picture *pic)
 		{
 			tmp2 = tmp->next;
 			tmp->next = tmp->next->next;
+			do_sector_animation_step(iw, tmp2, -tmp2->curr_dy);
 			free(tmp2);
 		}
 		else
 			tmp = tmp->next;
 	}
 	iw->sector_animations = a.next;
+	delete_wall_animation(iw, pic);
 }
 
 void	delete_picture(t_wall *wall, t_picture *pic, t_sdl *iw)
@@ -594,8 +698,21 @@ void	draw_submenu(t_sdl *iw)
 	}
 	else if (iw->v.submenu_mode == 7)
 	{
-		draw_text(iw, "Set DX of sector animation:", WINDOW_W - 500, WINDOW_H + 110);
+		draw_text(iw, "Set DX of walls animation:", WINDOW_W - 500, WINDOW_H + 110);
 		draw_text(iw, "+100  -100  OK  Exit", WINDOW_W - 450, WINDOW_H + 135);
+	}
+	else if (iw->v.submenu_mode == 8)
+	{
+		draw_text(iw, "Set DY of walls animation:", WINDOW_W - 500, WINDOW_H + 110);
+		draw_text(iw, "+100  -100  OK  Exit", WINDOW_W - 450, WINDOW_H + 135);
+	}
+	else if (iw->v.submenu_mode == 9)
+	{
+		draw_text(iw, "Set speed of walls animation:", WINDOW_W - 500, WINDOW_H + 110);
+		draw_text(iw, "Speed:", WINDOW_W - 450, WINDOW_H + 135);
+		draw_text(iw, (s = ft_itoa(iw->v.wall_anim->speed)), WINDOW_W - 370, WINDOW_H + 135);
+		free(s);
+		draw_text(iw, "+  -  OK  Exit", WINDOW_W - 340, WINDOW_H + 135);
 	}
 }
 
@@ -604,6 +721,22 @@ void	change_sector_animation_status(t_sdl *iw, t_picture *p)
 	t_sector_animation	*tmp;
 
 	tmp = iw->sector_animations;
+	while (tmp)
+	{
+		if (tmp->trigger == p)
+		{
+			tmp->status = ((tmp->status == 0) ? 1 : 0);
+			return;
+		}
+		tmp = tmp->next;
+	}
+}
+
+void	change_wall_animation_status(t_sdl *iw, t_picture *p)
+{
+	t_wall_animation	*tmp;
+
+	tmp = iw->wall_animations;
 	while (tmp)
 	{
 		if (tmp->trigger == p)
@@ -660,6 +793,7 @@ void	button_f_up(t_sdl *iw)
 	{
 		(*(iw->v.look_picture))->t = (((*(iw->v.look_picture))->t == 19) ? 20 : 19);
 		change_sector_animation_status(iw, *(iw->v.look_picture));
+		change_wall_animation_status(iw, *(iw->v.look_picture));
 	}
 }
 
@@ -954,7 +1088,6 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 			}
 			else if (x < WINDOW_W - 280)
 			{
-				do_sector_animation_step(iw, iw->v.sector_anim, -iw->v.sector_anim->dy);
 				iw->v.submenu_mode = 3;
 				draw_submenu(iw);
 			}
@@ -975,6 +1108,7 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 			}
 			else if (x < WINDOW_W - 245)
 			{
+				do_sector_animation_step(iw, iw->v.sector_anim, -iw->v.sector_anim->dy);
 				iw->v.sector_anim->next = iw->sector_animations;
 				iw->v.submenu_mode = 0;
 				draw_submenu(iw);
@@ -1050,17 +1184,66 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 		{
 			if (x < WINDOW_W - 390)
 			{
-				// +100
+				iw->v.wall_anim->dx += 100;
+				do_wall_animation_step_dx(iw, iw->v.wall_anim, 100);
 			}
 			else if (x < WINDOW_W - 330)
 			{
-				// -100
+				iw->v.wall_anim->dx -= 100;
+				do_wall_animation_step_dx(iw, iw->v.wall_anim, -100);
 			}
 			else if (x < WINDOW_W - 280)
 			{
-				// OK
+				iw->v.submenu_mode = 8;
+				draw_submenu(iw);
 			}
 			else if (x < WINDOW_W - 220)
+				exit_editing_wall_animation(iw);
+		}
+		else if (iw->v.submenu_mode == 8 && x > WINDOW_W - 450)
+		{
+			if (x < WINDOW_W - 390)
+			{
+				iw->v.wall_anim->dy += 100;
+				do_wall_animation_step_dy(iw, iw->v.wall_anim, 100);
+			}
+			else if (x < WINDOW_W - 330)
+			{
+				iw->v.wall_anim->dy -= 100;
+				do_wall_animation_step_dy(iw, iw->v.wall_anim, -100);
+			}
+			else if (x < WINDOW_W - 280)
+			{
+				iw->v.submenu_mode = 9;
+				draw_submenu(iw);
+			}
+			else if (x < WINDOW_W - 220)
+				exit_editing_wall_animation(iw);
+		}
+		else if (iw->v.submenu_mode == 9 && x > WINDOW_W - 340)
+		{
+			if (x < WINDOW_W - 320)
+			{
+				iw->v.wall_anim->speed += ((iw->v.wall_anim->speed < 9) ? 1 : 0);
+				draw_submenu(iw);
+			}
+			else if (x < WINDOW_W - 295)
+			{
+				iw->v.wall_anim->speed -= ((iw->v.wall_anim->speed > 1) ? 1 : 0);
+				draw_submenu(iw);
+			}
+			else if (x < WINDOW_W - 245)
+			{
+				do_wall_animation_step_dx(iw, iw->v.wall_anim, -iw->v.wall_anim->dx);
+				do_wall_animation_step_dy(iw, iw->v.wall_anim, -iw->v.wall_anim->dy);
+				iw->v.wall_anim->next = iw->wall_animations;
+				iw->v.submenu_mode = 0;
+				draw_submenu(iw);
+				iw->v.wall_anim->prev_clock = clock();
+				iw->wall_animations = iw->v.wall_anim;
+				iw->v.wall_anim = 0;
+			}
+			else if (x < WINDOW_W - 200)
 				exit_editing_wall_animation(iw);
 		}
 	}
@@ -1289,67 +1472,6 @@ void	move(t_sdl *iw, int pl, int *time)
 		move_in_portal(iw, dx, dy, sw, tmp);
 }
 
-// t_wall	*get_col_wall(t_sdl *iw, int dx, int dy)
-// {
-// 	int		w;
-// 	float	len;
-
-// 	w = iw->sectors[iw->d.cs].sw - 1;
-// 	while (++w < iw->sectors[iw->d.cs].sw + iw->sectors[iw->d.cs].nw)
-// 	{
-// 		len = fabsf(iw->walls[w].l.a * (float)(iw->p.x + dx) + iw->walls[w].l.b * (float)(iw->p.y + dy)
-// 			+ iw->walls[w].l.c) / sqrtf(powf(iw->walls[w].l.a, 2.0f) + powf(iw->walls[w].l.b, 2.0f));
-// 		if (len < COLLISION_SIZE)
-// 			return (&iw->walls[w]);
-// 	}
-// 	return (0);
-// }
-
-// void	move2(t_sdl *iw, int pl, int *time)
-// {
-// 	float		ang;
-// 	int		dx;
-// 	int		dy;
-// 	float	speed;
-// 	t_wall	*sw;
-// 	//int	tmp;
-
-// 	ang = (iw->p.rot + (float)pl * G1);
-// 	while (ang >= G360)
-// 		ang -= G360;
-// 	speed = MOVING_SPEED_PER_HALF_SEC * (float)(clock() - *time) / (float)CLKS_P_S;
-// 	*time = clock();
-// 	if (ang < 90)
-// 	{
-// 		dx = (int)(speed * cosf(ang)) * 2;
-// 		dy = (int)(-speed * sinf(ang)) * 2;
-// 	}
-// 	else if (ang < 180)
-// 	{
-// 		dx = (int)(-speed * cosf(G180 - ang)) * 2;
-// 		dy = (int)(-speed * sinf(G180 - ang)) * 2;
-// 	}
-// 	else if (ang < 270)
-// 	{
-// 		dx = (int)(speed * cosf(ang) - G180) * 2;
-// 		dy = (int)(-speed * sinf(ang) - G180) * 2;
-// 	}
-// 	else
-// 	{
-// 		dx = (int)(speed * cosf(G360 - ang)) * 2;
-// 		dy = (int)(speed * sinf(G360 - ang)) * 2;
-// 	}
-// 	//tmp = COLLISION_SIZE / (int)(sqrtf(powf((float)dx, 2.0f) + powf((float)dy, 2.0f)) + 1.1f);
-// 	if (in_sec_xy(iw, iw->d.cs, iw->p.x + dx, iw->p.y + dy))
-// 	{
-// 		if (get_col_wall(iw, dx, dy) == 0)
-// 		{
-// 			iw->p.x += dx;
-// 			iw->p.y += dy;
-// 		}
-// 	}
-// }
-
 void	get_wall_line2(t_wall *wall)
 {
 	wall->l.a = (float)(wall->next->y - wall->y);
@@ -1365,7 +1487,7 @@ void	do_sector_animations(t_sdl *iw)
 	tmp = iw->sector_animations;
 	while (tmp)
 	{
-		if (clock() - tmp->prev_clock > CLKS_P_S / 200)
+		if (clock() - tmp->prev_clock > CLKS_P_S / 50)
 		{
 			if (tmp->status == 1 && abs(tmp->curr_dy) < abs(tmp->dy))//tmp->curr_dy != tmp->dy)
 			{
@@ -1377,6 +1499,81 @@ void	do_sector_animations(t_sdl *iw)
 				do_sector_animation_step(iw, tmp, ((tmp->dy < 0) ? tmp->speed : -tmp->speed) * 10);
 				tmp->curr_dy += ((tmp->dy < 0) ? tmp->speed : -tmp->speed) * 10;
 			}
+			tmp->prev_clock = clock();
+		}
+		tmp = tmp->next;
+	}
+}
+
+void	do_wall_animations(t_sdl *iw)
+{
+	t_wall_animation	*tmp;
+
+	tmp = iw->wall_animations;
+	while (tmp)
+	{
+		if (clock() - tmp->prev_clock > CLKS_P_S / 50)
+		{
+			if (tmp->status == 1)
+			{
+				if (tmp->priority == 0)
+				{
+					if (abs(tmp->curr_dx) < abs(tmp->dx))
+					{
+						do_wall_animation_step_dx(iw, tmp, ((tmp->dx > 0) ? tmp->speed : -tmp->speed) * 10);
+						tmp->curr_dx += ((tmp->dx > 0) ? tmp->speed : -tmp->speed) * 10;
+					}
+					else if (abs(tmp->curr_dy) < abs(tmp->dy))
+					{
+						do_wall_animation_step_dy(iw, tmp, ((tmp->dy > 0) ? tmp->speed : -tmp->speed) * 10);
+						tmp->curr_dy += ((tmp->dy > 0) ? tmp->speed : -tmp->speed) * 10;
+					}
+				}
+				else
+				{
+					if (abs(tmp->curr_dy) < abs(tmp->dy))
+					{
+						do_wall_animation_step_dy(iw, tmp, ((tmp->dy > 0) ? tmp->speed : -tmp->speed) * 10);
+						tmp->curr_dy += ((tmp->dy > 0) ? tmp->speed : -tmp->speed) * 10;
+					}
+					else if (abs(tmp->curr_dx) < abs(tmp->dx))
+					{
+						do_wall_animation_step_dx(iw, tmp, ((tmp->dx > 0) ? tmp->speed : -tmp->speed) * 10);
+						tmp->curr_dx += ((tmp->dx > 0) ? tmp->speed : -tmp->speed) * 10;
+					}
+				}
+			}
+			else
+			{
+				if (tmp->priority == 0)
+				{
+					if (tmp->curr_dy != 0)
+					{
+						do_wall_animation_step_dy(iw, tmp, ((tmp->dy < 0) ? tmp->speed : -tmp->speed) * 10);
+						tmp->curr_dy += ((tmp->dy < 0) ? tmp->speed : -tmp->speed) * 10;
+					}
+					else if (tmp->curr_dx != 0)
+					{
+						do_wall_animation_step_dx(iw, tmp, ((tmp->dx < 0) ? tmp->speed : -tmp->speed) * 10);
+						tmp->curr_dx += ((tmp->dx < 0) ? tmp->speed : -tmp->speed) * 10;
+					}
+				}
+				else
+				{
+					if (tmp->curr_dx != 0)
+					{
+						do_wall_animation_step_dx(iw, tmp, ((tmp->dx < 0) ? tmp->speed : -tmp->speed) * 10);
+						tmp->curr_dx += ((tmp->dx < 0) ? tmp->speed : -tmp->speed) * 10;
+					}
+					else if (tmp->curr_dy != 0)
+					{
+						do_wall_animation_step_dy(iw, tmp, ((tmp->dy < 0) ? tmp->speed : -tmp->speed) * 10);
+						tmp->curr_dy += ((tmp->dy < 0) ? tmp->speed : -tmp->speed) * 10;
+					}
+				}
+			}
+
+			tmp->prev_clock = clock();
 		}
 		tmp = tmp->next;
 	}
@@ -1479,6 +1676,7 @@ void	loop(t_sdl *iw)
 	else
 		iw->v.fall = -1;
 	do_sector_animations(iw);
+	do_wall_animations(iw);
 	update(iw);
 	iw->v.fps = (double)CLKS_P_S / (double)(clock() - iw->loop_update_time);
 	iw->loop_update_time = clock();

@@ -452,7 +452,7 @@ typedef struct	s_wall_animation
 	clock_t	prev_clock;
 	// Count wall to be animated
 	int		count_walls;
-	// Walls to be animated
+	// ->next Walls to be animated
 	int		walls[COUNT_WALLS_TO_ANIM];
 	//t_animated_walls	*walls;
 	t_picture			*trigger;
