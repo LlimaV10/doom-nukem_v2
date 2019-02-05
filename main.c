@@ -3749,7 +3749,7 @@ void	draw_sprite(t_sdl *iw, t_sprite *sprite)
 					colour = get_pixel(sprite->t, texX, texY);
 					if (colour != 0x010000)
 						set_pixel(iw->sur, stripe, y,
-							get_light_color(get_pixel(sprite->t, texX, texY), iw->sectors[sprite->num_sec].light));
+							get_light_color(colour, iw->sectors[sprite->num_sec].light));
 				}
 				j++;
 			}
@@ -4277,33 +4277,33 @@ void	get_kernel_mem(t_sdl *iw)
 	while (++i < TEXTURES_COUNT)
 	{
 		iw->k.m_t[i] = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
-			iw->t[i]->w * iw->t[i]->h * iw->t[i]->format->BytesPerPixel, NULL, &iw->k.ret);
+			iw->t[i]->pitch * iw->t[i]->h, NULL, &iw->k.ret);
 		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t[i], CL_TRUE, 0,
-			iw->t[i]->w * iw->t[i]->h * iw->t[i]->format->BytesPerPixel, iw->t[i]->pixels, 0, NULL, NULL);
+			iw->t[i]->pitch * iw->t[i]->h, iw->t[i]->pixels, 0, NULL, NULL);
 	}
 	i = -1;
 	while (++i < DECOR_TEXTURES_COUNT)
 	{
 		iw->k.m_t_decor[i] = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
-			iw->t_decor[i]->w * iw->t_decor[i]->h * iw->t_decor[i]->format->BytesPerPixel, NULL, &iw->k.ret);
+			iw->t_decor[i]->pitch * iw->t_decor[i]->h, NULL, &iw->k.ret);
 		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t_decor[i], CL_TRUE, 0,
-			iw->t_decor[i]->w * iw->t_decor[i]->h * iw->t_decor[i]->format->BytesPerPixel, iw->t_decor[i]->pixels, 0, NULL, NULL);
+			iw->t_decor[i]->pitch * iw->t_decor[i]->h, iw->t_decor[i]->pixels, 0, NULL, NULL);
 	}
 	i = -1;
 	while (++i < ENEMIES_TEXTURES_COUNT)
 	{
 		iw->k.m_t_enemies[i] = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
-			iw->t_enemies[i]->w * iw->t_enemies[i]->h * iw->t_enemies[i]->format->BytesPerPixel, NULL, &iw->k.ret);
+			iw->t_enemies[i]->pitch * iw->t_enemies[i]->h, NULL, &iw->k.ret);
 		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t_enemies[i], CL_TRUE, 0,
-			iw->t_enemies[i]->w * iw->t_enemies[i]->h * iw->t_enemies[i]->format->BytesPerPixel, iw->t_enemies[i]->pixels, 0, NULL, NULL);
+			iw->t_enemies[i]->pitch * iw->t_enemies[i]->h, iw->t_enemies[i]->pixels, 0, NULL, NULL);
 	}
 	i = -1;
 	while (++i < PICK_UP_TEXTURES_COUNT)
 	{
 		iw->k.m_t_pickup[i] = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
-			iw->t_pickup[i]->w * iw->t_pickup[i]->h * iw->t_pickup[i]->format->BytesPerPixel, NULL, &iw->k.ret);
+			iw->t_pickup[i]->pitch * iw->t_pickup[i]->h, NULL, &iw->k.ret);
 		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t_pickup[i], CL_TRUE, 0,
-			iw->t_pickup[i]->w * iw->t_pickup[i]->h * iw->t_pickup[i]->format->BytesPerPixel, iw->t_pickup[i]->pixels, 0, NULL, NULL);
+			iw->t_pickup[i]->pitch * iw->t_pickup[i]->h, iw->t_pickup[i]->pixels, 0, NULL, NULL);
 	}
 	iw->k.m_top = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE,
 		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
@@ -4439,9 +4439,9 @@ int		main(void)
 	read_sprites_textures(&iw);
 	get_kernel_mem(&iw);
 	
-	// add_sprite(&iw,7240,2640,200,0,1, 0, 0.5f);
-	// add_sprite(&iw,8640,2200,400,0,1, 1, 0.1f);
-	// add_sprite(&iw,6520,2298,200,0,1, 2, 2.5f);
+	add_sprite(&iw,7240,2640,200,0,1, 0, 0.5f);
+	add_sprite(&iw,8640,2200,400,0,1, 1, 0.1f);
+	add_sprite(&iw,6520,2298,200,0,1, 2, 2.5f);
 
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
