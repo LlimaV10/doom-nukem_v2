@@ -758,6 +758,10 @@ void	update(t_sdl *iw)
 	SDL_UpdateWindowSurface(iw->win);
 	//printf("Update\n");
 	//printf("update ret %d\n", ret);
+	// if (iw->v.look_sprite == 0)
+	// 	printf("SPRITE NOT SELECTED\n");
+	// else
+	// 	printf("SPRITE SELECTED\n");
 }
 
 int		get_picture_dist(t_sdl *iw, t_picture *pic)
@@ -1454,14 +1458,14 @@ void	move(t_sdl *iw, int pl, int *time)
 		dx = (int)(speed * cosf(G360 - ang)) * 2;
 		dy = (int)(speed * sinf(G360 - ang)) * 2;
 	}
-	tmp = COLLISION_SIZE / (int)(sqrtf(powf((float)dx, 2.0f) + powf((float)dy, 2.0f)) + 1.1f);
+	tmp = COLLISION_SIZE / (int)(sqrtf(powf((float)dx, 2.0f) + powf((float)dy, 2.0f)) + 1.0f);
 	if (in_sec_xy(iw, iw->d.cs, iw->p.x + dx, iw->p.y + dy))
 	{
 		if (in_sec_xy(iw, iw->d.cs, iw->p.x + dx * tmp , iw->p.y + dy * tmp)
 			|| ((sw = is_wall_portal(iw, dx * tmp, dy * tmp)) != 0 && sw->glass < 0))
 		{
-			iw->p.x += dx;
-			iw->p.y += dy;
+			iw->p.x += dx + ((dx < 0) ? 1 : -1);
+			iw->p.y += dy + ((dy < 0) ? 1 : -1);
 		}
 		else
 			move_collisions(iw, dx, dy, tmp);
@@ -1579,6 +1583,69 @@ void	do_wall_animations(t_sdl *iw)
 	}
 }
 
+int		check_walls_collisions_on_line_segment(t_sdl *iw, int wall, int len)
+{
+	//float	len_point;
+	float	len_pifagor;
+	float	len_p_p;
+
+	len_p_p = powf(iw->walls[wall].x - iw->walls[wall].next->x, 2.0f) +
+		powf(iw->walls[wall].y - iw->walls[wall].next->y, 2.0f);
+	//len_point = sqrtf(powf(iw->p.x - iw->walls[wall].x, 2.0f) + powf(iw->p.y - iw->walls[wall].y, 2.0f));
+	len_pifagor = powf(iw->p.x - iw->walls[wall].x, 2.0f) + powf(iw->p.y - iw->walls[wall].y, 2.0f) -
+		powf(len, 2.0f);
+	if (len_pifagor > len_p_p)
+		return (0);
+	len_pifagor = powf(iw->p.x - iw->walls[wall].next->x, 2.0f) + powf(iw->p.y - iw->walls[wall].next->y, 2.0f) -
+		powf(len, 2.0f);
+	if (len_pifagor > len_p_p)
+		return (0);
+	return (1);
+}
+
+void	check_walls_collisions(t_sdl *iw)
+{
+	int		wall;
+	int		len;
+	float	nx;
+	float	ny;
+	float	tmp;
+
+	if (iw->d.cs < 0)
+		return;
+	wall = iw->sectors[iw->d.cs].sw - 1;
+	while (++wall < iw->sectors[iw->d.cs].sw + iw->sectors[iw->d.cs].nw)
+	{
+		if ((iw->walls[wall].nextsector == -1 || iw->walls[wall].glass != -1) && (iw->walls[wall].x != iw->walls[wall].next->x || 
+			iw->walls[wall].y != iw->walls[wall].next->y))
+		{
+			len = (int)(fabsf(iw->walls[wall].l.a * iw->p.x + iw->walls[wall].l.b * iw->p.y + iw->walls[wall].l.c) /
+				sqrtf(powf(iw->walls[wall].l.a, 2.0f) + powf(iw->walls[wall].l.b, 2.0f)));
+			if (len < COLLISION_SIZE2)
+			{
+				if (!check_walls_collisions_on_line_segment(iw, wall, len))
+					continue;
+				nx = iw->walls[wall].l.a;
+				ny = iw->walls[wall].l.b;
+				if ((iw->walls[wall].next->x > iw->walls[wall].x && ny > 0.0f) ||
+					(iw->walls[wall].next->x < iw->walls[wall].x && ny < 0.0f))
+				{
+					nx = -nx;
+					ny = -ny;
+				}
+				tmp = sqrtf(powf(nx, 2.0f) + powf(ny, 2.0f));
+				nx *= (float)(COLLISION_SIZE2 - len) / tmp;
+				ny *= (float)(COLLISION_SIZE2 - len) / tmp;
+				if (in_sec_xy(iw, iw->d.cs, iw->p.x + (int)nx, iw->p.y + (int)ny))
+				{
+					iw->p.x += (int)nx;
+					iw->p.y += (int)ny;
+				}
+			}
+		}
+	}
+}
+
 void	loop(t_sdl *iw)
 {
 	int		t;
@@ -1677,6 +1744,7 @@ void	loop(t_sdl *iw)
 		iw->v.fall = -1;
 	do_sector_animations(iw);
 	do_wall_animations(iw);
+	check_walls_collisions(iw);
 	update(iw);
 	iw->v.fps = (double)CLKS_P_S / (double)(clock() - iw->loop_update_time);
 	iw->loop_update_time = clock();
@@ -3124,6 +3192,21 @@ int		sector_visited(t_sdl *iw, int sec)
 	return (0);
 }
 
+void	draw_glass_sprites(t_sdl *iw)
+{
+	t_sprite	*tmp1;
+
+	tmp1 = *iw->sprite;
+	while (tmp1 != 0)
+	{
+		if (tmp1->num_sec == iw->d.cs && tmp1->draweble)
+		{
+			draw_sprite(iw, tmp1);
+			tmp1->draweble = 0;
+		}
+		tmp1 = tmp1->next; 
+	}
+}
 
 void	draw_start(t_sdl *iw);
 void	draw_skybox(t_sdl *iw);
@@ -3182,6 +3265,8 @@ void	draw_next_sector(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	{
 		if (iw->sectors[iw2.d.cs].cl.t < 0)
 			draw_skybox(&iw2);
+		sort_sprites(iw);
+		draw_glass_sprites(&iw2);
 		change_saved_top_bot_between_lines(iw, right->x - left->x + 1);
 		draw_glass_tex(iw, left, right, right->x - left->x + 1);
 	}
@@ -3259,6 +3344,8 @@ void	draw_next_sector_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, i
 	{
 		if (iw->sectors[iw2.d.cs].cl.t < 0)
 			draw_skybox_kernel(&iw2);
+		sort_sprites(iw);
+		draw_glass_sprites_kernel(&iw2);
 		change_saved_top_bot_between_lines(iw, len);
 		draw_glass_tex_kernel(iw, left, right, len);
 		/*clReleaseMemObject(iw->k.m_save_bottom);
@@ -3679,60 +3766,16 @@ void	draw_sprites(t_sdl *iw)
 	while (tmp1 != 0)
 	{
 		if (iw->sectors[tmp1->num_sec].visited && tmp1->draweble)
+		{
+			if (tmp1->sx < WINDOW_W / 2 && tmp1->ex > WINDOW_W / 2 &&
+				tmp1->top[WINDOW_W / 2] < WINDOW_H / 2 && tmp1->bottom[WINDOW_W / 2] > WINDOW_H / 2
+				&& tmp1->sy < WINDOW_H / 2 && tmp1->ey > WINDOW_H / 2)
+				iw->v.look_sprite = tmp1;
 			draw_sprite(iw, tmp1);
-		tmp1 = tmp1->next;
+		}
+		tmp1 = tmp1->next; 
 	}
 }
-
-//void        swap_values(t_sprite *tmp, t_sprite *first, t_sprite *second)
-//{
-//    tmp->x = first->x;
-//    tmp->y = first->y;
-//	tmp->z = first->z;
-//	tmp->dist = first->dist;
-//	tmp->t = first->t;
-//	tmp->t_kernel = first->t_kernel;
-//	tmp->num_sec = first->num_sec;
-//	tmp->scale = first->scale;
-//    first->x = second->x;
-//    first->y = second->y;
-//	first->z = second->z;
-//	first->dist = second->dist;
-//	first->t = second->t;
-//	first->t_kernel = second->t_kernel;
-//	first->num_sec = second->num_sec;
-//	first->scale = second->scale;
-//    second->x = tmp->x;
-//    second->y = tmp->y;
-//	second->z = tmp->z;
-//	second->dist = tmp->dist;
-//	second->t = tmp->t;
-//	second->t_kernel = tmp->t_kernel;
-//	second->num_sec = tmp->num_sec;
-//	second->scale = tmp->scale;
-//}
-
-//void        sortl(t_sprite *list)
-//{
-//    t_sprite    *tmp_1;
-//    t_sprite    *tmp_2;
-//    t_sprite    *swap;
-//
-//    tmp_1 = list;
-//	swap = (t_sprite *)ft_memalloc(sizeof(t_sprite));
-//	while (tmp_1->next)
-//	{
-//		tmp_2 = list;
-//		while (tmp_2->next)
-//        {
-//            if (tmp_2->dist < tmp_2->next->dist)
-//                swap_values(swap, tmp_2, tmp_2->next);
-//            tmp_2 = tmp_2->next;
-//        }
-//        tmp_1 = tmp_1->next;
-//    }
-//	free(swap);
-//}
 
 int		find_point(t_save_wall_pairs *tmp,t_sprite *tmp1)
 {
@@ -4025,6 +4068,7 @@ void	draw(t_sdl *iw)
 		*(iw->v.look_wall) = 0;
 		*(iw->v.look_sector) = 0;
 		*(iw->v.look_picture) = 0;
+		iw->v.look_sprite = 0;
 	}
 	iw->sectors[iw->d.cs].visited = 1;
 	tmp = (t_visited_sector *)malloc(sizeof(t_visited_sector));
@@ -4113,6 +4157,8 @@ void	read_textures(t_sdl *iw)
 void	read_sprites_textures(t_sdl *iw)
 {
 	iw->t_decor[0] = SDL_LoadBMP("sprites/decorations/0.bmp");
+	iw->t_decor[1] = SDL_LoadBMP("sprites/decorations/1.bmp");
+	iw->t_decor[2] = SDL_LoadBMP("sprites/decorations/2.bmp");
 
 	iw->t_enemies[0] = SDL_LoadBMP("sprites/enemies/0.bmp");
 
@@ -4196,6 +4242,7 @@ void	get_def(t_sdl *iw)
 	*(iw->v.look_sector) = 0;
 	iw->v.look_picture = (t_picture **)malloc(sizeof(t_picture *));
 	*(iw->v.look_picture) = 0;
+	iw->v.look_sprite = 0;
 	iw->v.look_portal = 0;
 	iw->v.changing_fc = 0;
 	iw->v.chang_fc_rect.h = 100;
@@ -4283,6 +4330,10 @@ void	get_kernel_mem(t_sdl *iw)
 	iw->k.m_save_top2 = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE,
 		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
 	iw->k.m_save_bottom2 = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE,
+		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
+	iw->k.m_save_top3 = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE,
+		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
+	iw->k.m_save_bottom3 = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE,
 		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
 }
 
@@ -4388,9 +4439,9 @@ int		main(void)
 	read_sprites_textures(&iw);
 	get_kernel_mem(&iw);
 	
-	/*add_sprite(&iw,7240,2640,200,0,1, 0, 0.5f);
-	add_sprite(&iw,8640,2200,400,0,1, 1, 0.1f);
-	add_sprite(&iw,6520,2298,200,0,1, 2, 0.5f);*/
+	// add_sprite(&iw,7240,2640,200,0,1, 0, 0.5f);
+	// add_sprite(&iw,8640,2200,400,0,1, 1, 0.1f);
+	// add_sprite(&iw,6520,2298,200,0,1, 2, 2.5f);
 
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
@@ -4417,6 +4468,3 @@ int		main(void)
 	// system("PAUSE");
 	return (0);
 }
-
-
-// ����� �������� visited_portals � ����� �������� �� visited sectors!!! � ����������!

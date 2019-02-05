@@ -914,13 +914,13 @@ void	draw_sprite_kernel(t_sdl *iw, t_sprite *sprite)
 		cint[11] = 0;
 		
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE, 0, 13 * sizeof(int), cint, 0, NULL, NULL);
-	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_top, CL_TRUE, 0, (WINDOW_W + 1) * sizeof(int), sprite->top, 0, NULL, NULL);
-	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_bottom, CL_TRUE, 0, (WINDOW_W + 1) * sizeof(int), sprite->bottom, 0, NULL, NULL);
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_save_top3, CL_TRUE, 0, (WINDOW_W + 1) * sizeof(int), sprite->top, 0, NULL, NULL);
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_save_bottom3, CL_TRUE, 0, (WINDOW_W + 1) * sizeof(int), sprite->bottom, 0, NULL, NULL);
 
 	iw->k.kernel = clCreateKernel(iw->k.program, "draw_sprite_kernel", &iw->k.ret);
 
-	iw->k.ret = clSetKernelArg(iw->k.kernel, 0, sizeof(cl_mem), (void *)&iw->k.m_top);
-	iw->k.ret = clSetKernelArg(iw->k.kernel, 1, sizeof(cl_mem), (void *)&iw->k.m_bottom);
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 0, sizeof(cl_mem), (void *)&iw->k.m_save_top3);
+	iw->k.ret = clSetKernelArg(iw->k.kernel, 1, sizeof(cl_mem), (void *)&iw->k.m_save_bottom3);
 	iw->k.ret = clSetKernelArg(iw->k.kernel, 2, sizeof(cl_mem), (void *)&iw->k.m_sur);
 	iw->k.ret = clSetKernelArg(iw->k.kernel, 3, sizeof(cl_mem), (void *)sprite->t_kernel);
 	iw->k.ret = clSetKernelArg(iw->k.kernel, 4, sizeof(cl_mem), (void *)&iw->k.m_cint);
@@ -930,6 +930,7 @@ void	draw_sprite_kernel(t_sdl *iw, t_sprite *sprite)
 
 	iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel, 1, NULL,
 		&global_item_size, &local_item_size, 0, NULL, NULL);
+	//printf("sprite draw ret %d\n", iw->k.ret);
 	
 	clFlush(iw->k.command_queue);
 	clFinish(iw->k.command_queue);
@@ -944,7 +945,29 @@ void	draw_sprites_kernel(t_sdl *iw)
 	while (tmp1 != 0)
 	{
 		if (iw->sectors[tmp1->num_sec].visited && tmp1->draweble)
+		{
+			if (tmp1->sx < WINDOW_W / 2 && tmp1->ex > WINDOW_W / 2 &&
+				tmp1->top[WINDOW_W / 2] < WINDOW_H / 2 && tmp1->bottom[WINDOW_W / 2] > WINDOW_H / 2
+				&& tmp1->sy < WINDOW_H / 2 && tmp1->ey > WINDOW_H / 2)
+				iw->v.look_sprite = tmp1;
 			draw_sprite_kernel(iw, tmp1);
+		}
 		tmp1 = tmp1->next;
+	}
+}
+
+void	draw_glass_sprites_kernel(t_sdl *iw)
+{
+	t_sprite	*tmp1;
+
+	tmp1 = *iw->sprite;
+	while (tmp1 != 0)
+	{
+		if (tmp1->num_sec == iw->d.cs && tmp1->draweble)
+		{
+			draw_sprite_kernel(iw, tmp1);
+			tmp1->draweble = 0;
+		}
+		tmp1 = tmp1->next; 
 	}
 }

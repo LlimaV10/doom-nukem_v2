@@ -48,4 +48,8 @@ int		get_min(int i1, int i2);
 void	draw_submenu(t_sdl *iw);
 void	calculate_picture(t_sdl *iw, t_wall *wall, t_picture *pic);
 void	get_wall_line2(t_wall *wall);
+void	draw_sprite(t_sdl *iw, t_sprite *sprite);
+void	draw_glass_sprites_kernel(t_sdl *iw);
+void	sort_sprites(t_sdl *iw);
+
 #endif

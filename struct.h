@@ -515,7 +515,9 @@ typedef struct	s_kernel
 	cl_mem		m_save_bottom;
 	cl_mem		m_save_top2;
 	cl_mem		m_save_bottom2;
-	
+	cl_mem		m_save_top3;
+	cl_mem		m_save_bottom3;
+
 	cl_mem		m_t_decor[DECOR_TEXTURES_COUNT];
 	cl_mem		m_t_enemies[ENEMIES_TEXTURES_COUNT];
 	cl_mem		m_t_pickup[PICK_UP_TEXTURES_COUNT];
@@ -559,6 +561,7 @@ typedef struct	s_variables
 	t_wall		*look_portal;
 	t_sector	**look_sector;
 	t_picture	**look_picture;
+	t_sprite	*look_sprite;
 	// 0 - floor, 1 - ceil
 	int		changing_fc;
 	SDL_Rect	chang_fc_rect;
