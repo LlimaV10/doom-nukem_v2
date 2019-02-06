@@ -946,7 +946,7 @@ void	draw_sprites_kernel(t_sdl *iw)
 	{
 		if (iw->sectors[tmp1->num_sec].visited && tmp1->draweble)
 		{
-			if (tmp1->sx < WINDOW_W / 2 && tmp1->ex > WINDOW_W / 2 &&
+			if (tmp1->top[WINDOW_W / 2] != -1 && tmp1->sx < WINDOW_W / 2 && tmp1->ex > WINDOW_W / 2 &&
 				tmp1->top[WINDOW_W / 2] < WINDOW_H / 2 && tmp1->bottom[WINDOW_W / 2] > WINDOW_H / 2
 				&& tmp1->sy < WINDOW_H / 2 && tmp1->ey > WINDOW_H / 2)
 				iw->v.look_sprite = tmp1;

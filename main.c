@@ -503,6 +503,8 @@ void	draw_some_info(t_sdl *iw)
 	t_draw_info	d;
 	char		*s;
 
+	if (iw->v.game_mode)
+		return;
 	d.col.r = 0;
 	d.col.g = 255;
 	d.col.b = 0;
@@ -514,6 +516,8 @@ void	draw_some_info(t_sdl *iw)
 	draw_text_number(iw, &d, "FPS: ", iw->v.fps);
 	d.rect.y = 25;
 	draw_text_number(iw, &d, "Sector: ", iw->d.cs);
+	d.rect.y = 50;
+	draw_text_number(iw, &d, "Fly mode: ", iw->v.fly_mode);
 	if (iw->v.f_button_mode == 1)
 	{
 		draw_text(iw, "Select Sectors to control light by pressing F", 50, 100);
@@ -596,6 +600,8 @@ void	draw_up_down_menu_arrows(t_sdl *iw, int x)
 
 void	draw_menu(t_sdl *iw)
 {
+	if (iw->v.game_mode)
+		return;
 	draw_menu_sphere(iw, 100, "X");
 	draw_menu_sphere(iw, 170, "Y");
 	draw_up_down_menu_arrows(iw, 50);
@@ -630,6 +636,8 @@ void	draw_tex_to_select(t_sdl *iw)
 	int		i;
 	SDL_Rect	rect;
 
+	if (iw->v.game_mode)
+		return;
 	rect.x = 0;
 	rect.y = WINDOW_H;
 	rect.w = 100;
@@ -642,15 +650,51 @@ void	draw_tex_to_select(t_sdl *iw)
 	}
 }
 
+void	draw_decor_tex_to_select(t_sdl *iw)
+{
+	int		i;
+	SDL_Rect	rect;
+
+	iw->v.sprites_select_mode = 0;
+	if (iw->v.game_mode)
+		return;
+	rect.x = 0;
+	rect.y = WINDOW_H + 200;
+	rect.w = 100;
+	rect.h = 100;
+	i = iw->v.scroll_decor_sprites - 1;
+	while (++i < DECOR_TEXTURES_COUNT && rect.x < WINDOW_W)
+	{
+		ft_scaled_blit(iw->t_decor[i], iw->sur, &rect);
+		rect.x += 100;
+	}
+}
+
 void	draw_selected_tex(t_sdl *iw)
 {
 	SDL_Rect	rect;
 
+	if (iw->v.game_mode)
+		return;
 	rect.x = WINDOW_W - 110;
 	rect.y = 10;
 	rect.w = 100;
 	rect.h = 100;
 	ft_scaled_blit(iw->t[iw->v.tex_to_fill], iw->sur, &rect);
+}
+
+void	draw_selected_sprite(t_sdl *iw)
+{
+	SDL_Rect	rect;
+
+	if (iw->v.game_mode)
+		return;
+	rect.x = WINDOW_W - 110;
+	rect.y = 130;
+	rect.w = 100;
+	rect.h = 100;
+	if (iw->v.selected_sprite_type == 0)
+		ft_scaled_blit(iw->t_decor[iw->v.selected_sprite], iw->sur, &rect);
 }
 
 void	draw_submenu(t_sdl *iw)
@@ -755,13 +799,14 @@ void	update(t_sdl *iw)
 	draw_crosshair(iw);
 	draw_some_info(iw);
 	draw_selected_tex(iw);
+	draw_selected_sprite(iw);
 	SDL_UpdateWindowSurface(iw->win);
 	//printf("Update\n");
 	//printf("update ret %d\n", ret);
-	// if (iw->v.look_sprite == 0)
-	// 	printf("SPRITE NOT SELECTED\n");
-	// else
-	// 	printf("SPRITE SELECTED\n");
+	/*if (iw->v.look_sprite == 0)
+		printf("SPRITE NOT SELECTED\n");
+	else
+		printf("SPRITE SELECTED\n");*/
 }
 
 int		get_picture_dist(t_sdl *iw, t_picture *pic)
@@ -824,7 +869,8 @@ void	key_up(int code, t_sdl *iw)
 		iw->v.rot_down = -1;
 	else if (code == 47)
 		iw->v.picture_changing = 0;
-	else if (code == 19 && iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0)
+	else if (code == 19 && iw->v.mouse_mode == 1 &&
+		*(iw->v.look_wall) != 0 && !iw->v.game_mode)
 		add_picture(iw, *(iw->v.look_wall));
 	else if (code == 9) // F
 		button_f_up(iw);
@@ -838,6 +884,19 @@ void	key_up(int code, t_sdl *iw)
 		iw->v.f_button_mode = 0;
 		iw->v.f_button_pointer = 0;
 	}
+	else if (code == 48)
+		iw->v.sprite_editing = 0;
+	else if (code == 25 && !iw->v.game_mode)
+	{
+		iw->v.fly_mode = ((iw->v.fly_mode == 2) ? 0 : iw->v.fly_mode + 1);
+		iw->v.fall = -1;
+		iw->v.fly_down = -1;
+		iw->v.fly_up = -1;
+	}
+	else if (code == 44 && iw->v.fly_mode)
+		iw->v.fly_up = -1;
+	else if (code == 224 && iw->v.fly_mode)
+		iw->v.fly_down = -1;
 	// 	iw->v.edit_mode = (iw->v.edit_mode == 0) ? 1 : 0;
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
 }
@@ -863,7 +922,8 @@ void	key_down(int code, t_sdl *iw)
 		iw->v.rot_up = clock();
 	else if (code == 81)
 		iw->v.rot_down = clock();
-	else if (code == 47 && *(iw->v.look_picture) != 0 && *(iw->v.look_wall) != 0)
+	else if (code == 47 && *(iw->v.look_picture) != 0 &&
+		*(iw->v.look_wall) != 0 && !iw->v.game_mode)
 	{
 		iw->v.picture_changing = *(iw->v.look_picture);
 		iw->v.wall_picture_changing = *(iw->v.look_wall);
@@ -876,19 +936,26 @@ void	key_down(int code, t_sdl *iw)
 		else
 			printf("OpenCL OFF\n");
 	}
-	else if (code == 43)
+	else if (code == 43 && !iw->v.game_mode)
 	{
 		iw->v.mouse_mode = ((iw->v.mouse_mode == 1) ? 0 : 1);
 		SDL_SetRelativeMouseMode(iw->v.mouse_mode);
 	}
-	else if (code == 55 && *(iw->v.look_sector) != 0 && iw->v.mouse_mode == 1)
+	else if (code == 55 && *(iw->v.look_sector) != 0 && iw->v.mouse_mode == 1 && !iw->v.game_mode)
 		(*(iw->v.look_sector))->cl.t = iw->v.tex_to_fill;
-	else if (code == 56 && *(iw->v.look_sector) != 0 && iw->v.mouse_mode == 1)
+	else if (code == 56 && *(iw->v.look_sector) != 0 && iw->v.mouse_mode == 1 && !iw->v.game_mode)
 		(*(iw->v.look_sector))->fr.t = iw->v.tex_to_fill;
-	else if (code == 54 && *(iw->v.look_sector) != 0 && iw->v.mouse_mode == 1)
+	else if (code == 54 && *(iw->v.look_sector) != 0 && iw->v.mouse_mode == 1 && !iw->v.game_mode)
 		(*(iw->v.look_sector))->cl.t = -1;
-	else if (code == 16 && iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0 && (*iw->v.look_wall)->nextsector == -1)
+	else if (code == 16 && iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0
+		&& (*iw->v.look_wall)->nextsector == -1 && !iw->v.game_mode)
 		(*(iw->v.look_wall))->t = -1;
+	else if (code == 48 && iw->v.mouse_mode == 1)
+		iw->v.sprite_editing = 1;
+	else if (code == 44 && iw->v.fly_mode)
+		iw->v.fly_up = clock();
+	else if (code == 224 && iw->v.fly_mode)
+		iw->v.fly_down = clock();
 	/*else if (code == 9)
 		check_animations(iw);*/
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
@@ -896,7 +963,7 @@ void	key_down(int code, t_sdl *iw)
 
 void	key_down_repeat(int code, t_sdl *iw)
 {
-	if (code == 44 && iw->v.jump_time == -1 && iw->v.fall == -1)
+	if (code == 44 && iw->v.jump_time == -1 && iw->v.fall == -1 && !iw->v.fly_mode)
 	{
 		iw->v.jump_time = clock();
 		iw->v.jump = JUMP_HEIGHT;
@@ -964,8 +1031,11 @@ void	rotate_fc(t_sector_fc *fc, int xy, int pl)
 void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 {
 	int		i;
+	if (iw->v.game_mode)
+	{
 
-	if (y > WINDOW_H && y < WINDOW_H + 100 && iw->v.mouse_mode == 0)
+	}
+	else if (y > WINDOW_H && y < WINDOW_H + 100 && iw->v.mouse_mode == 0)
 	{
 		i = x / 100 + iw->v.scroll_first_tex;
 		if (i < TEXTURES_COUNT)
@@ -1054,6 +1124,15 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 				free((*(iw->v.look_sector))->fr.n);
 				(*(iw->v.look_sector))->fr.n = 0;
 			}
+		}
+		else if (x > 332 && x < 430)
+		{
+			if (y < WINDOW_H + 135)
+				printf("DeCOR\n");
+			else if (y < WINDOW_H + 170)
+				printf("Pickup\n");
+			else
+				printf("Enemies\n");
 		}
 		else if (iw->v.submenu_mode == 1 && x > WINDOW_W - 450)
 		{
@@ -1251,6 +1330,27 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 				exit_editing_wall_animation(iw);
 		}
 	}
+	else if (y > WINDOW_H + 200 && y < WINDOW_H + 300 && iw->v.mouse_mode == 0)
+	{
+		if (iw->v.sprites_select_mode == 0)
+		{
+			i = x / 100 + iw->v.scroll_decor_sprites;
+			if (i < DECOR_TEXTURES_COUNT)
+			{
+				iw->v.selected_sprite_type = 0;
+				iw->v.selected_sprite = i;
+			}
+		}
+	}
+	else if (iw->v.sprite_editing && iw->v.mouse_mode == 1 && iw->v.look_sprite != 0)
+	{
+		if (iw->v.selected_sprite_type == 0)
+		{
+			iw->v.look_sprite->type = 0;
+			iw->v.look_sprite->t = iw->t_decor[iw->v.selected_sprite];
+			iw->v.look_sprite->t_kernel = &iw->k.m_t_decor[iw->v.selected_sprite];
+		}
+	}
 	else if (iw->v.mouse_mode == 1 && *(iw->v.look_picture) != 0 && *(iw->v.look_wall) != 0)
 	{
 		(*(iw->v.look_picture))->t = iw->v.tex_to_fill;
@@ -1267,7 +1367,11 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 
 void	mouse_buttonright_up(int x, int y, t_sdl *iw)
 {
-	if (iw->v.mouse_mode == 1 && iw->v.look_portal != 0)
+	if (iw->v.game_mode)
+	{
+
+	}
+	else if (iw->v.mouse_mode == 1 && iw->v.look_portal != 0)
 		iw->v.look_portal->glass = iw->v.tex_to_fill;
 	else if (iw->v.mouse_mode == 1 && *(iw->v.look_picture) != 0 && *(iw->v.look_wall) != 0)
 		delete_picture(*(iw->v.look_wall), *(iw->v.look_picture), iw);
@@ -1292,6 +1396,13 @@ void	mouse_wheel(SDL_Event *e, t_sdl *iw)
 		else if (e->wheel.y > 0)
 			iw->v.picture_changing->tw += 30;
 		calculate_picture(iw, iw->v.wall_picture_changing, iw->v.picture_changing);
+	}
+	else if (iw->v.mouse_mode == 1 && iw->v.sprite_editing && iw->v.look_sprite != 0)
+	{
+		if (e->wheel.y < 0)
+			iw->v.look_sprite->scale *= 1.1f;
+		else if (iw->v.look_sprite->scale > 0.05f)
+			iw->v.look_sprite->scale /= 1.1f;
 	}
 }
 
@@ -1415,6 +1526,7 @@ void	move_in_portal(t_sdl *iw, int dx, int dy, t_wall *sw, int tmp)
 	iw->d.cs = savecs;
 	if (nszu - nszd >= PLAYER_HEIGHT + PLAYER_HEAD_SIZE
 		&& (nszd < iw->p.z || nszd - iw->p.z + PLAYER_HEIGHT < MAX_CLIMB_HEIGHT)
+		&& (nszu >= iw->p.z + PLAYER_HEAD_SIZE)
 		&& in_sec_xy(iw, sw->nextsector, nx, ny))
 	{
 		iw->p.x = nx;
@@ -1706,12 +1818,11 @@ void	loop(t_sdl *iw)
 			move(iw, 90, &iw->v.right);
 			//iw->v.right = clock();
 		}
-		if (iw->v.fall != -1)
+		if (iw->v.fall != -1 && !iw->v.fly_mode)
 		{
 			t = clock();
 			iw->p.z -= (int)(iw->v.accel * ((double)(t - iw->v.fall) /
-				(double)CLKS_P_S) * 50.0f/* *
-				((float)(t - iw->loop_update_time) / (float)CLOCKS_PER_SEC)*/);
+				(double)CLKS_P_S) * 50.0f);
 		}
 		else if (iw->v.jump_time != -1)
 		{
@@ -1730,15 +1841,26 @@ void	loop(t_sdl *iw)
 
 		}
 		if (iw->v.fall == -1 && iw->v.jump_time == -1
-			&& (iw->p.z - iw->v.plrzd) > PLAYER_HEIGHT)
+			&& (iw->p.z - iw->v.plrzd) > PLAYER_HEIGHT && !iw->v.fly_mode)
 			iw->v.fall = clock();
-		if (iw->sectors[iw->d.cs].cl.t >= 0 && iw->p.z + PLAYER_HEAD_SIZE > iw->v.plrzu)
+		if (iw->v.fly_up != -1)
+		{
+			iw->p.z += (int)(FLY_SPEED * (float)(clock() - iw->v.fly_up) / (float)CLKS_P_S);
+			iw->v.fly_up = clock();
+		}
+		if (iw->v.fly_down != -1)
+		{
+			iw->p.z -= (int)(FLY_SPEED * (float)(clock() - iw->v.fly_down) / (float)CLKS_P_S);
+			iw->v.fly_down = clock();
+		}
+		if (iw->sectors[iw->d.cs].cl.t >= 0 && iw->p.z + PLAYER_HEAD_SIZE > iw->v.plrzu && iw->v.fly_mode != 2)
 			iw->p.z = iw->v.plrzu - PLAYER_HEAD_SIZE;
-		else if (iw->p.z - iw->v.plrzd < PLAYER_HEIGHT)
+		else if (iw->p.z - iw->v.plrzd < PLAYER_HEIGHT && iw->v.fly_mode != 2)
 		{
 			iw->p.z = iw->v.plrzd + PLAYER_HEIGHT;
 			iw->v.fall = -1;
 		}
+		
 	}
 	else
 		iw->v.fall = -1;
@@ -3767,7 +3889,7 @@ void	draw_sprites(t_sdl *iw)
 	{
 		if (iw->sectors[tmp1->num_sec].visited && tmp1->draweble)
 		{
-			if (tmp1->sx < WINDOW_W / 2 && tmp1->ex > WINDOW_W / 2 &&
+			if (tmp1->top[WINDOW_W / 2] != -1 && tmp1->sx < WINDOW_W / 2 && tmp1->ex > WINDOW_W / 2 &&
 				tmp1->top[WINDOW_W / 2] < WINDOW_H / 2 && tmp1->bottom[WINDOW_W / 2] > WINDOW_H / 2
 				&& tmp1->sy < WINDOW_H / 2 && tmp1->ey > WINDOW_H / 2)
 				iw->v.look_sprite = tmp1;
@@ -3990,9 +4112,9 @@ void	draw_start(t_sdl *iw)
 		get_sprites_top_bottom(iw, tmp);
 		draw_left_right(iw, tmp->left, tmp->right);
 		tmp = tmp->next;
-		// iw->k.ret = clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_sur, CL_TRUE, 0,
-		// 	WINDOW_W * WINDOW_H * sizeof(int), iw->sur->pixels, 0, NULL, NULL);
-		// SDL_UpdateWindowSurface(iw->win);
+		/*iw->k.ret = clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_sur, CL_TRUE, 0,
+			WINDOW_W * WINDOW_H * sizeof(int), iw->sur->pixels, 0, NULL, NULL);*/
+		//SDL_UpdateWindowSurface(iw->win);
 		// char s[500];
 		// read(0, s, 10);
 		//system("PAUSE");
@@ -4159,6 +4281,7 @@ void	read_sprites_textures(t_sdl *iw)
 	iw->t_decor[0] = SDL_LoadBMP("sprites/decorations/0.bmp");
 	iw->t_decor[1] = SDL_LoadBMP("sprites/decorations/1.bmp");
 	iw->t_decor[2] = SDL_LoadBMP("sprites/decorations/2.bmp");
+	iw->t_decor[3] = SDL_LoadBMP("sprites/decorations/3.bmp");
 
 	iw->t_enemies[0] = SDL_LoadBMP("sprites/enemies/0.bmp");
 
@@ -4200,12 +4323,12 @@ void add_sprite(t_sdl *iw, int x, int y, int z, int t, int num, int type, float 
 
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 5431;
-	iw->p.y = 2499; //-2360
-	iw->p.z = 600;
-	iw->p.introt = 3;
+	iw->p.x = 3822;
+	iw->p.y = 3612; //-2360
+	iw->p.z = 100;
+	iw->p.introt = 25;
 	iw->p.rot = (float)iw->p.introt * G1;
-	iw->p.rotup = 12; //550
+	iw->p.rotup = 140; //550
 	iw->v.ls = 0;
 	iw->v.angle = (float)WINDOW_W / (float)WINDOW_H * 22.0f * G1;// 0.698132f;
 	iw->v.kernel = 1;
@@ -4267,6 +4390,18 @@ void	get_def(t_sdl *iw)
 	iw->v.wall_anim = 0;
 	iw->vw_save = (t_save_wall **)malloc(sizeof(t_save_wall *));
 	*(iw->vw_save) = 0;
+
+	iw->v.game_mode = 0;
+
+	iw->v.sprites_select_mode = 0;
+	iw->v.scroll_decor_sprites = 0;
+	iw->v.selected_sprite_type = 0;
+	iw->v.selected_sprite = 0;
+	iw->v.sprite_editing = 0;
+
+	iw->v.fly_mode = 0;
+	iw->v.fly_down = -1;
+	iw->v.fly_up = -1;
 }
 
 void	get_kernel_mem(t_sdl *iw)
@@ -4447,11 +4582,16 @@ int		main(void)
 	TTF_Init();
 	iw.arial_font = TTF_OpenFont("fonts/ARIAL.TTF", 24);
 	SDL_SetRelativeMouseMode(iw.v.mouse_mode);
-	iw.win = SDL_CreateWindow("SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		WINDOW_W, WINDOW_H + 100 + 100 + 100, SDL_WINDOW_SHOWN);
+	if (!iw.v.game_mode)
+		iw.win = SDL_CreateWindow("SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+			WINDOW_W, WINDOW_H + 300, SDL_WINDOW_SHOWN);
+	else
+		iw.win = SDL_CreateWindow("SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+			WINDOW_W, WINDOW_H, SDL_WINDOW_SHOWN);
 	//iw.ren = SDL_CreateRenderer(iw.win, -1, 0);
 	iw.sur = SDL_GetWindowSurface(iw.win);
 	draw_tex_to_select(&iw);
+	draw_decor_tex_to_select(&iw);
 	draw_menu(&iw);
 	// draw
 	get_map(&iw);

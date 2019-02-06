@@ -534,22 +534,22 @@ typedef struct	s_variables
 	// 1 - kernel-ON
 	int		kernel;
 	// move
-	int		front;
-	int		back;
-	int		left;
-	int		right;
+	clock_t		front;
+	clock_t		back;
+	clock_t		left;
+	clock_t		right;
 	// rotate
-	int		rot_left;
-	int		rot_right;
-	int		rot_up;
-	int		rot_down;
-	int		fall;
+	clock_t		rot_left;
+	clock_t		rot_right;
+	clock_t		rot_up;
+	clock_t		rot_down;
+	clock_t		fall;
+	clock_t		jump_time;
 	// acceleration (meters per second^2)
 	float	accel;
 	int		plrzu;
 	int		plrzd;
 	int		jump;
-	int		jump_time;
 	int		fps;
 	int		tex_to_fill;
 	int		scroll_first_tex;
@@ -575,6 +575,18 @@ typedef struct	s_variables
 	int		submenu_mode;
 	t_sector_animation	*sector_anim;
 	t_wall_animation	*wall_anim;
+	int		game_mode;
+
+	// 0 - decor, 1 - pickup, 2 - enemies
+	int		sprites_select_mode;
+	int		scroll_decor_sprites;
+	int		selected_sprite_type;
+	int		selected_sprite;
+	int		sprite_editing;
+
+	int		fly_mode;
+	clock_t	fly_up;
+	clock_t	fly_down;
 }				t_variables;
 
 typedef struct	s_level
