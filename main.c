@@ -1413,6 +1413,8 @@ t_wall	*is_wall_portal(t_sdl *iw, int dx, int dy)
 	int			side1;
 	int			side2;
 
+	if (iw->d.cs < 0)
+		return (0);
 	wall = iw->sectors[iw->d.cs].sw - 1;
 	while (++wall < iw->sectors[iw->d.cs].sw + iw->sectors[iw->d.cs].nw)
 	{
@@ -1569,6 +1571,20 @@ void	move(t_sdl *iw, int pl, int *time)
 	{
 		dx = (int)(speed * cosf(G360 - ang)) * 2;
 		dy = (int)(speed * sinf(G360 - ang)) * 2;
+	}
+	if (iw->v.fly_mode == 2)
+	{
+		if ((sw = is_wall_portal(iw, dx, dy)) == 0)
+		{
+			iw->p.x += dx;
+			iw->p.y += dy;
+		}
+		else
+		{
+			iw->p.x += dx + iw->walls[sw->nextsector_wall].x - sw->next->x;
+			iw->p.y += dy + iw->walls[sw->nextsector_wall].y - sw->next->y;
+		}
+		return;
 	}
 	tmp = COLLISION_SIZE / (int)(sqrtf(powf((float)dx, 2.0f) + powf((float)dy, 2.0f)) + 1.0f);
 	if (in_sec_xy(iw, iw->d.cs, iw->p.x + dx, iw->p.y + dy))
@@ -1862,11 +1878,23 @@ void	loop(t_sdl *iw)
 		}
 		
 	}
+	else if (iw->v.fly_mode == 2)
+	{
+		if (iw->v.front != -1)
+			move(iw, 0, &iw->v.front);
+		if (iw->v.back != -1)
+			move(iw, 180, &iw->v.back);
+		if (iw->v.left != -1)
+			move(iw, 270, &iw->v.left);
+		if (iw->v.right != -1)
+			move(iw, 90, &iw->v.right);
+	}
 	else
 		iw->v.fall = -1;
 	do_sector_animations(iw);
 	do_wall_animations(iw);
-	check_walls_collisions(iw);
+	if (iw->v.fly_mode != 2)
+		check_walls_collisions(iw);
 	update(iw);
 	iw->v.fps = (double)CLKS_P_S / (double)(clock() - iw->loop_update_time);
 	iw->loop_update_time = clock();
@@ -4279,11 +4307,18 @@ void	read_textures(t_sdl *iw)
 void	read_sprites_textures(t_sdl *iw)
 {
 	iw->t_decor[0] = SDL_LoadBMP("sprites/decorations/0.bmp");
-	iw->t_decor[1] = SDL_LoadBMP("sprites/decorations/1.bmp");
+	/*iw->t_decor[1] = SDL_LoadBMP("sprites/decorations/1.bmp");
 	iw->t_decor[2] = SDL_LoadBMP("sprites/decorations/2.bmp");
-	iw->t_decor[3] = SDL_LoadBMP("sprites/decorations/3.bmp");
+	iw->t_decor[3] = SDL_LoadBMP("sprites/decorations/3.bmp");*/
 
 	iw->t_enemies[0] = SDL_LoadBMP("sprites/enemies/0.bmp");
+	iw->t_enemies[1] = SDL_LoadBMP("sprites/enemies/1.bmp");
+	iw->t_enemies[2] = SDL_LoadBMP("sprites/enemies/2.bmp");
+	iw->t_enemies[3] = SDL_LoadBMP("sprites/enemies/3.bmp");
+	iw->t_enemies[4] = SDL_LoadBMP("sprites/enemies/4.bmp");
+	iw->t_enemies[5] = SDL_LoadBMP("sprites/enemies/5.bmp");
+	iw->t_enemies[6] = SDL_LoadBMP("sprites/enemies/6.bmp");
+	iw->t_enemies[7] = SDL_LoadBMP("sprites/enemies/7.bmp");
 
 	iw->t_pickup[0] = SDL_LoadBMP("sprites/to_pick_up/0.bmp");
 	iw->t_pickup[1] = SDL_LoadBMP("sprites/to_pick_up/1.bmp");
