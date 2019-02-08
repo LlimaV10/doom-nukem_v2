@@ -374,6 +374,21 @@ typedef struct	s_draw_info
 // 	int		lr;
 // }				t_save_wall_pairs_closest;
 
+typedef struct	s_enemy
+{
+	int		enemy_numb;
+	int		health;
+	int		damage;
+	// 0 - passive turned on player,
+	// 1 - passive turned away player,
+	// 2 - haunting player
+	// 3 - attack start
+	// 4.. other custom modes
+	int		status;
+	// time of previous loop update
+	clock_t	prev_update_time;
+}				t_enemy;
+
 typedef struct	s_sprite
 {
 	int		x;
@@ -402,6 +417,8 @@ typedef struct	s_sprite
 
 	int		draweble;
 	int		type;
+	// if not enemy == 0
+	t_enemy	e;
 }           t_sprite;
 
 typedef struct	s_sector_animation
@@ -580,6 +597,7 @@ typedef struct	s_variables
 	// 0 - decor, 1 - pickup, 2 - enemies
 	int		sprites_select_mode;
 	int		scroll_decor_sprites;
+	int		scroll_pickup_sprites;
 	int		selected_sprite_type;
 	int		selected_sprite;
 	int		sprite_editing;

@@ -650,14 +650,26 @@ void	draw_tex_to_select(t_sdl *iw)
 	}
 }
 
+void	clear_sprites_tex_to_select(t_sdl *iw)
+{
+	SDL_Rect	rect;
+
+	rect.x = 0;
+	rect.y = WINDOW_H + 200;
+	rect.w = WINDOW_W;
+	rect.h = 100;
+	SDL_FillRect(iw->sur, &rect, 0x000000);
+}
+
 void	draw_decor_tex_to_select(t_sdl *iw)
 {
 	int		i;
 	SDL_Rect	rect;
 
-	iw->v.sprites_select_mode = 0;
 	if (iw->v.game_mode)
 		return;
+	clear_sprites_tex_to_select(iw);
+	iw->v.sprites_select_mode = 0;
 	rect.x = 0;
 	rect.y = WINDOW_H + 200;
 	rect.w = 100;
@@ -668,6 +680,43 @@ void	draw_decor_tex_to_select(t_sdl *iw)
 		ft_scaled_blit(iw->t_decor[i], iw->sur, &rect);
 		rect.x += 100;
 	}
+}
+
+void	draw_pickup_tex_to_select(t_sdl *iw)
+{
+	int		i;
+	SDL_Rect	rect;
+
+	if (iw->v.game_mode)
+		return;
+	clear_sprites_tex_to_select(iw);
+	iw->v.sprites_select_mode = 1;
+	rect.x = 0;
+	rect.y = WINDOW_H + 200;
+	rect.w = 100;
+	rect.h = 100;
+	i = iw->v.scroll_pickup_sprites - 1;
+	while (++i < PICK_UP_TEXTURES_COUNT && rect.x < WINDOW_W)
+	{
+		ft_scaled_blit(iw->t_pickup[i], iw->sur, &rect);
+		rect.x += 100;
+	}
+}
+
+void	draw_enemies_tex_to_select(t_sdl *iw)
+{
+	SDL_Rect	rect;
+
+	if (iw->v.game_mode)
+		return;
+	clear_sprites_tex_to_select(iw);
+	iw->v.sprites_select_mode = 2;
+	rect.x = 0;
+	rect.y = WINDOW_H + 200;
+	rect.w = 100;
+	rect.h = 100;
+	ft_scaled_blit(iw->t_enemies[0], iw->sur, &rect);
+	//rect.x += 100;
 }
 
 void	draw_selected_tex(t_sdl *iw)
@@ -695,6 +744,13 @@ void	draw_selected_sprite(t_sdl *iw)
 	rect.h = 100;
 	if (iw->v.selected_sprite_type == 0)
 		ft_scaled_blit(iw->t_decor[iw->v.selected_sprite], iw->sur, &rect);
+	else if (iw->v.selected_sprite_type == 1)
+		ft_scaled_blit(iw->t_pickup[iw->v.selected_sprite], iw->sur, &rect);
+	else if (iw->v.selected_sprite_type == 2)
+	{
+		if (iw->v.selected_sprite == 0)
+			ft_scaled_blit(iw->t_enemies[0], iw->sur, &rect);
+	}
 }
 
 void	draw_submenu(t_sdl *iw)
@@ -1128,11 +1184,11 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 		else if (x > 332 && x < 430)
 		{
 			if (y < WINDOW_H + 135)
-				printf("DeCOR\n");
+				draw_decor_tex_to_select(iw);
 			else if (y < WINDOW_H + 170)
-				printf("Pickup\n");
+				draw_pickup_tex_to_select(iw);
 			else
-				printf("Enemies\n");
+				draw_enemies_tex_to_select(iw);
 		}
 		else if (iw->v.submenu_mode == 1 && x > WINDOW_W - 450)
 		{
@@ -1338,6 +1394,24 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 			if (i < DECOR_TEXTURES_COUNT)
 			{
 				iw->v.selected_sprite_type = 0;
+				iw->v.selected_sprite = i;
+			}
+		}
+		else if (iw->v.sprites_select_mode == 1)
+		{
+			i = x / 100 + iw->v.scroll_pickup_sprites;
+			if (i < PICK_UP_TEXTURES_COUNT)
+			{
+				iw->v.selected_sprite_type = 1;
+				iw->v.selected_sprite = i;
+			}
+		}
+		else if (iw->v.sprites_select_mode == 2)
+		{
+			i = x / 100;
+			if (i < COUNT_ENEMIES)
+			{
+				iw->v.selected_sprite_type = 2;
 				iw->v.selected_sprite = i;
 			}
 		}
@@ -1774,6 +1848,21 @@ void	check_walls_collisions(t_sdl *iw)
 	}
 }
 
+void	check_enemies(t_sdl *iw)
+{
+	t_sprite	*tmp;
+
+	tmp = *iw->sprite;
+	while (tmp)
+	{
+		if (tmp->type == 2)
+		{
+			
+		}
+		tmp = tmp->next;
+	}
+}
+
 void	loop(t_sdl *iw)
 {
 	int		t;
@@ -1895,6 +1984,8 @@ void	loop(t_sdl *iw)
 	do_wall_animations(iw);
 	if (iw->v.fly_mode != 2)
 		check_walls_collisions(iw);
+	if (iw->v.game_mode)
+		check_enemies(iw);
 	update(iw);
 	iw->v.fps = (double)CLKS_P_S / (double)(clock() - iw->loop_update_time);
 	iw->loop_update_time = clock();
@@ -4358,6 +4449,8 @@ void add_sprite(t_sdl *iw, int x, int y, int z, int t, int num, int type, float 
 
 void	get_def(t_sdl *iw)
 {
+	iw->v.game_mode = 0;
+
 	iw->p.x = 3822;
 	iw->p.y = 3612; //-2360
 	iw->p.z = 100;
@@ -4426,10 +4519,9 @@ void	get_def(t_sdl *iw)
 	iw->vw_save = (t_save_wall **)malloc(sizeof(t_save_wall *));
 	*(iw->vw_save) = 0;
 
-	iw->v.game_mode = 0;
-
 	iw->v.sprites_select_mode = 0;
 	iw->v.scroll_decor_sprites = 0;
+	iw->v.scroll_pickup_sprites = 0;
 	iw->v.selected_sprite_type = 0;
 	iw->v.selected_sprite = 0;
 	iw->v.sprite_editing = 0;
@@ -4609,9 +4701,9 @@ int		main(void)
 	read_sprites_textures(&iw);
 	get_kernel_mem(&iw);
 	
-	add_sprite(&iw,7240,2640,200,0,1, 0, 0.5f);
-	add_sprite(&iw,8640,2200,400,0,1, 1, 0.1f);
-	add_sprite(&iw,6520,2298,200,0,1, 2, 2.5f);
+	add_sprite(&iw,7240,2640,200, 0, 1, 0, 1.0f);
+	add_sprite(&iw,8640,2200,400, 0, 1, 0, 1.0f);
+	add_sprite(&iw,6520,2298,200, 0, 1, 0, 1.0f);
 
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
