@@ -716,7 +716,8 @@ void	draw_enemies_tex_to_select(t_sdl *iw)
 	rect.w = 100;
 	rect.h = 100;
 	ft_scaled_blit(iw->t_enemies[0], iw->sur, &rect);
-	//rect.x += 100;
+	rect.x += 100;
+	ft_scaled_blit(iw->t_enemies[8], iw->sur, &rect);
 }
 
 void	draw_selected_tex(t_sdl *iw)
@@ -750,6 +751,8 @@ void	draw_selected_sprite(t_sdl *iw)
 	{
 		if (iw->v.selected_sprite == 0)
 			ft_scaled_blit(iw->t_enemies[0], iw->sur, &rect);
+		else if (iw->v.selected_sprite == 1)
+			ft_scaled_blit(iw->t_enemies[8], iw->sur, &rect);
 	}
 }
 
@@ -1424,6 +1427,32 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 			iw->v.look_sprite->t = iw->t_decor[iw->v.selected_sprite];
 			iw->v.look_sprite->t_kernel = &iw->k.m_t_decor[iw->v.selected_sprite];
 		}
+		else if (iw->v.selected_sprite_type == 1)
+		{
+			iw->v.look_sprite->type = 1;
+			iw->v.look_sprite->t = iw->t_pickup[iw->v.selected_sprite];
+			iw->v.look_sprite->t_kernel = &iw->k.m_t_pickup[iw->v.selected_sprite];
+		}
+		else if (iw->v.selected_sprite_type == 2)
+		{
+			iw->v.look_sprite->type = 2;
+			iw->v.look_sprite->e.enemy_numb = iw->v.selected_sprite;
+			iw->v.look_sprite->e.status = 0;
+			if (iw->v.selected_sprite == 0)
+			{
+				iw->v.look_sprite->e.health = 10;
+				iw->v.look_sprite->e.damage = 5;
+				iw->v.look_sprite->t = iw->t_enemies[0];
+				iw->v.look_sprite->t_kernel = &iw->k.m_t_enemies[0];
+			}
+			else if (iw->v.selected_sprite == 1)
+			{
+				iw->v.look_sprite->e.health = 20;
+				iw->v.look_sprite->e.damage = 8;
+				iw->v.look_sprite->t = iw->t_enemies[8];
+				iw->v.look_sprite->t_kernel = &iw->k.m_t_enemies[8];
+			}
+		}
 	}
 	else if (iw->v.mouse_mode == 1 && *(iw->v.look_picture) != 0 && *(iw->v.look_wall) != 0)
 	{
@@ -1475,7 +1504,7 @@ void	mouse_wheel(SDL_Event *e, t_sdl *iw)
 	{
 		if (e->wheel.y < 0)
 			iw->v.look_sprite->scale *= 1.1f;
-		else if (iw->v.look_sprite->scale > 0.05f)
+		else if (iw->v.look_sprite->scale > 0.2f)
 			iw->v.look_sprite->scale /= 1.1f;
 	}
 }
@@ -1848,6 +1877,46 @@ void	check_walls_collisions(t_sdl *iw)
 	}
 }
 
+// ENEMIES FUNCTIONS /////////////////////////////////////////////////////////////
+
+// HARD TO OPTIMIZE, NEED SOME BRAINSTORM
+int		enemy_sees_player(t_sdl *iw, int sx, int sy, int sector)
+{
+	float	k1;
+	float	k2;
+	float	a;
+	float	b;
+	float	c;
+	int		wall;
+
+	a = (float)(iw->p.y - sy);
+	b = (float)(sx - iw->p.x);
+	c = (float)(iw->p.x * sy - sx * iw->p.y);
+	wall = iw->sectors[sector].sw;
+	while (++wall < iw->sectors[sector].sw + iw->sectors[sector].nw)
+	{
+		k1 = a * (float)iw->walls[wall].x + b * (float)iw->walls[wall].y + c;
+		k2 = iw->walls[wall].l.a * (float)sx + iw->walls[wall].l.b * (float)sy + iw->walls[wall].l.c;
+		if ((k1 > 0.0f && k2 < 0.0f) || (k1 < 0.0f && k2 > 0.0f))
+		{
+			if (iw->walls[wall].nextsector == -1)
+				return (0);
+			else
+			{
+				// probably recursive.. but this is not optimized
+			}
+		}
+	}
+}
+
+void	enemy_intelligence0(t_sdl *iw, t_sprite *s)
+{
+	if (s->e.status == 0)
+	{
+
+	}
+}
+
 void	check_enemies(t_sdl *iw)
 {
 	t_sprite	*tmp;
@@ -1857,11 +1926,14 @@ void	check_enemies(t_sdl *iw)
 	{
 		if (tmp->type == 2)
 		{
-			
+			if (tmp->e.enemy_numb == 0)
+				enemy_intelligence0(iw, tmp);
 		}
 		tmp = tmp->next;
 	}
 }
+
+///////////////////////////////////////////////////////////////////////////////////
 
 void	loop(t_sdl *iw)
 {
@@ -3958,6 +4030,9 @@ void	draw_sprite(t_sdl *iw, t_sprite *sprite)
 	int		colour;
 
 	sprite->spriteheight = 2 * sprite->spritewidth * sprite->t->h / sprite->t->w;
+	if (abs(sprite->z - iw->p.z) > 1500)
+		sprite->spriteheight = (float)sprite->spriteheight * 1.0f /
+		(float)(abs(sprite->z - iw->p.z) / 1500.0f);
 	sprite->ey = WINDOW_H * (iw->p.z + (int)sprite->pplen / 2 - sprite->z) / (int)sprite->pplen + iw->p.rotup;
 	sprite->sy = sprite->ey - sprite->spriteheight;
 	i = 0;
@@ -4410,6 +4485,18 @@ void	read_sprites_textures(t_sdl *iw)
 	iw->t_enemies[5] = SDL_LoadBMP("sprites/enemies/5.bmp");
 	iw->t_enemies[6] = SDL_LoadBMP("sprites/enemies/6.bmp");
 	iw->t_enemies[7] = SDL_LoadBMP("sprites/enemies/7.bmp");
+	iw->t_enemies[8] = SDL_LoadBMP("sprites/enemies/8.bmp");
+	iw->t_enemies[9] = SDL_LoadBMP("sprites/enemies/9.bmp");
+	iw->t_enemies[10] = SDL_LoadBMP("sprites/enemies/10.bmp");
+	iw->t_enemies[11] = SDL_LoadBMP("sprites/enemies/11.bmp");
+	iw->t_enemies[12] = SDL_LoadBMP("sprites/enemies/12.bmp");
+	iw->t_enemies[13] = SDL_LoadBMP("sprites/enemies/13.bmp");
+	iw->t_enemies[14] = SDL_LoadBMP("sprites/enemies/14.bmp");
+	iw->t_enemies[15] = SDL_LoadBMP("sprites/enemies/15.bmp");
+	iw->t_enemies[16] = SDL_LoadBMP("sprites/enemies/16.bmp");
+	iw->t_enemies[17] = SDL_LoadBMP("sprites/enemies/17.bmp");
+	iw->t_enemies[18] = SDL_LoadBMP("sprites/enemies/18.bmp");
+	iw->t_enemies[19] = SDL_LoadBMP("sprites/enemies/19.bmp");
 
 	iw->t_pickup[0] = SDL_LoadBMP("sprites/to_pick_up/0.bmp");
 	iw->t_pickup[1] = SDL_LoadBMP("sprites/to_pick_up/1.bmp");
@@ -4449,7 +4536,7 @@ void add_sprite(t_sdl *iw, int x, int y, int z, int t, int num, int type, float 
 
 void	get_def(t_sdl *iw)
 {
-	iw->v.game_mode = 0;
+	iw->v.game_mode = 1;
 
 	iw->p.x = 3822;
 	iw->p.y = 3612; //-2360
@@ -4701,9 +4788,16 @@ int		main(void)
 	read_sprites_textures(&iw);
 	get_kernel_mem(&iw);
 	
-	add_sprite(&iw,7240,2640,200, 0, 1, 0, 1.0f);
-	add_sprite(&iw,8640,2200,400, 0, 1, 0, 1.0f);
-	add_sprite(&iw,6520,2298,200, 0, 1, 0, 1.0f);
+	add_sprite(&iw,7240,2640,200, 0, 1, 0, 2.0f);
+	(*iw.sprite)->type = 2;
+	(*iw.sprite)->e.enemy_numb = 0;
+	(*iw.sprite)->e.health = 10;
+	(*iw.sprite)->e.damage = 5;
+	(*iw.sprite)->e.status = 0;
+	(*iw.sprite)->t = iw.t_enemies[0];
+	(*iw.sprite)->t_kernel = &iw.k.m_t_enemies[0];
+	/*add_sprite(&iw,8640,2200,400, 0, 1, 0, 1.0f);
+	add_sprite(&iw,6520,2298,200, 0, 1, 0, 1.0f);*/
 
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();

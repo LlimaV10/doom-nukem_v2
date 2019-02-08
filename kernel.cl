@@ -525,6 +525,8 @@ __kernel void draw_inclined_floor_ceil_betw_walls_tex_kernel(
 			i = top[j] - 1;
 			while (++i < wallTop[j] && i < bottom[j])
 			{
+				if ((int)sky_y >= cint[5])
+					sky_y -= (float)cint[5];
 				tp = (int)sky_x * 3 + (int)sky_y * 3 * cint[4];
 				wpixels[cint[8] + j + i * cint[6]] = (int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16);
 
@@ -769,6 +771,8 @@ __kernel void draw_floor_ceil_betw_walls_tex_kernel(
 			i = top[j] - 1;
 			while (++i < wallTop[j] && i < bottom[j])
 			{
+				if ((int)sky_y >= cint[5])
+					sky_y -= (float)cint[5];
 				tp = (int)sky_x * 3 + (int)sky_y * 3 * cint[4];
 				wpixels[cint[8] + j + i * cint[6]] = (int)(ceilpixels[tp] | ceilpixels[tp + 1] << 8 | ceilpixels[tp + 2] << 16);
 				sky_y += dy;
@@ -840,7 +844,6 @@ __kernel void draw_floor_ceil_betw_walls_tex_kernel(
 //1 - WINDOW_W
 //2 - sky_width
 //3 - sky_height
-
 //4 - screen_left
 
 //float

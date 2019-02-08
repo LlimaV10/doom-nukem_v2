@@ -387,12 +387,14 @@ typedef struct	s_enemy
 	int		status;
 	// time of previous loop update
 	clock_t	prev_update_time;
+	int		start_x;
+	int		start_y;
 }				t_enemy;
 
 typedef struct	s_sprite
 {
 	int		x;
-	//int		t;
+	int		t_numb;
 	SDL_Surface	*t;
 	cl_mem		*t_kernel;
 	int		y;
@@ -416,8 +418,8 @@ typedef struct	s_sprite
 	struct s_sprite	*next;
 
 	int		draweble;
+	// 0 - decor, 1 - pickup, 2 - enemy
 	int		type;
-	// if not enemy == 0
 	t_enemy	e;
 }           t_sprite;
 
