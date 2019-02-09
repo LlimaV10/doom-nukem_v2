@@ -1877,6 +1877,15 @@ void	check_walls_collisions(t_sdl *iw)
 	}
 }
 
+void	clear_visited_sectors(t_sdl *iw)
+{
+	int		sector;
+
+	sector = -1;
+	while (++sector < iw->v.sc)
+		iw->sectors[sector].visited = 0;
+}
+
 // ENEMIES FUNCTIONS /////////////////////////////////////////////////////////////
 
 // HARD TO OPTIMIZE, NEED SOME BRAINSTORM
@@ -1889,31 +1898,60 @@ int		enemy_sees_player(t_sdl *iw, int sx, int sy, int sector)
 	float	c;
 	int		wall;
 
+	iw->sectors[sector].visited = 1;
 	a = (float)(iw->p.y - sy);
 	b = (float)(sx - iw->p.x);
 	c = (float)(iw->p.x * sy - sx * iw->p.y);
+	// just walls
 	wall = iw->sectors[sector].sw;
 	while (++wall < iw->sectors[sector].sw + iw->sectors[sector].nw)
 	{
-		k1 = a * (float)iw->walls[wall].x + b * (float)iw->walls[wall].y + c;
+		if (iw->walls[wall].nextsector != -1)
+			continue;
+		
+		k1 = iw->walls[wall].l.a * (float)iw->p.x + iw->walls[wall].l.b * (float)iw->p.y + iw->walls[wall].l.c;
 		k2 = iw->walls[wall].l.a * (float)sx + iw->walls[wall].l.b * (float)sy + iw->walls[wall].l.c;
 		if ((k1 > 0.0f && k2 < 0.0f) || (k1 < 0.0f && k2 > 0.0f))
 		{
-			if (iw->walls[wall].nextsector == -1)
+			k1 = a * (float)iw->walls[wall].x + b * (float)iw->walls[wall].y + c;
+			k2 = a * (float)iw->walls[wall].next->x + b * (float)iw->walls[wall].next->y + c;
+			if ((k1 > 0.0f && k2 < 0.0f) || (k1 < 0.0f && k2 > 0.0f))
 				return (0);
-			else
-			{
-				// probably recursive.. but this is not optimized
-			}
 		}
 	}
+	// portals
+	wall = iw->sectors[sector].sw;
+	while (++wall < iw->sectors[sector].sw + iw->sectors[sector].nw)
+	{
+		if (iw->walls[wall].nextsector == -1 || iw->sectors[iw->walls[wall].nextsector].visited)
+			continue;
+		/*k1 = a * (float)iw->walls[wall].x + b * (float)iw->walls[wall].y + c;
+		k2 = a * (float)iw->walls[wall].next->x + b * (float)iw->walls[wall].next->y + c;*/
+		//k2 = iw->walls[wall].l.a * (float)sx + iw->walls[wall].l.b * (float)sy + iw->walls[wall].l.c;
+		k1 = iw->walls[wall].l.a * (float)iw->p.x + iw->walls[wall].l.b * (float)iw->p.y + iw->walls[wall].l.c;
+		k2 = iw->walls[wall].l.a * (float)sx + iw->walls[wall].l.b * (float)sy + iw->walls[wall].l.c;
+		if ((k1 > 0.0f && k2 < 0.0f) || (k1 < 0.0f && k2 > 0.0f))
+		{
+			k1 = iw->walls[wall].l.a * (float)iw->p.x + iw->walls[wall].l.b * (float)iw->p.y + iw->walls[wall].l.c;
+			k2 = iw->walls[wall].l.a * (float)sx + iw->walls[wall].l.b * (float)sy + iw->walls[wall].l.c;
+			if ((k1 > 0.0f && k2 < 0.0f) || (k1 < 0.0f && k2 > 0.0f))
+				if (!enemy_sees_player(iw, sx + iw->walls[iw->walls[wall].nextsector_wall].x -
+					iw->walls[wall].next->x, sy + iw->walls[iw->walls[wall].nextsector_wall].y -
+					iw->walls[wall].next->y, iw->walls[wall].nextsector))
+					return (0);
+		}
+	}
+	return (1);
 }
 
 void	enemy_intelligence0(t_sdl *iw, t_sprite *s)
 {
 	if (s->e.status == 0)
 	{
-
+		if (enemy_sees_player(iw, s->x, s->y, s->num_sec) == 1)
+			printf("I SEE YOU!\n");
+		else
+			printf("WHERE are YOU?\n");
 	}
 }
 
@@ -4538,12 +4576,12 @@ void	get_def(t_sdl *iw)
 {
 	iw->v.game_mode = 1;
 
-	iw->p.x = 3822;
-	iw->p.y = 3612; //-2360
+	iw->p.x = 511;
+	iw->p.y = 1684; //-2360
 	iw->p.z = 100;
-	iw->p.introt = 25;
+	iw->p.introt = 3;
 	iw->p.rot = (float)iw->p.introt * G1;
-	iw->p.rotup = 140; //550
+	iw->p.rotup = 2; //550
 	iw->v.ls = 0;
 	iw->v.angle = (float)WINDOW_W / (float)WINDOW_H * 22.0f * G1;// 0.698132f;
 	iw->v.kernel = 1;
