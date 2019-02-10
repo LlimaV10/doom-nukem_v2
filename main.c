@@ -956,6 +956,9 @@ void	key_up(int code, t_sdl *iw)
 		iw->v.fly_up = -1;
 	else if (code == 224 && iw->v.fly_mode)
 		iw->v.fly_down = -1;
+	else if (code == 6 && *iw->v.look_wall != 0 &&
+		(*iw->v.look_wall)->t >= 0 && (*iw->v.look_wall)->t < TEXTURES_COUNT)
+		iw->v.tex_to_fill = (*iw->v.look_wall)->t;
 	// 	iw->v.edit_mode = (iw->v.edit_mode == 0) ? 1 : 0;
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
 }
@@ -1946,17 +1949,17 @@ int		enemy_sees_player(t_sdl *iw, int sx, int sy, int sector)
 	return (1);
 }
 
-int		enemy_sees_player1(t_sdl *iw, t_sprite *s)
-{
-	t_enemy_sees_player	esp;
-
-	esp.px = iw->p.x;
-	esp.py = iw->p.y;
-	esp.ex = s->x;
-	esp.ey = s->y;
-	esp.prev_portal = -1;
-
-}
+//int		enemy_sees_player(t_sdl *iw, t_sprite *s)
+//{
+//	t_enemy_sees_player	esp;
+//
+//	esp.px = iw->p.x;
+//	esp.py = iw->p.y;
+//	esp.ex = s->x;
+//	esp.ey = s->y;
+//	esp.prev_portal = -1;
+//
+//}
 
 void	enemy_intelligence0(t_sdl *iw, t_sprite *s)
 {
@@ -4589,7 +4592,7 @@ void add_sprite(t_sdl *iw, int x, int y, int z, int t, int num, int type, float 
 
 void	get_def(t_sdl *iw)
 {
-	iw->v.game_mode = 1;
+	iw->v.game_mode = 0;
 
 	iw->p.x = 511;
 	iw->p.y = 1684; //-2360
@@ -4831,6 +4834,147 @@ void	add_picture1(t_sdl *iw)
 	iw->walls[20].p = tmp;
 	calculate_picture(iw, &iw->walls[20], tmp);
 }
+//	GET_SECTOR_WAYS_FUNCTIONS //////////////////////////////////////////////////////////
+
+void	free_way(t_sector_ways **way)
+{
+	t_sector_way	*tmp;
+	t_sector_way	*tmp2;
+
+	if (*way == 0)
+		return;
+	tmp = (*way)->way_start;
+	while (tmp)
+	{
+		tmp2 = tmp;
+		tmp = tmp->next;
+		free(tmp2);
+	}
+	free(*way);
+	*way = 0;
+}
+
+int		sector_in_way(t_sdl *iw, t_sector_ways *way, int sector)
+{
+	t_sector_way	*tmp;
+
+	if (way == 0)
+		return (0);
+	tmp = way->way_start;
+	while (tmp)
+	{
+		if (iw->walls[tmp->portal].nextsector == sector)
+			return (1);
+		tmp = tmp->next;
+	}
+	return (0);
+}
+
+void	add_portal_in_way2(t_sector_ways *tmp, int portal)
+{
+	t_sector_way	*nw;
+	t_sector_way	*w;
+
+	nw = (t_sector_way *)malloc(sizeof(t_sector_way));
+	nw->portal = portal;
+	nw->next = 0;
+	if (tmp->way_start == 0)
+		tmp->way_start = nw;
+	else
+	{
+		w = tmp->way_start;
+		while (w->next)
+			w = w->next;
+		w->next = nw;
+	}
+}
+
+t_sector_ways	*add_portal_in_way(t_sector_ways *current_way, int portal)
+{
+	t_sector_ways	*tmp;
+	t_sector_way	*way;
+
+	tmp = (t_sector_ways *)malloc(sizeof(t_sector_ways));
+	tmp->way_start = 0;
+	if (current_way == 0)
+	{
+		tmp->way_start = (t_sector_way *)malloc(sizeof(t_sector_way));
+		tmp->way_start->next = 0;
+		tmp->way_start->portal = portal;
+		return (tmp);
+	}
+	way = current_way->way_start;
+	while (way)
+	{
+		add_portal_in_way2(tmp, way->portal);
+		way = way->next;
+	}
+	add_portal_in_way2(tmp, portal);
+	return (tmp);
+}
+
+void	go_in_sector_way(t_sdl *iw, t_get_sectors_ways *g, t_sector_ways *current_way)
+{
+	int				wall;
+	int				save;
+	t_sector_ways	*tmp;
+
+	if (g->current == g->to)
+	{
+		current_way->next = g->ways;
+		g->ways = current_way;
+		return;
+	}
+	wall = iw->sectors[g->current].sw - 1;
+	while (++wall < iw->sectors[g->current].sw + iw->sectors[g->current].nw)
+	{
+		if (iw->walls[wall].nextsector == -1 || sector_in_way(iw, current_way, iw->walls[wall].nextsector))
+			continue;
+		save = g->current;
+		g->current = iw->walls[wall].nextsector;
+		go_in_sector_way(iw, g, add_portal_in_way(current_way, wall));
+		g->current = save;
+	}
+	free_way(&current_way);
+}
+
+void	get_sectors_ways2(t_sdl *iw)
+{
+	t_get_sectors_ways	g;
+
+	g.from = -1;
+	while (++g.from < iw->v.sc)
+	{
+		g.to = -1;
+		while (++g.to < iw->v.sc)
+		{
+			if (g.from == g.to)
+				continue;
+			g.ways = 0;
+			g.current = g.from;
+			go_in_sector_way(iw, &g, 0);
+			iw->ways[g.from][g.to] = g.ways;
+		}
+	}
+}
+
+void	get_sectors_ways(t_sdl *iw)
+{
+	int		i;
+	int		j;
+
+	iw->ways = (t_sector_ways ***)malloc(iw->v.sc * sizeof(t_sector_ways **));
+	i = -1;
+	while (++i < iw->v.sc)
+	{
+		iw->ways[i] = (t_sector_ways **)malloc(iw->v.sc * sizeof(t_sector_ways *));
+		j = -1;
+		while (++j < iw->v.sc)
+			iw->ways[i][j] = 0;
+	}
+	get_sectors_ways2(iw);
+}
+////////////////////////////////////////////////////////////////////////////////////////
 
 int		main(void)
 {
@@ -4869,6 +5013,7 @@ int		main(void)
 	draw_menu(&iw);
 	// draw
 	get_map(&iw);
+	get_sectors_ways(&iw); //////////////////////////////
 	add_picture1(&iw); ///////
 	//get_animation(&iw);
 	create_map(&iw);

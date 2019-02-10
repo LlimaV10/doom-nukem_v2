@@ -380,21 +380,21 @@ typedef struct	s_visited_sector
 	struct	s_visited_sector	*next;
 }				t_visited_sector;
 
-typedef struct	s_enemy_sees_player
-{
-	int		px;
-	int		py;
-	int		ex;
-	int		ey;
-	int		prev_portal;
-	int		sector;
-	float	k1;
-	float	k2;
-	float	a;
-	float	b;
-	float	c;
-	t_visited_sector	*visited_sectors;
-}				t_enemy_sees_player;
+//typedef struct	s_enemy_sees_player
+//{
+//	int		px;
+//	int		py;
+//	int		ex;
+//	int		ey;
+//	int		prev_portal;
+//	int		sector;
+//	float	k1;
+//	float	k2;
+//	float	a;
+//	float	b;
+//	float	c;
+//	t_visited_sector	*visited_sectors;
+//}				t_enemy_sees_player;
 
 typedef struct	s_enemy
 {
@@ -642,6 +642,26 @@ typedef struct	s_level
 // 	struct	s_visited_portal	*next;
 // }				t_visited_portal;
 
+typedef struct	s_sector_way
+{
+	int					portal;
+	struct s_sector_way	*next;
+}				t_sector_way;
+
+typedef struct	s_sector_ways
+{
+	t_sector_way			*way_start;
+	struct s_sector_ways	*next;
+}				t_sector_ways;
+
+typedef struct	s_get_sectors_ways
+{
+	int				from;
+	int				to;
+	int				current;
+	t_sector_ways	*ways;
+}				t_get_sectors_ways;
+
 typedef struct	s_sdl
 {
 	SDL_Window	*win;
@@ -675,6 +695,7 @@ typedef struct	s_sdl
 	t_sector_animation	*sector_animations;
 	t_wall_animation	*wall_animations;
 	t_save_wall			**vw_save;
+	t_sector_ways		***ways;
 }				t_sdl;
 
 #endif
