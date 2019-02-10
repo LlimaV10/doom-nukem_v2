@@ -374,6 +374,28 @@ typedef struct	s_draw_info
 // 	int		lr;
 // }				t_save_wall_pairs_closest;
 
+typedef struct	s_visited_sector
+{
+	int		sec;
+	struct	s_visited_sector	*next;
+}				t_visited_sector;
+
+typedef struct	s_enemy_sees_player
+{
+	int		px;
+	int		py;
+	int		ex;
+	int		ey;
+	int		prev_portal;
+	int		sector;
+	float	k1;
+	float	k2;
+	float	a;
+	float	b;
+	float	c;
+	t_visited_sector	*visited_sectors;
+}				t_enemy_sees_player;
+
 typedef struct	s_enemy
 {
 	int		enemy_numb;
@@ -619,12 +641,6 @@ typedef struct	s_level
 // 	t_wall	*wall;
 // 	struct	s_visited_portal	*next;
 // }				t_visited_portal;
-
-typedef struct	s_visited_sector
-{
-	int		sec;
-	struct	s_visited_sector	*next;
-}				t_visited_sector;
 
 typedef struct	s_sdl
 {

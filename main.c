@@ -1903,7 +1903,7 @@ int		enemy_sees_player(t_sdl *iw, int sx, int sy, int sector)
 	b = (float)(sx - iw->p.x);
 	c = (float)(iw->p.x * sy - sx * iw->p.y);
 	// just walls
-	wall = iw->sectors[sector].sw;
+	wall = iw->sectors[sector].sw - 1;
 	while (++wall < iw->sectors[sector].sw + iw->sectors[sector].nw)
 	{
 		if (iw->walls[wall].nextsector != -1)
@@ -1920,10 +1920,12 @@ int		enemy_sees_player(t_sdl *iw, int sx, int sy, int sector)
 		}
 	}
 	// portals
-	wall = iw->sectors[sector].sw;
+	wall = iw->sectors[sector].sw - 1;
 	while (++wall < iw->sectors[sector].sw + iw->sectors[sector].nw)
 	{
-		if (iw->walls[wall].nextsector == -1 || iw->sectors[iw->walls[wall].nextsector].visited)
+		if (iw->walls[wall].nextsector == -1)
+			continue;
+		if (iw->sectors[iw->walls[wall].nextsector].visited)
 			continue;
 		/*k1 = a * (float)iw->walls[wall].x + b * (float)iw->walls[wall].y + c;
 		k2 = a * (float)iw->walls[wall].next->x + b * (float)iw->walls[wall].next->y + c;*/
@@ -1944,14 +1946,27 @@ int		enemy_sees_player(t_sdl *iw, int sx, int sy, int sector)
 	return (1);
 }
 
+int		enemy_sees_player1(t_sdl *iw, t_sprite *s)
+{
+	t_enemy_sees_player	esp;
+
+	esp.px = iw->p.x;
+	esp.py = iw->p.y;
+	esp.ex = s->x;
+	esp.ey = s->y;
+	esp.prev_portal = -1;
+
+}
+
 void	enemy_intelligence0(t_sdl *iw, t_sprite *s)
 {
 	if (s->e.status == 0)
 	{
-		if (enemy_sees_player(iw, s->x, s->y, s->num_sec) == 1)
+		clear_visited_sectors(iw);
+		/*if (enemy_sees_player(iw, s->x, s->y, s->num_sec) == 1)
 			printf("I SEE YOU!\n");
 		else
-			printf("WHERE are YOU?\n");
+			printf("WHERE are YOU?\n");*/
 	}
 }
 
