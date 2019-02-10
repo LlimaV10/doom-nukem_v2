@@ -1639,6 +1639,7 @@ void	move_in_portal(t_sdl *iw, int dx, int dy, t_wall *sw, int tmp)
 	{
 		iw->p.x = nx;
 		iw->p.y = ny;
+		iw->d.cs = sw->nextsector;
 	}
 	else
 		move_collisions(iw, dx, dy, tmp);
