@@ -272,7 +272,6 @@ void	calculate_pictures_list(t_sdl *iw, t_wall *wall, t_picture *p)
 void	do_wall_animation_step_dx(t_sdl *iw, t_wall_animation *a, int dx)
 {
 	int		i;
-	t_picture	*p;
 
 	i = -1;
 	while (++i < a->count_walls)
@@ -300,7 +299,6 @@ void	do_wall_animation_step_dx(t_sdl *iw, t_wall_animation *a, int dx)
 void	do_wall_animation_step_dy(t_sdl *iw, t_wall_animation *a, int dy)
 {
 	int		i;
-	t_picture	*p;
 
 	i = -1;
 	while (++i < a->count_walls)
@@ -911,21 +909,21 @@ void	key_up(int code, t_sdl *iw)
 	if (code == 41)
 		exit_x(iw);
 	else if (code == 79)
-		iw->v.rot_right = -1;
+		iw->v.rot_right = 1;
 	else if (code == 80)
-		iw->v.rot_left = -1;
+		iw->v.rot_left = 1;
 	else if (code == 26)
-		iw->v.front = -1;
+		iw->v.front = 1;
 	else if (code == 22)
-		iw->v.back = -1;
+		iw->v.back = 1;
 	else if (code == 4)
-		iw->v.left = -1;
+		iw->v.left = 1;
 	else if (code == 7)
-		iw->v.right = -1;
+		iw->v.right = 1;
 	else if (code == 82)
-		iw->v.rot_up = -1;
+		iw->v.rot_up = 1;
 	else if (code == 81)
-		iw->v.rot_down = -1;
+		iw->v.rot_down = 1;
 	else if (code == 47)
 		iw->v.picture_changing = 0;
 	else if (code == 19 && iw->v.mouse_mode == 1 &&
@@ -948,14 +946,14 @@ void	key_up(int code, t_sdl *iw)
 	else if (code == 25 && !iw->v.game_mode)
 	{
 		iw->v.fly_mode = ((iw->v.fly_mode == 2) ? 0 : iw->v.fly_mode + 1);
-		iw->v.fall = -1;
-		iw->v.fly_down = -1;
-		iw->v.fly_up = -1;
+		iw->v.fall = 1;
+		iw->v.fly_down = 1;
+		iw->v.fly_up = 1;
 	}
 	else if (code == 44 && iw->v.fly_mode)
-		iw->v.fly_up = -1;
+		iw->v.fly_up = 1;
 	else if (code == 224 && iw->v.fly_mode)
-		iw->v.fly_down = -1;
+		iw->v.fly_down = 1;
 	else if (code == 6 && *iw->v.look_wall != 0 &&
 		(*iw->v.look_wall)->t >= 0 && (*iw->v.look_wall)->t < TEXTURES_COUNT)
 		iw->v.tex_to_fill = (*iw->v.look_wall)->t;
@@ -1025,7 +1023,7 @@ void	key_down(int code, t_sdl *iw)
 
 void	key_down_repeat(int code, t_sdl *iw)
 {
-	if (code == 44 && iw->v.jump_time == -1 && iw->v.fall == -1 && !iw->v.fly_mode)
+	if (code == 44 && iw->v.jump_time == 1 && iw->v.fall == 1 && !iw->v.fly_mode)
 	{
 		iw->v.jump_time = clock();
 		iw->v.jump = JUMP_HEIGHT;
@@ -1645,7 +1643,7 @@ void	move_in_portal(t_sdl *iw, int dx, int dy, t_wall *sw, int tmp)
 		move_collisions(iw, dx, dy, tmp);
 }
 
-void	move(t_sdl *iw, int pl, int *time)
+void	move(t_sdl *iw, int pl, clock_t *time)
 {
 	float		ang;
 	int		dx;
@@ -1893,7 +1891,7 @@ void	clear_visited_sectors(t_sdl *iw)
 // ENEMIES FUNCTIONS /////////////////////////////////////////////////////////////
 
 // HARD TO OPTIMIZE, NEED SOME BRAINSTORM
-int		enemy_sees_player(t_sdl *iw, int sx, int sy, int sector)
+int		enemy_sees_player01(t_sdl *iw, int sx, int sy, int sector)
 {
 	float	k1;
 	float	k2;
@@ -1941,7 +1939,7 @@ int		enemy_sees_player(t_sdl *iw, int sx, int sy, int sector)
 			k1 = iw->walls[wall].l.a * (float)iw->p.x + iw->walls[wall].l.b * (float)iw->p.y + iw->walls[wall].l.c;
 			k2 = iw->walls[wall].l.a * (float)sx + iw->walls[wall].l.b * (float)sy + iw->walls[wall].l.c;
 			if ((k1 > 0.0f && k2 < 0.0f) || (k1 < 0.0f && k2 > 0.0f))
-				if (!enemy_sees_player(iw, sx + iw->walls[iw->walls[wall].nextsector_wall].x -
+				if (!enemy_sees_player01(iw, sx + iw->walls[iw->walls[wall].nextsector_wall].x -
 					iw->walls[wall].next->x, sy + iw->walls[iw->walls[wall].nextsector_wall].y -
 					iw->walls[wall].next->y, iw->walls[wall].nextsector))
 					return (0);
@@ -1950,27 +1948,121 @@ int		enemy_sees_player(t_sdl *iw, int sx, int sy, int sector)
 	return (1);
 }
 
-//int		enemy_sees_player(t_sdl *iw, t_sprite *s)
-//{
-//	t_enemy_sees_player	esp;
-//
-//	esp.px = iw->p.x;
-//	esp.py = iw->p.y;
-//	esp.ex = s->x;
-//	esp.ey = s->y;
-//	esp.prev_portal = -1;
-//
-//}
+int		esp_check_walls(t_sdl *iw, t_enemy_sees_player *esp)
+{
+	int		wall;
+
+	wall = iw->sectors[esp->curr_sector].sw - 1;
+	while (++wall < iw->sectors[esp->curr_sector].sw + iw->sectors[esp->curr_sector].nw)
+	{
+		if (iw->walls[wall].nextsector != -1)
+			continue;
+		esp->k1 = iw->walls[wall].l.a * (float)esp->px + iw->walls[wall].l.b * (float)esp->py + iw->walls[wall].l.c;
+		esp->k2 = iw->walls[wall].l.a * (float)esp->ex + iw->walls[wall].l.b * (float)esp->ey + iw->walls[wall].l.c;
+		if ((esp->k1 > 0.0f && esp->k2 < 0.0f) || (esp->k1 < 0.0f && esp->k2 > 0.0f))
+		{
+			esp->k1 = esp->a * (float)iw->walls[wall].x + esp->b * (float)iw->walls[wall].y + esp->c;
+			esp->k2 = esp->a * (float)iw->walls[wall].next->x + esp->b * (float)iw->walls[wall].next->y + esp->c;
+			if ((esp->k1 > 0.0f && esp->k2 < 0.0f) || (esp->k1 < 0.0f && esp->k2 > 0.0f))
+				return (0);
+		}
+	}
+	return (1);
+}
+
+int		esp_check_portal(t_sdl *iw, t_enemy_sees_player *esp, int portal)
+{
+	esp->k1 = iw->walls[portal].l.a * (float)esp->px + iw->walls[portal].l.b * (float)esp->py + iw->walls[portal].l.c;
+	esp->k2 = iw->walls[portal].l.a * (float)esp->ex + iw->walls[portal].l.b * (float)esp->ey + iw->walls[portal].l.c;
+	if ((esp->k1 > 0.0f && esp->k2 < 0.0f) || (esp->k1 < 0.0f && esp->k2 > 0.0f))
+	{
+		esp->k1 = esp->a * (float)iw->walls[portal].x + esp->b * (float)iw->walls[portal].y + esp->c;
+		esp->k2 = esp->a * (float)iw->walls[portal].next->x + esp->b * (float)iw->walls[portal].next->y + esp->c;
+		if ((esp->k1 > 0.0f && esp->k2 < 0.0f) || (esp->k1 < 0.0f && esp->k2 > 0.0f))
+			return (1);
+	}
+	return (0);
+}
+
+void	esp_get_new_player_coordinates(t_sdl *iw, t_sector_way *way, t_enemy_sees_player *esp, t_sprite *s)
+{
+	esp->px = iw->p.x;
+	esp->py = iw->p.y;
+	esp->ex = s->x;
+	esp->ey = s->y;
+	esp->curr_sector = s->num_sec;
+	while (way)
+	{
+		esp->px -= iw->walls[iw->walls[way->portal].nextsector_wall].x - iw->walls[way->portal].next->x;
+		esp->py -= iw->walls[iw->walls[way->portal].nextsector_wall].y - iw->walls[way->portal].next->y;
+		way = way->next;
+	}
+}
+
+int		enemy_sees_player(t_sdl *iw, t_sprite *s)
+{
+	t_enemy_sees_player	esp;
+	t_sector_ways		*ways;
+	t_sector_way		*way;
+
+	esp.px = iw->p.x;
+	esp.py = iw->p.y;
+	esp.ex = s->x;
+	esp.ey = s->y;
+	esp.curr_sector = s->num_sec;
+	if (iw->d.cs == s->num_sec)
+	{
+		esp.a = (float)(esp.py - esp.ey);
+		esp.b = (float)(esp.ex - esp.px);
+		esp.c = (float)(esp.px * esp.ey - esp.ex * esp.py);
+		if (!esp_check_walls(iw, &esp))
+			return (-1);
+		return ((int)sqrtf(powf(esp.px - esp.ex, 2.0f) + powf(esp.py - esp.ey, 2.0f)));
+	}
+	// if (!iw->ways[s->num_sec][iw->d.cs])
+	// 	return (-1);
+	ways = iw->ways[s->num_sec][iw->d.cs];
+	while (ways)
+	{
+		way = ways->way_start;
+		esp_get_new_player_coordinates(iw, way, &esp, s);
+		while (way)
+		{
+			esp.a = (float)(esp.py - esp.ey);
+			esp.b = (float)(esp.ex - esp.px);
+			esp.c = (float)(esp.px * esp.ey - esp.ex * esp.py);
+			if (!esp_check_walls(iw, &esp) || !esp_check_portal(iw, &esp, way->portal))
+				break;
+			esp.px += iw->walls[iw->walls[way->portal].nextsector_wall].x - iw->walls[way->portal].next->x;
+			esp.py += iw->walls[iw->walls[way->portal].nextsector_wall].y - iw->walls[way->portal].next->y;
+			esp.ex += iw->walls[iw->walls[way->portal].nextsector_wall].x - iw->walls[way->portal].next->x;
+			esp.ey += iw->walls[iw->walls[way->portal].nextsector_wall].y - iw->walls[way->portal].next->y;
+			esp.curr_sector = iw->walls[way->portal].nextsector;
+			way = way->next;
+		}
+		if (!way)
+		{
+			esp.a = (float)(esp.py - esp.ey);
+			esp.b = (float)(esp.ex - esp.px);
+			esp.c = (float)(esp.px * esp.ey - esp.ex * esp.py);
+			if (esp_check_walls(iw, &esp))
+				return ((int)sqrtf(powf(esp.px - esp.ex, 2.0f) + powf(esp.py - esp.ey, 2.0f)));
+		}
+		ways = ways->next;
+	}
+	return (-1);
+}
 
 void	enemy_intelligence0(t_sdl *iw, t_sprite *s)
 {
+	int		i;
 	if (s->e.status == 0)
 	{
 		clear_visited_sectors(iw);
-		/*if (enemy_sees_player(iw, s->x, s->y, s->num_sec) == 1)
-			printf("I SEE YOU!\n");
+		if ((i = enemy_sees_player(iw, s)) != -1)
+			printf("I SEE YOU! %d\n", i);
 		else
-			printf("WHERE are YOU?\n");*/
+			printf("WHERE are YOU?\n");
 	}
 }
 
@@ -1999,7 +2091,7 @@ void	loop(t_sdl *iw)
 
 	if ((double)(clock() - iw->loop_update_time) < (double)CLKS_P_S / (double)MAX_FPS)
 		return;
-	if (iw->v.rot_right != -1)
+	if (iw->v.rot_right != 1)
 	{
 		iw->p.rot += (ROTATION_SPEED_PER_HALF_SEC * (double)(clock() - iw->v.rot_right)
 			/ (double)CLKS_P_S * 2.0f) * G1;
@@ -2008,7 +2100,7 @@ void	loop(t_sdl *iw)
 		iw->p.introt = (int)(iw->p.rot / G1);
 		iw->v.rot_right = clock();
 	}
-	if (iw->v.rot_left != -1)
+	if (iw->v.rot_left != 1)
 	{
 		iw->p.rot -= (ROTATION_SPEED_PER_HALF_SEC * (double)(clock() - iw->v.rot_left)
 			/ (double)CLKS_P_S * 2.0f) * G1;
@@ -2017,12 +2109,12 @@ void	loop(t_sdl *iw)
 		iw->p.introt = (int)(iw->p.rot / G1);
 		iw->v.rot_left = clock();
 	}
-	if (iw->v.rot_up != -1 && iw->p.rotup < 2 * WINDOW_H)
+	if (iw->v.rot_up != 1 && iw->p.rotup < 2 * WINDOW_H)
 	{
 		iw->p.rotup += 2 * WINDOW_H * (clock() - iw->v.rot_up) / CLKS_P_S;
 		iw->v.rot_up = clock();
 	}
-	if (iw->v.rot_down != -1 && iw->p.rotup > -2 * WINDOW_H)
+	if (iw->v.rot_down != 1 && iw->p.rotup > -2 * WINDOW_H)
 	{
 		iw->p.rotup -= 2 * WINDOW_H * (clock() - iw->v.rot_down) / CLKS_P_S;
 		iw->v.rot_down = clock();
@@ -2032,40 +2124,40 @@ void	loop(t_sdl *iw)
 	{
 		iw->v.plrzu = get_ceil_z(iw, iw->p.x, iw->p.y);
 		iw->v.plrzd = get_floor_z(iw, iw->p.x, iw->p.y);
-		if (iw->v.front != -1)
+		if (iw->v.front != 1)
 		{
 			move(iw, 0, &iw->v.front);
 			//iw->v.front = clock();
 		}
-		if (iw->v.back != -1)
+		if (iw->v.back != 1)
 		{
 			move(iw, 180, &iw->v.back);
 			//iw->v.back = clock();
 		}
-		if (iw->v.left != -1)
+		if (iw->v.left != 1)
 		{
 			move(iw, 270, &iw->v.left);
 			//iw->v.left = clock();
 		}
-		if (iw->v.right != -1)
+		if (iw->v.right != 1)
 		{
 			move(iw, 90, &iw->v.right);
 			//iw->v.right = clock();
 		}
-		if (iw->v.fall != -1 && !iw->v.fly_mode)
+		if (iw->v.fall != 1 && !iw->v.fly_mode)
 		{
 			t = clock();
 			iw->p.z -= (int)(iw->v.accel * ((double)(t - iw->v.fall) /
 				(double)CLKS_P_S) * 50.0f);
 		}
-		else if (iw->v.jump_time != -1)
+		else if (iw->v.jump_time != 1)
 		{
 			jsz = (double)(clock() - iw->v.jump_time) / (double)CLKS_P_S * (double)JUMP_HEIGHT *
 				iw->v.accel / 10.0f;
 			if ((int)jsz >= iw->v.jump)
 			{
 				iw->p.z += iw->v.jump;
-				iw->v.jump_time = -1;
+				iw->v.jump_time = 1;
 			}
 			else
 			{
@@ -2074,15 +2166,15 @@ void	loop(t_sdl *iw)
 			}
 
 		}
-		if (iw->v.fall == -1 && iw->v.jump_time == -1
+		if (iw->v.fall == 1 && iw->v.jump_time == 1
 			&& (iw->p.z - iw->v.plrzd) > PLAYER_HEIGHT && !iw->v.fly_mode)
 			iw->v.fall = clock();
-		if (iw->v.fly_up != -1)
+		if (iw->v.fly_up != 1)
 		{
 			iw->p.z += (int)(FLY_SPEED * (float)(clock() - iw->v.fly_up) / (float)CLKS_P_S);
 			iw->v.fly_up = clock();
 		}
-		if (iw->v.fly_down != -1)
+		if (iw->v.fly_down != 1)
 		{
 			iw->p.z -= (int)(FLY_SPEED * (float)(clock() - iw->v.fly_down) / (float)CLKS_P_S);
 			iw->v.fly_down = clock();
@@ -2092,23 +2184,23 @@ void	loop(t_sdl *iw)
 		else if (iw->p.z - iw->v.plrzd < PLAYER_HEIGHT && iw->v.fly_mode != 2)
 		{
 			iw->p.z = iw->v.plrzd + PLAYER_HEIGHT;
-			iw->v.fall = -1;
+			iw->v.fall = 1;
 		}
 		
 	}
 	else if (iw->v.fly_mode == 2)
 	{
-		if (iw->v.front != -1)
+		if (iw->v.front != 1)
 			move(iw, 0, &iw->v.front);
-		if (iw->v.back != -1)
+		if (iw->v.back != 1)
 			move(iw, 180, &iw->v.back);
-		if (iw->v.left != -1)
+		if (iw->v.left != 1)
 			move(iw, 270, &iw->v.left);
-		if (iw->v.right != -1)
+		if (iw->v.right != 1)
 			move(iw, 90, &iw->v.right);
 	}
 	else
-		iw->v.fall = -1;
+		iw->v.fall = 1;
 	do_sector_animations(iw);
 	do_wall_animations(iw);
 	if (iw->v.fly_mode != 2)
@@ -4606,16 +4698,16 @@ void	get_def(t_sdl *iw)
 	iw->v.kernel = 1;
 	load_kernel(&iw->k);
 	//fill_floor_coefficients(iw);
-	iw->v.front = -1;
-	iw->v.back = -1;
-	iw->v.left = -1;
-	iw->v.right = -1;
-	iw->v.rot_left = -1;
-	iw->v.rot_right = -1;
-	iw->v.rot_up = -1;
-	iw->v.rot_down = -1;
-	iw->v.fall = -1;
-	iw->v.jump_time = -1;
+	iw->v.front = 1;
+	iw->v.back = 1;
+	iw->v.left = 1;
+	iw->v.right = 1;
+	iw->v.rot_left = 1;
+	iw->v.rot_right = 1;
+	iw->v.rot_up = 1;
+	iw->v.rot_down = 1;
+	iw->v.fall = 1;
+	iw->v.jump_time = 1;
 	iw->v.jump = 0;
 	iw->v.accel = 9.81f;
 	iw->loop_update_time = clock();
@@ -4918,7 +5010,6 @@ void	go_in_sector_way(t_sdl *iw, t_get_sectors_ways *g, t_sector_ways *current_w
 {
 	int				wall;
 	int				save;
-	t_sector_ways	*tmp;
 
 	if (g->current == g->to)
 	{
@@ -4929,7 +5020,9 @@ void	go_in_sector_way(t_sdl *iw, t_get_sectors_ways *g, t_sector_ways *current_w
 	wall = iw->sectors[g->current].sw - 1;
 	while (++wall < iw->sectors[g->current].sw + iw->sectors[g->current].nw)
 	{
-		if (iw->walls[wall].nextsector == -1 || sector_in_way(iw, current_way, iw->walls[wall].nextsector))
+		if (iw->walls[wall].nextsector == -1 ||
+			sector_in_way(iw, current_way, iw->walls[wall].nextsector) ||
+			iw->walls[wall].nextsector == g->from)
 			continue;
 		save = g->current;
 		g->current = iw->walls[wall].nextsector;
@@ -5007,6 +5100,7 @@ int		main(void)
 	else
 		iw.win = SDL_CreateWindow("SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 			WINDOW_W, WINDOW_H, SDL_WINDOW_SHOWN);
+	//SDL_SetWindowFullscreen(iw.win, SDL_WINDOW_FULLSCREEN_DESKTOP);
 	//iw.ren = SDL_CreateRenderer(iw.win, -1, 0);
 	iw.sur = SDL_GetWindowSurface(iw.win);
 	draw_tex_to_select(&iw);

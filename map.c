@@ -80,10 +80,10 @@ void	get_map(t_sdl *iw)
 	iw->walls[i - 1].next = &iw->walls[i];
 
 	i++;
-	new_wall(&(iw->walls[i]), 5000, -1000, 1, 14);
+	new_wall(&(iw->walls[i]), 5000, 4000, 1, 14);
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
-	new_wall(&(iw->walls[i]), 5000, -2000, -1, -1);
+	new_wall(&(iw->walls[i]), 5000, 3000, -1, -1);
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
 	new_wall(&(iw->walls[i]), 5000, -5000, -1, -1);
@@ -154,16 +154,16 @@ void	get_map(t_sdl *iw)
 	iw->walls[i].next = &iw->walls[14];
 
 	i++;
-	new_wall(&(iw->walls[i]), 8000, 4000, 2, 29);
+	new_wall(&(iw->walls[i]), 8000, 4000, -1, 29);
 	//iw->walls[i - 1].next = &iw->walls[i];
 	i++;
-	new_wall(&(iw->walls[i]), 8000, 3900, 2, 28);
+	new_wall(&(iw->walls[i]), 8000, 3900, -1, 28);
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
-	new_wall(&(iw->walls[i]), 8500, 3900, 2, 27);
+	new_wall(&(iw->walls[i]), 8500, 3900, -1, 27);
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
-	new_wall(&(iw->walls[i]), 8500, 4000, 2, 26);
+	new_wall(&(iw->walls[i]), 8500, 4000, -1, 26);
 	iw->walls[i - 1].next = &iw->walls[i];
 
 	iw->walls[i].next = &iw->walls[22];

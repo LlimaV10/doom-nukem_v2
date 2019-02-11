@@ -380,21 +380,19 @@ typedef struct	s_visited_sector
 	struct	s_visited_sector	*next;
 }				t_visited_sector;
 
-//typedef struct	s_enemy_sees_player
-//{
-//	int		px;
-//	int		py;
-//	int		ex;
-//	int		ey;
-//	int		prev_portal;
-//	int		sector;
-//	float	k1;
-//	float	k2;
-//	float	a;
-//	float	b;
-//	float	c;
-//	t_visited_sector	*visited_sectors;
-//}				t_enemy_sees_player;
+typedef struct	s_enemy_sees_player
+{
+	int		px;
+	int		py;
+	int		ex;
+	int		ey;
+	int		curr_sector;
+	float	k1;
+	float	k2;
+	float	a;
+	float	b;
+	float	c;
+}				t_enemy_sees_player;
 
 typedef struct	s_enemy
 {
