@@ -849,12 +849,173 @@ void	change_wall_animation_status(t_sdl *iw, t_picture *p)
 	}
 }
 
+//////////////////////////////////////////////////////////////////
+
+void	ft_line_x(t_sdl *iw, t_brz *tip, int x1, int y1)
+{
+	tip->x = x1;
+	tip->y = y1;
+	tip->d = -tip->lengthx;
+	tip->length++;
+	while (tip->length--)
+	{
+		if (tip->x >= 0 && tip->y >= 0)
+			set_pixel(iw->sur, tip->x, tip->y, tip->color);
+		tip->x += tip->dx;
+		tip->d += 2 * tip->lengthy;
+		if (tip->d > 0)
+		{
+			tip->d -= 2 * tip->lengthx;
+			tip->y += tip->dy;
+		}
+	}
+}
+
+void	ft_line_y(t_sdl *iw, t_brz *tip, int x1, int y1)
+{
+	tip->x = x1;
+	tip->y = y1;
+	tip->d = -tip->lengthy;
+	tip->length++;
+	while (tip->length--)
+	{
+		if (tip->y < 1000 && tip->x >= 0 && tip->y >= 0)
+			set_pixel(iw->sur, tip->x, tip->y, tip->color);
+		tip->y += tip->dy;
+		tip->d += 2 * tip->lengthx;
+		if (tip->d > 0)
+		{
+			tip->d -= 2 * tip->lengthy;
+			tip->x += tip->dx;
+		}
+	}
+}
+
+void	ft_line(t_hud *den, t_col *vec, t_sdl *iw)
+{
+	t_brz	tip;
+	int		x2;
+	int		x1;
+	int		y2;
+	int		y1;
+
+	x1 = vec->x1;
+	x2 = vec->x2;
+	y1 = vec->y1;
+	y2 = vec->y2;
+	tip.color = den->color;
+	tip.dx = (x2 - x1 >= 0 ? 1 : -1);
+	tip.dy = (y2 - y1 >= 0 ? 1 : -1);
+	tip.lengthx = abs(x2 - x1);
+	tip.lengthy = abs(y2 - y1);
+	tip.length = (tip.lengthx > tip.lengthy ? tip.lengthx : tip.lengthy);
+	if (tip.length == 0 && y2 < 1000 && x1 >= 0 && y2 >= 0 )
+		set_pixel(iw->sur, x1, y2, tip.color);
+	if (tip.lengthy <= tip.lengthx)
+		ft_line_x(iw, &tip, x1, y1);
+	else
+		ft_line_y(iw, &tip, x1, y1);
+}
+
+void drawCircle(t_hud *den, int xc, int yc, int x, int y) 
+{ 
+	den->koord += 4;
+	
+
+	den->mas[den->i].x = xc - y;
+	den->mas[den->i].y = yc - x;
+	den->mas[150 - den->i].x = xc - x;
+	den->mas[150 - den->i].y = yc - y;
+	den->mas[den->i + 151].x = xc + x;
+	den->mas[den->i + 151].y = yc - y;
+	den->mas[300 - den->i].x = xc + y;
+	den->mas[300 - den->i].y = yc - x;
+	den->mas2[den->i].x = xc-y;
+	den->mas2[den->i].y = yc+x;
+	den->mas2[150 - den->i].x = xc-x;
+	den->mas2[150 - den->i].y = yc+y;
+	den->mas2[den->i + 150].x = xc+x;
+	den->mas2[den->i + 150].y = yc+y;
+	den->mas2[300 - den->i].x = xc+y;
+	den->mas2[300 - den->i].y = yc+x;
+	den->i += 1;
+
+}
+
+void circle(t_hud *den, int xc, int yc)
+{
+	den->koord = 0;
+	den->i = 0;
+	int	r;
+
+	r = den->rad;
+    int x = 0, y = r; 
+    int d = 3 - 2 * r; 
+    drawCircle(den, xc, yc, x, y); 
+    while (y >= x) 
+    { 
+        x++; 
+        if (d > 0) 
+        { 
+            y--;  
+            d = d + 4 * (x - y) + 10; 
+        } 
+        else
+            d = d + 4 * x + 6; 
+        drawCircle(den, xc, yc, x, y);  
+    }
+}
+
+
+void	load_image_foot(t_hud *den, t_sdl *iw)
+{
+	den->rect.x = WINDOW_W - 288;//412;
+	den->rect.y = WINDOW_H - 218;
+	den->rect.h = 20;
+	den->rect.w = 20;
+	SDL_BlitSurface(den->enot, NULL, iw->sur, &den->rect);
+}
+
+void	make_health(t_hud *den, t_sdl *iw)
+{
+	int		i;
+	t_col	vec;	
+
+	load_image_foot(den, iw);
+	den->color = 0xAA0000;
+	i = 0;
+	while (i < (3 * iw->p.health))
+	{
+		vec.x1 = den->mas[i].x;
+		vec.x2 = den->mas[i].x + 30;
+		vec.y1 = den->mas[i].y;
+		vec.y2 = den->mas[i].y;
+		ft_line(den, &vec, iw);
+		i++;
+	}
+	i = 0;
+	den->color = 0x0000AA;
+	while (i < (3 * den->shell))
+	{
+		vec.x1 = den->mas2[i].x;
+		vec.x2 = den->mas2[i].x + 30;
+		vec.y1 = den->mas2[i].y;
+		vec.y2 = den->mas2[i].y;
+		ft_line(den, &vec, iw);
+		i++;
+	}
+}
+
+//////////////////////////////////////////////////////////////////
+
 void	update(t_sdl *iw)
 {
 	SDL_FillRect(iw->sur, &iw->winrect, 0x000000);
 	draw(iw);
 	draw_crosshair(iw);
 	draw_some_info(iw);
+	if (iw->v.game_mode)
+		make_health(&iw->hud, iw);
 	draw_selected_tex(iw);
 	draw_selected_sprite(iw);
 	SDL_UpdateWindowSurface(iw->win);
@@ -1501,7 +1662,7 @@ void	mouse_wheel(SDL_Event *e, t_sdl *iw)
 			iw->v.picture_changing->tw += 30;
 		calculate_picture(iw, iw->v.wall_picture_changing, iw->v.picture_changing);
 	}
-	else if (iw->v.mouse_mode == 1 && iw->v.sprite_editing && iw->v.look_sprite != 0)
+	else if (iw->v.mouse_mode == 1 && iw->v.sprite_editing && !iw->v.game_mode && iw->v.look_sprite != 0)
 	{
 		if (e->wheel.y < 0)
 			iw->v.look_sprite->scale *= 1.1f;
@@ -1879,74 +2040,16 @@ void	check_walls_collisions(t_sdl *iw)
 	}
 }
 
-void	clear_visited_sectors(t_sdl *iw)
-{
-	int		sector;
+// void	clear_visited_sectors(t_sdl *iw)
+// {
+// 	int		sector;
 
-	sector = -1;
-	while (++sector < iw->v.sc)
-		iw->sectors[sector].visited = 0;
-}
+// 	sector = -1;
+// 	while (++sector < iw->v.sc)
+// 		iw->sectors[sector].visited = 0;
+// }
 
 // ENEMIES FUNCTIONS /////////////////////////////////////////////////////////////
-
-// HARD TO OPTIMIZE, NEED SOME BRAINSTORM
-int		enemy_sees_player01(t_sdl *iw, int sx, int sy, int sector)
-{
-	float	k1;
-	float	k2;
-	float	a;
-	float	b;
-	float	c;
-	int		wall;
-
-	iw->sectors[sector].visited = 1;
-	a = (float)(iw->p.y - sy);
-	b = (float)(sx - iw->p.x);
-	c = (float)(iw->p.x * sy - sx * iw->p.y);
-	// just walls
-	wall = iw->sectors[sector].sw - 1;
-	while (++wall < iw->sectors[sector].sw + iw->sectors[sector].nw)
-	{
-		if (iw->walls[wall].nextsector != -1)
-			continue;
-		
-		k1 = iw->walls[wall].l.a * (float)iw->p.x + iw->walls[wall].l.b * (float)iw->p.y + iw->walls[wall].l.c;
-		k2 = iw->walls[wall].l.a * (float)sx + iw->walls[wall].l.b * (float)sy + iw->walls[wall].l.c;
-		if ((k1 > 0.0f && k2 < 0.0f) || (k1 < 0.0f && k2 > 0.0f))
-		{
-			k1 = a * (float)iw->walls[wall].x + b * (float)iw->walls[wall].y + c;
-			k2 = a * (float)iw->walls[wall].next->x + b * (float)iw->walls[wall].next->y + c;
-			if ((k1 > 0.0f && k2 < 0.0f) || (k1 < 0.0f && k2 > 0.0f))
-				return (0);
-		}
-	}
-	// portals
-	wall = iw->sectors[sector].sw - 1;
-	while (++wall < iw->sectors[sector].sw + iw->sectors[sector].nw)
-	{
-		if (iw->walls[wall].nextsector == -1)
-			continue;
-		if (iw->sectors[iw->walls[wall].nextsector].visited)
-			continue;
-		/*k1 = a * (float)iw->walls[wall].x + b * (float)iw->walls[wall].y + c;
-		k2 = a * (float)iw->walls[wall].next->x + b * (float)iw->walls[wall].next->y + c;*/
-		//k2 = iw->walls[wall].l.a * (float)sx + iw->walls[wall].l.b * (float)sy + iw->walls[wall].l.c;
-		k1 = iw->walls[wall].l.a * (float)iw->p.x + iw->walls[wall].l.b * (float)iw->p.y + iw->walls[wall].l.c;
-		k2 = iw->walls[wall].l.a * (float)sx + iw->walls[wall].l.b * (float)sy + iw->walls[wall].l.c;
-		if ((k1 > 0.0f && k2 < 0.0f) || (k1 < 0.0f && k2 > 0.0f))
-		{
-			k1 = iw->walls[wall].l.a * (float)iw->p.x + iw->walls[wall].l.b * (float)iw->p.y + iw->walls[wall].l.c;
-			k2 = iw->walls[wall].l.a * (float)sx + iw->walls[wall].l.b * (float)sy + iw->walls[wall].l.c;
-			if ((k1 > 0.0f && k2 < 0.0f) || (k1 < 0.0f && k2 > 0.0f))
-				if (!enemy_sees_player01(iw, sx + iw->walls[iw->walls[wall].nextsector_wall].x -
-					iw->walls[wall].next->x, sy + iw->walls[iw->walls[wall].nextsector_wall].y -
-					iw->walls[wall].next->y, iw->walls[wall].nextsector))
-					return (0);
-		}
-	}
-	return (1);
-}
 
 int		esp_check_walls(t_sdl *iw, t_enemy_sees_player *esp)
 {
@@ -2017,6 +2120,7 @@ int		enemy_sees_player(t_sdl *iw, t_sprite *s)
 		esp.c = (float)(esp.px * esp.ey - esp.ex * esp.py);
 		if (!esp_check_walls(iw, &esp))
 			return (-1);
+		s->e.vis_esp = esp;
 		return ((int)sqrtf(powf(esp.px - esp.ex, 2.0f) + powf(esp.py - esp.ey, 2.0f)));
 	}
 	// if (!iw->ways[s->num_sec][iw->d.cs])
@@ -2046,23 +2150,131 @@ int		enemy_sees_player(t_sdl *iw, t_sprite *s)
 			esp.b = (float)(esp.ex - esp.px);
 			esp.c = (float)(esp.px * esp.ey - esp.ex * esp.py);
 			if (esp_check_walls(iw, &esp))
+			{
+				s->e.vis_esp = esp;
 				return ((int)sqrtf(powf(esp.px - esp.ex, 2.0f) + powf(esp.py - esp.ey, 2.0f)));
+			}
 		}
 		ways = ways->next;
 	}
 	return (-1);
 }
 
+int		move_enemy_in_portal(t_sdl *iw, t_sprite *s, t_intpoint2d *vect)
+{
+	int		wall;
+	float	k1;
+	float	k2;
+
+	wall = iw->sectors[s->num_sec].sw - 1;
+	while (++wall < iw->sectors[s->num_sec].sw + iw->sectors[s->num_sec].nw)
+	{
+		if (iw->walls[wall].nextsector == -1 || iw->walls[wall].glass != -1)
+			continue;
+		k1 = iw->walls[wall].l.a * s->x + iw->walls[wall].l.b * s->y + iw->walls[wall].l.c;
+		k2 = iw->walls[wall].l.a * (s->x + vect->x) + iw->walls[wall].l.b * (s->y + vect->y) + iw->walls[wall].l.c;
+		if ((k1 < 0.0f && k2 > 0.0f) || (k1 > 0.0f && k2 < 0.0f))
+		{
+			s->e.vis_esp.a = (float)vect->y;
+			s->e.vis_esp.b = (float)(-vect->x);
+			s->e.vis_esp.c = (float)((s->x + vect->x) * s->y - s->x * (s->y + vect->y));
+			k1 = s->e.vis_esp.a * iw->walls[wall].x + s->e.vis_esp.b * iw->walls[wall].y + s->e.vis_esp.c;
+			k2 = s->e.vis_esp.a * iw->walls[wall].next->x + s->e.vis_esp.b * iw->walls[wall].next->y + s->e.vis_esp.c;
+			if ((k1 < 0.0f && k2 > 0.0f) || (k1 > 0.0f && k2 < 0.0f))
+			{
+				s->x += vect->x + iw->walls[iw->walls[wall].nextsector_wall].x - iw->walls[wall].next->x;
+				s->y += vect->y + iw->walls[iw->walls[wall].nextsector_wall].y - iw->walls[wall].next->y;
+				s->num_sec = iw->walls[wall].nextsector;
+				s->e.vis_esp.ex += iw->walls[iw->walls[wall].nextsector_wall].x - iw->walls[wall].next->x;
+				s->e.vis_esp.ey += iw->walls[iw->walls[wall].nextsector_wall].y - iw->walls[wall].next->y;
+				s->e.vis_esp.px += iw->walls[iw->walls[wall].nextsector_wall].x - iw->walls[wall].next->x;
+				s->e.vis_esp.py += iw->walls[iw->walls[wall].nextsector_wall].y - iw->walls[wall].next->y;
+				return (1);
+			}
+		}
+	}
+	return (0);
+}
+
+int		move_enemy(t_sdl *iw, t_sprite *s)
+{
+	t_point2d		vect_norm;
+	t_intpoint2d	vect;
+	float			len;
+	clock_t			t;
+
+	vect_norm.x = s->e.vis_esp.px - s->e.vis_esp.ex;
+	vect_norm.y = s->e.vis_esp.py - s->e.vis_esp.ey;
+	len = sqrtf(powf(vect_norm.x, 2.0f) + powf(vect_norm.y, 2.0f));
+	vect_norm.x /= len;
+	vect_norm.y /= len;
+	t = clock();
+	vect.x = vect_norm.x * (float)(t - s->e.prev_update_time) / (float)CLKS_P_S * 1000.0f;
+	vect.y = vect_norm.y * (float)(t - s->e.prev_update_time) / (float)CLKS_P_S * 1000.0f;
+	if (in_sec_xy(iw, s->num_sec, s->x + vect.x, s->y + vect.y))
+	{
+		s->x += vect.x;
+		s->y += vect.y;
+		return (1);
+	}
+	return (move_enemy_in_portal(iw, s, &vect));
+}
+
+void	sprite_physics(t_sdl *iw, t_sprite *s)
+{
+	if (s->fall_time != 1)
+	{
+		
+	}
+}
+
 void	enemy_intelligence0(t_sdl *iw, t_sprite *s)
 {
 	int		i;
+
 	if (s->e.status == 0)
 	{
-		clear_visited_sectors(iw);
+		if (clock() - s->e.previous_picture_change > CLKS_P_S / 3)
+		{
+			s->e.previous_picture_change = clock();
+			if (s->t_numb == 0)
+				s->t_numb = 2;
+			else
+				s->t_numb = 0;
+			s->t = iw->t_enemies[s->t_numb];
+			s->t_kernel = &iw->k.m_t_enemies[s->t_numb];
+		}
 		if ((i = enemy_sees_player(iw, s)) != -1)
-			printf("I SEE YOU! %d\n", i);
+		{
+			if (i < 10000 && i > 800)
+				move_enemy(iw, s);
+			else if (i <= 800)
+				s->e.status = 3;
+		}
+		else if (s->e.vis_esp.curr_sector != -1)
+		{
+			i = (int)sqrtf(powf(s->x - s->e.vis_esp.px, 2.0f) + powf(s->y - s->e.vis_esp.py, 2.0f));
+			if (i > 10)
+				move_enemy(iw, s);
+		}
+	}
+	else if (s->e.status == 3 && clock() - s->e.previous_picture_change > CLKS_P_S / 5)
+	{
+		s->e.previous_picture_change = clock();
+		if (s->t_numb != 3 && s->t_numb != 4)
+			s->t_numb = 3;
+		else if (s->t_numb == 3)
+		{
+			s->t_numb = 4;
+			iw->p.health -= 3;
+		}
 		else
-			printf("WHERE are YOU?\n");
+		{
+			s->t_numb = 0;
+			s->e.status = 0;
+		}
+		s->t = iw->t_enemies[s->t_numb];
+		s->t_kernel = &iw->k.m_t_enemies[s->t_numb];
 	}
 }
 
@@ -2077,6 +2289,7 @@ void	check_enemies(t_sdl *iw)
 		{
 			if (tmp->e.enemy_numb == 0)
 				enemy_intelligence0(iw, tmp);
+			tmp->e.prev_update_time = clock();
 		}
 		tmp = tmp->next;
 	}
@@ -4664,7 +4877,13 @@ void add_sprite(t_sdl *iw, int x, int y, int z, int t, int num, int type, float 
 	tmp->next = *iw->sprite;
 	tmp->type = type;
 	tmp->scale = scale;
+	tmp->e.vis_esp.curr_sector = -1;
+	tmp->e.previous_picture_change = 1;
+	tmp->e.prev_update_time = 1;
+	tmp->fall_time = 1;
+	//tmp->e.previous_move_to_player_time = 1;
 	(*iw->sprite) = tmp;
+	tmp->t_numb = t;
 	if (type == 0)
 	{
 		tmp->t = iw->t_decor[t];
@@ -4765,6 +4984,11 @@ void	get_def(t_sdl *iw)
 	iw->v.fly_mode = 0;
 	iw->v.fly_down = -1;
 	iw->v.fly_up = -1;
+
+	iw->hud.rad = 105;
+	iw->p.health = 100;
+	iw->hud.shell = 100;
+	iw->hud.enot = SDL_LoadBMP("weapons/enot.bmp");
 }
 
 void	get_kernel_mem(t_sdl *iw)
@@ -4927,6 +5151,7 @@ void	add_picture1(t_sdl *iw)
 	iw->walls[20].p = tmp;
 	calculate_picture(iw, &iw->walls[20], tmp);
 }
+
 //	GET_SECTOR_WAYS_FUNCTIONS //////////////////////////////////////////////////////////
 
 void	free_way(t_sector_ways **way)
@@ -5103,6 +5328,7 @@ int		main(void)
 	//SDL_SetWindowFullscreen(iw.win, SDL_WINDOW_FULLSCREEN_DESKTOP);
 	//iw.ren = SDL_CreateRenderer(iw.win, -1, 0);
 	iw.sur = SDL_GetWindowSurface(iw.win);
+	circle(&iw.hud, FOOTX, FOOTY);
 	draw_tex_to_select(&iw);
 	draw_decor_tex_to_select(&iw);
 	draw_menu(&iw);

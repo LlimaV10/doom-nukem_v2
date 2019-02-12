@@ -114,6 +114,7 @@ typedef struct	s_player
 	float	rot;
 	int		introt;
 	int		rotup;
+	int		health;
 }				t_player;
 
 typedef struct	s_point2d
@@ -409,6 +410,8 @@ typedef struct	s_enemy
 	clock_t	prev_update_time;
 	int		start_x;
 	int		start_y;
+	t_enemy_sees_player	vis_esp;
+	clock_t	previous_picture_change;
 }				t_enemy;
 
 typedef struct	s_sprite
@@ -419,6 +422,7 @@ typedef struct	s_sprite
 	cl_mem		*t_kernel;
 	int		y;
 	int		z;
+	clock_t	fall_time;
 	int		x_s;
 	float	plen;
 	float	pplen;
@@ -497,6 +501,52 @@ typedef struct	s_wall_animation
 	t_picture			*trigger;
 	struct	s_wall_animation	*next;
 }				t_wall_animation;
+
+//////////////////////////////////////////////////////////////////////////////
+typedef struct		s_col
+{
+	int				x1;
+	int				y1;
+	int				x2;
+	int				y2;
+	int				xmod;
+	int				ymod;
+	int				sect;
+}					t_col;
+
+
+	typedef struct	s_xy
+{
+	int				x;
+	int				y;
+}					t_xy;
+
+typedef struct		s_brz
+{
+	int				dx;
+	int				dy;
+	int				lengthx;
+	int				lengthy;
+	int				length;
+	int				x;
+	int				y;
+	int				d;
+	int				color;
+}					t_brz;
+
+typedef struct		s_hud
+{
+	SDL_Surface		*enot;
+	SDL_Rect		rect;
+	int				color;
+	int				shell;
+	int				i;
+	t_xy			mas[300];
+	t_xy			mas2[300];
+	int				rad;
+	int				koord;
+}					t_hud;
+/////////////////////////////////////////////////
 
 typedef struct	s_draw
 {
@@ -694,6 +744,8 @@ typedef struct	s_sdl
 	t_wall_animation	*wall_animations;
 	t_save_wall			**vw_save;
 	t_sector_ways		***ways;
+
+	t_hud		hud;
 }				t_sdl;
 
 #endif
