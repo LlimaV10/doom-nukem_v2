@@ -710,6 +710,20 @@ typedef struct	s_get_sectors_ways
 	t_sector_ways	*ways;
 }				t_get_sectors_ways;
 
+//typedef struct	s_draw_gun
+//{
+//	SDL_Surface	*(t)[];
+//}				t_draw_gun;
+
+typedef struct	s_packaging_texture
+{
+	void	*pixels;
+	int		w;
+	int		h;
+	int		pitch;
+	int		bpp;
+}				t_packaging_texture;
+
 typedef struct	s_sdl
 {
 	SDL_Window	*win;
@@ -725,6 +739,7 @@ typedef struct	s_sdl
 	t_draw		d;
 	// textures
 	SDL_Surface *(t)[TEXTURES_COUNT];
+	t_packaging_texture	*(t2)[TEXTURES_COUNT];
 	// textures compression
 	float		tsz[TEXTURES_COUNT];
 	t_kernel	k;

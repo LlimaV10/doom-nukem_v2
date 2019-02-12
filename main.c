@@ -849,7 +849,7 @@ void	change_wall_animation_status(t_sdl *iw, t_picture *p)
 	}
 }
 
-//////////////////////////////////////////////////////////////////
+// HUD ////////////////////////////////////////////////////////////////
 
 void	ft_line_x(t_sdl *iw, t_brz *tip, int x1, int y1)
 {
@@ -1008,12 +1008,18 @@ void	make_health(t_hud *den, t_sdl *iw)
 
 //////////////////////////////////////////////////////////////////
 
+void	draw_gun(t_sdl *iw)
+{
+
+}
+
 void	update(t_sdl *iw)
 {
 	SDL_FillRect(iw->sur, &iw->winrect, 0x000000);
 	draw(iw);
 	draw_crosshair(iw);
 	draw_some_info(iw);
+
 	if (iw->v.game_mode)
 		make_health(&iw->hud, iw);
 	draw_selected_tex(iw);
@@ -2040,15 +2046,6 @@ void	check_walls_collisions(t_sdl *iw)
 	}
 }
 
-// void	clear_visited_sectors(t_sdl *iw)
-// {
-// 	int		sector;
-
-// 	sector = -1;
-// 	while (++sector < iw->v.sc)
-// 		iw->sectors[sector].visited = 0;
-// }
-
 // ENEMIES FUNCTIONS /////////////////////////////////////////////////////////////
 
 int		esp_check_walls(t_sdl *iw, t_enemy_sees_player *esp)
@@ -2222,10 +2219,22 @@ int		move_enemy(t_sdl *iw, t_sprite *s)
 
 void	sprite_physics(t_sdl *iw, t_sprite *s)
 {
+	int		tmp;
+
 	if (s->fall_time != 1)
+		s->z -= (int)(iw->v.accel * ((float)(clock() - s->fall_time) /
+			(float)CLKS_P_S) * 50.0f);
+	tmp = get_ceil_z_sec(iw, s->x, s->y, s->num_sec);
+	if (s->z + SPRITE_HEIGHT > tmp)
+		s->z = tmp - SPRITE_HEIGHT;
+	tmp = get_floor_z_sec(iw, s->x, s->y, s->num_sec);
+	if (s->z < tmp)
 	{
-		
+		s->z = tmp;
+		s->fall_time = 1;
 	}
+	else
+		s->fall_time = clock() - CLKS_P_S / 10;
 }
 
 void	enemy_intelligence0(t_sdl *iw, t_sprite *s)
@@ -2276,6 +2285,7 @@ void	enemy_intelligence0(t_sdl *iw, t_sprite *s)
 		s->t = iw->t_enemies[s->t_numb];
 		s->t_kernel = &iw->k.m_t_enemies[s->t_numb];
 	}
+	sprite_physics(iw, s);
 }
 
 void	check_enemies(t_sdl *iw)
@@ -2295,7 +2305,7 @@ void	check_enemies(t_sdl *iw)
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////////
+//\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 void	loop(t_sdl *iw)
 {
@@ -2307,7 +2317,7 @@ void	loop(t_sdl *iw)
 	if (iw->v.rot_right != 1)
 	{
 		iw->p.rot += (ROTATION_SPEED_PER_HALF_SEC * (double)(clock() - iw->v.rot_right)
-			/ (double)CLKS_P_S * 2.0f) * G1;
+			/ (float)CLKS_P_S * 2.0f) * G1;
 		while (iw->p.rot >= G360)
 			iw->p.rot -= G360;
 		iw->p.introt = (int)(iw->p.rot / G1);
@@ -2316,7 +2326,7 @@ void	loop(t_sdl *iw)
 	if (iw->v.rot_left != 1)
 	{
 		iw->p.rot -= (ROTATION_SPEED_PER_HALF_SEC * (double)(clock() - iw->v.rot_left)
-			/ (double)CLKS_P_S * 2.0f) * G1;
+			/ (float)CLKS_P_S * 2.0f) * G1;
 		while (iw->p.rot < 0.0f)
 			iw->p.rot += G360;
 		iw->p.introt = (int)(iw->p.rot / G1);
@@ -2365,7 +2375,7 @@ void	loop(t_sdl *iw)
 		}
 		else if (iw->v.jump_time != 1)
 		{
-			jsz = (double)(clock() - iw->v.jump_time) / (double)CLKS_P_S * (double)JUMP_HEIGHT *
+			jsz = (float)(clock() - iw->v.jump_time) / (float)CLKS_P_S * (float)JUMP_HEIGHT *
 				iw->v.accel / 10.0f;
 			if ((int)jsz >= iw->v.jump)
 			{
@@ -2421,7 +2431,7 @@ void	loop(t_sdl *iw)
 	if (iw->v.game_mode)
 		check_enemies(iw);
 	update(iw);
-	iw->v.fps = (double)CLKS_P_S / (double)(clock() - iw->loop_update_time);
+	iw->v.fps = (int)((float)CLKS_P_S / (float)(clock() - iw->loop_update_time));
 	iw->loop_update_time = clock();
 }
 
@@ -2679,6 +2689,24 @@ int		get_ceil_z(t_sdl *iw, int x, int y)
 	else
 		return ((iw->sectors[iw->d.cs].cl.n->a * x + iw->sectors[iw->d.cs].cl.n->b *
 			y + iw->sectors[iw->d.cs].cl.n->d) / (-iw->sectors[iw->d.cs].cl.n->c));
+}
+
+int		get_floor_z_sec(t_sdl *iw, int x, int y, int sector)
+{
+	if (iw->sectors[sector].fr.n == 0)
+		return (iw->sectors[sector].fr.z);
+	else
+		return ((iw->sectors[sector].fr.n->a * x + iw->sectors[sector].fr.n->b *
+			y + iw->sectors[sector].fr.n->d) / (-iw->sectors[sector].fr.n->c));
+}
+
+int		get_ceil_z_sec(t_sdl *iw, int x, int y, int sector)
+{
+	if (iw->sectors[sector].cl.n == 0)
+		return (iw->sectors[sector].cl.z);
+	else
+		return ((iw->sectors[sector].cl.n->a * x + iw->sectors[sector].cl.n->b *
+			y + iw->sectors[sector].cl.n->d) / (-iw->sectors[sector].cl.n->c));
 }
 
 float	get_vectors_angle(float x1, float y1, float x2, float y2)
@@ -2990,7 +3018,7 @@ void	draw_between_sectors_bot_tex(t_sdl *iw, t_save_wall *left, t_save_wall *rig
 		}
 		iw->d.bottom[left->x + j] = tmp[j];
 		d.ang += d.dang;
-		d.left_len = sinf(d.ang) * d.lenpl / sin(d.sing - d.ang);
+		d.left_len = sinf(d.ang) * d.lenpl / sinf(d.sing - d.ang);
 		d.tx = (left->olen + d.left_len) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
 		while (d.tx > (float)iw->t[left->wall->t]->w)
 			d.tx -= (float)iw->t[left->wall->t]->w;
@@ -3057,7 +3085,7 @@ void	draw_between_sectors_top_tex(t_sdl *iw, t_save_wall *left, t_save_wall *rig
 		}
 		iw->d.top[left->x + j] = tmp[j];
 		d.ang += d.dang;
-		d.left_len = sinf(d.ang) * d.lenpl / sin(d.sing - d.ang);
+		d.left_len = sinf(d.ang) * d.lenpl / sinf(d.sing - d.ang);
 		d.tx = (left->olen + d.left_len) * (float)iw->t[left->wall->t]->w * iw->tsz[left->wall->t] / 1000.0f;
 		while (d.tx > (float)iw->t[left->wall->t]->w)
 			d.tx -= (float)iw->t[left->wall->t]->w;
@@ -3112,7 +3140,7 @@ void	draw_floor_ceil_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int l
 				d.sky_x += d.dx;
 			continue;
 		}
-		d.left_len = sinf(d.ang) * d.lenpl / sin(d.sing - d.ang);
+		d.left_len = sinf(d.ang) * d.lenpl / sinf(d.sing - d.ang);
 		d.r.x = (float)left->p.x + d.rv.x * d.left_len;
 		d.r.y = (float)left->p.y + d.rv.y * d.left_len;
 		d.frcoef = get_ceil_z(iw, d.r.x, d.r.y) - get_floor_z(iw, d.r.x, d.r.y);
@@ -3243,7 +3271,7 @@ void	draw_inclined_floor_ceil_tex(t_sdl *iw, t_save_wall *left, t_save_wall *rig
 				d.sky_x += d.dx;
 			continue;
 		}
-		d.left_len = sinf(d.ang) * d.lenpl / sin(d.sing - d.ang);
+		d.left_len = sinf(d.ang) * d.lenpl / sinf(d.sing - d.ang);
 		d.r.x = (float)left->p.x + d.rv.x * d.left_len;
 		d.r.y = (float)left->p.y + d.rv.y * d.left_len;
 		d.frcoef = get_ceil_z(iw, d.r.x, d.r.y) - get_floor_z(iw, d.r.x, d.r.y);
@@ -3368,7 +3396,7 @@ void	draw_wall_floor_ceil_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, 
 				d.sky_x += d.dx;*/
 			continue;
 		}
-		d.left_len = sinf(d.ang) * d.lenpl / sin(d.sing - d.ang);
+		d.left_len = sinf(d.ang) * d.lenpl / sinf(d.sing - d.ang);
 		d.r.x = (float)left->p.x + d.rv.x * d.left_len;
 		d.r.y = (float)left->p.y + d.rv.y * d.left_len;
 
@@ -3496,7 +3524,7 @@ void	draw_inclined_wall_floor_ceil_tex(t_sdl *iw, t_save_wall *left, t_save_wall
 			d.ang += d.dang;
 			continue;
 		}
-		d.left_len = sinf(d.ang) * d.lenpl / sin(d.sing - d.ang);
+		d.left_len = sinf(d.ang) * d.lenpl / sinf(d.sing - d.ang);
 		d.r.x = (float)left->p.x + d.rv.x * d.left_len;
 		d.r.y = (float)left->p.y + d.rv.y * d.left_len;
 		d.frcoef = get_ceil_z(iw, d.r.x, d.r.y) - get_floor_z(iw, d.r.x, d.r.y);
@@ -3811,7 +3839,7 @@ void	draw_glass_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 			d.ang += d.dang;
 			continue;
 		}
-		d.left_len = sinf(d.ang) * d.lenpl / sin(d.sing - d.ang);
+		d.left_len = sinf(d.ang) * d.lenpl / sinf(d.sing - d.ang);
 		d.tx = (left->olen + d.left_len) * (float)iw->t[left->wall->glass]->w * iw->tsz[left->wall->glass] / 1000.0f;
 		d.zu = (float)d.nleft_zu + d.left_len * d.zudiff;
 		d.zd = (float)d.nleft_zd + d.left_len * d.zddiff;
@@ -4379,7 +4407,7 @@ int		get_min(int i1, int i2)
 	else
 		return (i2);
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+// SPRITES DRAW /////////////////////////////////////////////////////////////////////////////////////////////////////
 void	draw_sprite(t_sdl *iw, t_sprite *sprite)
 {
 	int		i;
@@ -4455,14 +4483,14 @@ void	draw_sprites(t_sdl *iw)
 	}
 }
 
-int		find_point(t_save_wall_pairs *tmp,t_sprite *tmp1)
+int		find_point(t_save_wall_pairs *tmp, t_sprite *tmp1)
 {
-	int i;
+	int		i;
 	int ax = tmp->right->p.x-tmp->left->p.x;
 	int ay = tmp->right->p.y-tmp->left->p.y;
 	int bx = tmp1->x - tmp->left->p.x;
 	int by = tmp1->y - tmp->left->p.y;
-	i = ax*by - ay*bx;
+	i = ax * by - ay * bx;
 	if (i > 0)
 		return (0);
 	else 
@@ -4521,9 +4549,9 @@ void	get_sprites_top_bottom(t_sdl *iw, t_save_wall_pairs	*tmp)
 			(WINDOW_W + 1) * sizeof(int), iw->d.bottom, 0, NULL, NULL);
 	}
 	tmp1 = *iw->sprite;
-	while(tmp1 != 0)
+	while (tmp1 != 0)
 	{
-		if (!iw->sectors[tmp1->num_sec].visited || !tmp1->draweble)
+		if (!iw->sectors[tmp1->num_sec].visited || !tmp1->draweble || iw->d.cs != tmp1->num_sec)
 		{
 			tmp1 = tmp1->next;
 			continue;
@@ -4531,7 +4559,7 @@ void	get_sprites_top_bottom(t_sdl *iw, t_save_wall_pairs	*tmp)
 		if ((tmp1->sx >= tmp->left->x && tmp1->sx <= tmp->right->x)
 			|| (tmp1->ex >= tmp->left->x && tmp1->ex<= tmp->right->x)
 			|| (tmp1->sx <= tmp->left->x && tmp1->ex >= tmp->right->x))
-			if(find_point(tmp,tmp1) == 1)
+			if (find_point(tmp, tmp1) == 1)
 			{
 				j = get_max(tmp1->sx, get_max(tmp->left->x, iw->d.screen_left)) - 1;
 				jend = get_min(tmp1->ex, get_min(tmp->right->x, iw->d.screen_right));
@@ -4604,7 +4632,7 @@ void	sort_sprites(t_sdl *iw)
 	*iw->sprite = head.next;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+//\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 void	save_walls(t_sdl *iw)
 {
@@ -4904,8 +4932,6 @@ void add_sprite(t_sdl *iw, int x, int y, int z, int t, int num, int type, float 
 
 void	get_def(t_sdl *iw)
 {
-	iw->v.game_mode = 0;
-
 	iw->p.x = 511;
 	iw->p.y = 1684; //-2360
 	iw->p.z = 100;
@@ -5293,18 +5319,20 @@ void	get_sectors_ways(t_sdl *iw)
 	}
 	get_sectors_ways2(iw);
 }
-////////////////////////////////////////////////////////////////////////////////////////
+//\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 int		main(void)
 {
 	t_sdl	iw;
 
+	iw.v.game_mode = 1;
 	get_def(&iw);
 	read_textures(&iw);
 	read_sprites_textures(&iw);
 	get_kernel_mem(&iw);
 	
-	add_sprite(&iw,7240,2640,200, 0, 1, 0, 2.0f);
+	add_sprite(&iw, 4700, -900, 0, 0, 0, 0, 2.0f);
+	//add_sprite(&iw,7240,2640,200, 0, 1, 0, 2.0f);
 	(*iw.sprite)->type = 2;
 	(*iw.sprite)->e.enemy_numb = 0;
 	(*iw.sprite)->e.health = 10;

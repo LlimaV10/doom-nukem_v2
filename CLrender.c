@@ -892,7 +892,7 @@ void	draw_sprite_kernel(t_sdl *iw, t_sprite *sprite)
 	sprite->spriteheight = 2 * sprite->spritewidth * sprite->t->h / sprite->t->w;
 	if (abs(sprite->z - iw->p.z) > 1500)
 		sprite->spriteheight = (float)sprite->spriteheight * 1.0f /
-		(float)(abs(sprite->z - iw->p.z) / 1500.0f);
+		((float)abs(sprite->z - iw->p.z) / 1500.0f);
 	sprite->ey = WINDOW_H * (iw->p.z + (int)sprite->pplen / 2 - sprite->z) / (int)sprite->pplen + iw->p.rotup;
 	sprite->sy = sprite->ey - sprite->spriteheight;
 
