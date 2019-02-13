@@ -782,7 +782,7 @@ int		draw_picture_kernel(t_sdl *iw, t_picture *pic)
 	cint[1] = iw->t[pic->t]->h;
 	cint[4] = iw->t[pic->t]->w;
 	cint[5] = WINDOW_W;
-	cint[6] = iw->t[pic->t]->format->BytesPerPixel;
+	cint[6] = iw->t[pic->t]->bpp;
 	cint[7] = iw->t[pic->t]->pitch;
 
 	d.lang = get_vectors_angle(iw->d.left_point.x - (float)iw->p.x, iw->d.left_point.y - (float)iw->p.y,
@@ -909,7 +909,7 @@ void	draw_sprite_kernel(t_sdl *iw, t_sprite *sprite)
 	cint[6] = sprite->spriteheight;
 	cint[7] = sprite->t->h;
 	cint[8] = WINDOW_W;
-	cint[9] = sprite->t->format->BytesPerPixel;
+	cint[9] = sprite->t->bpp;
 	cint[10] = sprite->t->pitch;
 	if (sprite->sx < 0)
 		cint[11] = -sprite->sx;

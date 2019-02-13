@@ -3,6 +3,15 @@
 
 # include "defines.h"
 
+typedef struct	s_packaging_texture
+{
+	void	*pixels;
+	int		w;
+	int		h;
+	int		pitch;
+	int		bpp;
+}				t_packaging_texture;
+
 typedef struct	s_line2d
 {
 	// Ax + By + C = 0. This is A
@@ -418,7 +427,7 @@ typedef struct	s_sprite
 {
 	int		x;
 	int		t_numb;
-	SDL_Surface	*t;
+	t_packaging_texture	*t;
 	cl_mem		*t_kernel;
 	int		y;
 	int		z;
@@ -715,15 +724,6 @@ typedef struct	s_get_sectors_ways
 //	SDL_Surface	*(t)[];
 //}				t_draw_gun;
 
-typedef struct	s_packaging_texture
-{
-	void	*pixels;
-	int		w;
-	int		h;
-	int		pitch;
-	int		bpp;
-}				t_packaging_texture;
-
 typedef struct	s_sdl
 {
 	SDL_Window	*win;
@@ -738,8 +738,8 @@ typedef struct	s_sdl
 	t_level		l;
 	t_draw		d;
 	// textures
-	SDL_Surface *(t)[TEXTURES_COUNT];
-	t_packaging_texture	*(t2)[TEXTURES_COUNT];
+	SDL_Surface *(t_sur)[TEXTURES_COUNT];
+	t_packaging_texture	*(t)[TEXTURES_COUNT];
 	// textures compression
 	float		tsz[TEXTURES_COUNT];
 	t_kernel	k;
@@ -751,9 +751,12 @@ typedef struct	s_sdl
 	t_sprite 	**sprite;
 	// Sprite textures
 	//SDL_Surface	*(st)[SPRITES_TEXTURES_COUNT];
-	SDL_Surface	*(t_decor)[DECOR_TEXTURES_COUNT];
-	SDL_Surface	*(t_enemies)[ENEMIES_TEXTURES_COUNT];
-	SDL_Surface	*(t_pickup)[PICK_UP_TEXTURES_COUNT];
+	SDL_Surface	*(t_decor_sur)[DECOR_TEXTURES_COUNT];
+	t_packaging_texture	*(t_decor)[DECOR_TEXTURES_COUNT];
+	SDL_Surface	*(t_enemies_sur)[ENEMIES_TEXTURES_COUNT];
+	t_packaging_texture	*(t_enemies)[ENEMIES_TEXTURES_COUNT];
+	SDL_Surface	*(t_pickup_sur)[PICK_UP_TEXTURES_COUNT];
+	t_packaging_texture	*(t_pickup)[PICK_UP_TEXTURES_COUNT];
 
 	t_sector_animation	*sector_animations;
 	t_wall_animation	*wall_animations;

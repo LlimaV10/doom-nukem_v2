@@ -20,14 +20,14 @@ int		get_light_color(int color, t_picture *light)
 		>> 8 << 8)) * 0.2f));
 }
 
-Uint32	get_pixel(SDL_Surface *sur, const int x, const int y)
+Uint32	get_pixel(t_packaging_texture *sur, const int x, const int y)
 {
 	uint8_t *v;
 	int		bpp;
 
 	if (x < 0 || x >= sur->w || y < 0 || y >= sur->h)
 		return (0);
-	bpp = sur->format->BytesPerPixel;
+	bpp = sur->bpp;
 	v = (uint8_t *)sur->pixels + y * sur->pitch + x * bpp;
 	// printf("bpp %d\n", bpp);
 	// if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
@@ -614,7 +614,7 @@ void	draw_menu(t_sdl *iw)
 	draw_text(iw, "Enemies", 335, WINDOW_H + 165);
 }
 
-void	ft_scaled_blit(SDL_Surface *tex, SDL_Surface *winsur, SDL_Rect *rect)
+void	ft_scaled_blit(t_packaging_texture *tex, SDL_Surface *winsur, SDL_Rect *rect)
 {
 	int		i;
 	int		j;
@@ -4809,47 +4809,47 @@ void	draw(t_sdl *iw)
 
 void	read_textures(t_sdl *iw)
 {
-	iw->t[0] = SDL_LoadBMP("textures/0.bmp");
+	iw->t_sur[0] = SDL_LoadBMP("textures/0.bmp");
 	iw->tsz[0] = 1.0f;
-	iw->t[1] = SDL_LoadBMP("textures/1.bmp");
+	iw->t_sur[1] = SDL_LoadBMP("textures/1.bmp");
 	iw->tsz[1] = 1.0f;
-	iw->t[2] = SDL_LoadBMP("textures/2.bmp");
+	iw->t_sur[2] = SDL_LoadBMP("textures/2.bmp");
 	iw->tsz[2] = 1.0f;
-	iw->t[3] = SDL_LoadBMP("textures/3.bmp");
+	iw->t_sur[3] = SDL_LoadBMP("textures/3.bmp");
 	iw->tsz[3] = 1.0f;
-	iw->t[4] = SDL_LoadBMP("textures/4.bmp");
+	iw->t_sur[4] = SDL_LoadBMP("textures/4.bmp");
 	iw->tsz[4] = 1.0f;
-	iw->t[5] = SDL_LoadBMP("textures/5.bmp");
+	iw->t_sur[5] = SDL_LoadBMP("textures/5.bmp");
 	iw->tsz[5] = 1.0f;
-	iw->t[6] = SDL_LoadBMP("textures/6.bmp");
+	iw->t_sur[6] = SDL_LoadBMP("textures/6.bmp");
 	iw->tsz[6] = 1.0f;
-	iw->t[7] = SDL_LoadBMP("textures/7.bmp");
+	iw->t_sur[7] = SDL_LoadBMP("textures/7.bmp");
 	iw->tsz[7] = 1.0f;
-	iw->t[8] = SDL_LoadBMP("textures/8.bmp");
+	iw->t_sur[8] = SDL_LoadBMP("textures/8.bmp");
 	iw->tsz[8] = 1.0f;
-	iw->t[9] = SDL_LoadBMP("textures/9.bmp");
+	iw->t_sur[9] = SDL_LoadBMP("textures/9.bmp");
 	iw->tsz[9] = 1.0f;
-	iw->t[10] = SDL_LoadBMP("textures/10.bmp");
+	iw->t_sur[10] = SDL_LoadBMP("textures/10.bmp");
 	iw->tsz[10] = 1.0f;
-	iw->t[11] = SDL_LoadBMP("textures/11.bmp");
+	iw->t_sur[11] = SDL_LoadBMP("textures/11.bmp");
 	iw->tsz[11] = 1.0f;
-	iw->t[12] = SDL_LoadBMP("textures/12.bmp");
+	iw->t_sur[12] = SDL_LoadBMP("textures/12.bmp");
 	iw->tsz[12] = 1.0f;
-	iw->t[13] = SDL_LoadBMP("textures/13.bmp");
+	iw->t_sur[13] = SDL_LoadBMP("textures/13.bmp");
 	iw->tsz[13] = 1.0f;
-	iw->t[14] = SDL_LoadBMP("textures/14.bmp");
+	iw->t_sur[14] = SDL_LoadBMP("textures/14.bmp");
 	iw->tsz[14] = 1.0f;
-	iw->t[15] = SDL_LoadBMP("textures/15.bmp");
+	iw->t_sur[15] = SDL_LoadBMP("textures/15.bmp");
 	iw->tsz[15] = 1.0f;
-	iw->t[16] = SDL_LoadBMP("textures/16.bmp");
+	iw->t_sur[16] = SDL_LoadBMP("textures/16.bmp");
 	iw->tsz[16] = 1.0f;
-	iw->t[17] = SDL_LoadBMP("textures/17.bmp");
+	iw->t_sur[17] = SDL_LoadBMP("textures/17.bmp");
 	iw->tsz[17] = 1.0f;
-	iw->t[18] = SDL_LoadBMP("textures/18.bmp");
+	iw->t_sur[18] = SDL_LoadBMP("textures/18.bmp");
 	iw->tsz[18] = 1.0f;
-	iw->t[19] = SDL_LoadBMP("textures/19.bmp");
+	iw->t_sur[19] = SDL_LoadBMP("textures/19.bmp");
 	iw->tsz[19] = 1.0f;
-	iw->t[20] = SDL_LoadBMP("textures/20.bmp");
+	iw->t_sur[20] = SDL_LoadBMP("textures/20.bmp");
 	iw->tsz[20] = 1.0f;
 	// iw->t[17] = SDL_LoadBMP("textures/17.bmp");
 	// iw->tsz[17] = 1.0f;
@@ -4862,34 +4862,34 @@ void	read_textures(t_sdl *iw)
 
 void	read_sprites_textures(t_sdl *iw)
 {
-	iw->t_decor[0] = SDL_LoadBMP("sprites/decorations/0.bmp");
+	iw->t_decor_sur[0] = SDL_LoadBMP("sprites/decorations/0.bmp");
 	/*iw->t_decor[1] = SDL_LoadBMP("sprites/decorations/1.bmp");
 	iw->t_decor[2] = SDL_LoadBMP("sprites/decorations/2.bmp");
 	iw->t_decor[3] = SDL_LoadBMP("sprites/decorations/3.bmp");*/
 
-	iw->t_enemies[0] = SDL_LoadBMP("sprites/enemies/0.bmp");
-	iw->t_enemies[1] = SDL_LoadBMP("sprites/enemies/1.bmp");
-	iw->t_enemies[2] = SDL_LoadBMP("sprites/enemies/2.bmp");
-	iw->t_enemies[3] = SDL_LoadBMP("sprites/enemies/3.bmp");
-	iw->t_enemies[4] = SDL_LoadBMP("sprites/enemies/4.bmp");
-	iw->t_enemies[5] = SDL_LoadBMP("sprites/enemies/5.bmp");
-	iw->t_enemies[6] = SDL_LoadBMP("sprites/enemies/6.bmp");
-	iw->t_enemies[7] = SDL_LoadBMP("sprites/enemies/7.bmp");
-	iw->t_enemies[8] = SDL_LoadBMP("sprites/enemies/8.bmp");
-	iw->t_enemies[9] = SDL_LoadBMP("sprites/enemies/9.bmp");
-	iw->t_enemies[10] = SDL_LoadBMP("sprites/enemies/10.bmp");
-	iw->t_enemies[11] = SDL_LoadBMP("sprites/enemies/11.bmp");
-	iw->t_enemies[12] = SDL_LoadBMP("sprites/enemies/12.bmp");
-	iw->t_enemies[13] = SDL_LoadBMP("sprites/enemies/13.bmp");
-	iw->t_enemies[14] = SDL_LoadBMP("sprites/enemies/14.bmp");
-	iw->t_enemies[15] = SDL_LoadBMP("sprites/enemies/15.bmp");
-	iw->t_enemies[16] = SDL_LoadBMP("sprites/enemies/16.bmp");
-	iw->t_enemies[17] = SDL_LoadBMP("sprites/enemies/17.bmp");
-	iw->t_enemies[18] = SDL_LoadBMP("sprites/enemies/18.bmp");
-	iw->t_enemies[19] = SDL_LoadBMP("sprites/enemies/19.bmp");
+	iw->t_enemies_sur[0] = SDL_LoadBMP("sprites/enemies/0.bmp");
+	iw->t_enemies_sur[1] = SDL_LoadBMP("sprites/enemies/1.bmp");
+	iw->t_enemies_sur[2] = SDL_LoadBMP("sprites/enemies/2.bmp");
+	iw->t_enemies_sur[3] = SDL_LoadBMP("sprites/enemies/3.bmp");
+	iw->t_enemies_sur[4] = SDL_LoadBMP("sprites/enemies/4.bmp");
+	iw->t_enemies_sur[5] = SDL_LoadBMP("sprites/enemies/5.bmp");
+	iw->t_enemies_sur[6] = SDL_LoadBMP("sprites/enemies/6.bmp");
+	iw->t_enemies_sur[7] = SDL_LoadBMP("sprites/enemies/7.bmp");
+	iw->t_enemies_sur[8] = SDL_LoadBMP("sprites/enemies/8.bmp");
+	iw->t_enemies_sur[9] = SDL_LoadBMP("sprites/enemies/9.bmp");
+	iw->t_enemies_sur[10] = SDL_LoadBMP("sprites/enemies/10.bmp");
+	iw->t_enemies_sur[11] = SDL_LoadBMP("sprites/enemies/11.bmp");
+	iw->t_enemies_sur[12] = SDL_LoadBMP("sprites/enemies/12.bmp");
+	iw->t_enemies_sur[13] = SDL_LoadBMP("sprites/enemies/13.bmp");
+	iw->t_enemies_sur[14] = SDL_LoadBMP("sprites/enemies/14.bmp");
+	iw->t_enemies_sur[15] = SDL_LoadBMP("sprites/enemies/15.bmp");
+	iw->t_enemies_sur[16] = SDL_LoadBMP("sprites/enemies/16.bmp");
+	iw->t_enemies_sur[17] = SDL_LoadBMP("sprites/enemies/17.bmp");
+	iw->t_enemies_sur[18] = SDL_LoadBMP("sprites/enemies/18.bmp");
+	iw->t_enemies_sur[19] = SDL_LoadBMP("sprites/enemies/19.bmp");
 
-	iw->t_pickup[0] = SDL_LoadBMP("sprites/to_pick_up/0.bmp");
-	iw->t_pickup[1] = SDL_LoadBMP("sprites/to_pick_up/1.bmp");
+	iw->t_pickup_sur[0] = SDL_LoadBMP("sprites/to_pick_up/0.bmp");
+	iw->t_pickup_sur[1] = SDL_LoadBMP("sprites/to_pick_up/1.bmp");
 }
 
 void add_sprite(t_sdl *iw, int x, int y, int z, int t, int num, int type, float scale)
@@ -5321,18 +5321,86 @@ void	get_sectors_ways(t_sdl *iw)
 }
 //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
+void	get_packaging_textures(t_sdl *iw)
+{
+	int		i;
+
+	i = -1;
+	while (++i < TEXTURES_COUNT)
+	{
+		iw->t[i] = (t_packaging_texture *)malloc(sizeof(t_packaging_texture));
+		iw->t[i]->w = iw->t_sur[i]->w;
+		iw->t[i]->h = iw->t_sur[i]->h;
+		iw->t[i]->pitch = iw->t_sur[i]->pitch;
+		iw->t[i]->bpp = iw->t_sur[i]->format->BytesPerPixel;
+		iw->t[i]->pixels = malloc(iw->t[i]->pitch * iw->t[i]->h);
+		ft_memcpy(iw->t[i]->pixels, iw->t_sur[i]->pixels, iw->t[i]->pitch * iw->t[i]->h);
+		SDL_FreeSurface(iw->t_sur[i]);
+	}
+	i = -1;
+	while (++i < DECOR_TEXTURES_COUNT)
+	{
+		iw->t_decor[i] = (t_packaging_texture *)malloc(sizeof(t_packaging_texture));
+		iw->t_decor[i]->w = iw->t_decor_sur[i]->w;
+		iw->t_decor[i]->h = iw->t_decor_sur[i]->h;
+		iw->t_decor[i]->pitch = iw->t_decor_sur[i]->pitch;
+		iw->t_decor[i]->bpp = iw->t_decor_sur[i]->format->BytesPerPixel;
+		iw->t_decor[i]->pixels = malloc(iw->t_decor[i]->pitch * iw->t_decor[i]->h);
+		ft_memcpy(iw->t_decor[i]->pixels, iw->t_decor_sur[i]->pixels, iw->t_decor[i]->pitch * iw->t_decor[i]->h);
+		SDL_FreeSurface(iw->t_decor_sur[i]);
+	}
+	i = -1;
+	while (++i < ENEMIES_TEXTURES_COUNT)
+	{
+		iw->t_enemies[i] = (t_packaging_texture *)malloc(sizeof(t_packaging_texture));
+		iw->t_enemies[i]->w = iw->t_enemies_sur[i]->w;
+		iw->t_enemies[i]->h = iw->t_enemies_sur[i]->h;
+		iw->t_enemies[i]->pitch = iw->t_enemies_sur[i]->pitch;
+		iw->t_enemies[i]->bpp = iw->t_enemies_sur[i]->format->BytesPerPixel;
+		iw->t_enemies[i]->pixels = malloc(iw->t_enemies[i]->pitch * iw->t_enemies[i]->h);
+		ft_memcpy(iw->t_enemies[i]->pixels, iw->t_enemies_sur[i]->pixels, iw->t_enemies[i]->pitch * iw->t_enemies[i]->h);
+		SDL_FreeSurface(iw->t_enemies_sur[i]);
+	}
+	i = -1;
+	while (++i < PICK_UP_TEXTURES_COUNT)
+	{
+		iw->t_pickup[i] = (t_packaging_texture *)malloc(sizeof(t_packaging_texture));
+		iw->t_pickup[i]->w = iw->t_pickup_sur[i]->w;
+		iw->t_pickup[i]->h = iw->t_pickup_sur[i]->h;
+		iw->t_pickup[i]->pitch = iw->t_pickup_sur[i]->pitch;
+		iw->t_pickup[i]->bpp = iw->t_pickup_sur[i]->format->BytesPerPixel;
+		iw->t_pickup[i]->pixels = malloc(iw->t_pickup[i]->pitch * iw->t_pickup[i]->h);
+		ft_memcpy(iw->t_pickup[i]->pixels, iw->t_pickup_sur[i]->pixels, iw->t_pickup[i]->pitch * iw->t_pickup[i]->h);
+		SDL_FreeSurface(iw->t_pickup_sur[i]);
+	}
+}
+
+void	set_sprites_z(t_sdl *iw)
+{
+	t_sprite	*s;
+
+	s = *(iw->sprite);
+	while (s)
+	{
+		if (s->type != 2 || s->e.enemy_numb != 0)
+			s->z = get_floor_z_sec(iw, s->x, s->y, s->num_sec);
+		s = s->next;
+	}
+}
+
 int		main(void)
 {
 	t_sdl	iw;
 
-	iw.v.game_mode = 1;
+	iw.v.game_mode = 0;
 	get_def(&iw);
 	read_textures(&iw);
 	read_sprites_textures(&iw);
+	get_packaging_textures(&iw);
 	get_kernel_mem(&iw);
-	
+
+	//add_sprite(&iw, 7240, 2640, 500, 0, 1, 0, 2.0f);
 	add_sprite(&iw, 4700, -900, 0, 0, 0, 0, 2.0f);
-	//add_sprite(&iw,7240,2640,200, 0, 1, 0, 2.0f);
 	(*iw.sprite)->type = 2;
 	(*iw.sprite)->e.enemy_numb = 0;
 	(*iw.sprite)->e.health = 10;
@@ -5342,6 +5410,7 @@ int		main(void)
 	(*iw.sprite)->t_kernel = &iw.k.m_t_enemies[0];
 	/*add_sprite(&iw,8640,2200,400, 0, 1, 0, 1.0f);
 	add_sprite(&iw,6520,2298,200, 0, 1, 0, 1.0f);*/
+
 
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
@@ -5362,6 +5431,7 @@ int		main(void)
 	draw_menu(&iw);
 	// draw
 	get_map(&iw);
+	set_sprites_z(&iw);
 	get_sectors_ways(&iw); //////////////////////////////
 	add_picture1(&iw); ///////
 	//get_animation(&iw);
