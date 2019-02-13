@@ -1085,3 +1085,42 @@ __kernel void draw_sprite_kernel(
 		}
 	}
 }
+
+//cint
+//0 - start_i
+//1 - start_j
+//2 - to_j
+//3 - changed_rect.x
+//4 - changed_rect.y
+//5 - rect_w
+//6 - rect_h
+//7 - tw
+//8 - th
+//9 - bpp
+//10 - pitch
+//11 - light
+//12 - WINDOW_W
+
+__kernel void draw_gun_kernel(
+	__global int *wpixels, __global const uchar *gun,
+	__global const int *cint
+)
+{
+	int		i;
+	int		wi;
+	int		j;
+	int		pixel;
+	int		tp;
+
+	i = get_global_id(0) + cint[0];
+	wi = i * cint[12];
+	j = cint[1];
+	while (++j < cint[2])
+	{
+		tp = (j - cint[3]) * cint[7] / cint[5] * cint[9] +
+			(i - cint[4]) * cint[8] / cint[6] * cint[10];
+		pixel = (int)(gun[tp] | gun[tp + 1] << 8 | gun[tp + 2] << 16);
+		if (pixel != 0x010000)
+			wpixels[j + wi] = get_light_color(pixel, cint[11]);
+	}
+}

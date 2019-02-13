@@ -851,77 +851,9 @@ void	change_wall_animation_status(t_sdl *iw, t_picture *p)
 
 // HUD ////////////////////////////////////////////////////////////////
 
-void	ft_line_x(t_sdl *iw, t_brz *tip, int x1, int y1)
-{
-	tip->x = x1;
-	tip->y = y1;
-	tip->d = -tip->lengthx;
-	tip->length++;
-	while (tip->length--)
-	{
-		if (tip->x >= 0 && tip->y >= 0)
-			set_pixel(iw->sur, tip->x, tip->y, tip->color);
-		tip->x += tip->dx;
-		tip->d += 2 * tip->lengthy;
-		if (tip->d > 0)
-		{
-			tip->d -= 2 * tip->lengthx;
-			tip->y += tip->dy;
-		}
-	}
-}
-
-void	ft_line_y(t_sdl *iw, t_brz *tip, int x1, int y1)
-{
-	tip->x = x1;
-	tip->y = y1;
-	tip->d = -tip->lengthy;
-	tip->length++;
-	while (tip->length--)
-	{
-		if (tip->y < 1000 && tip->x >= 0 && tip->y >= 0)
-			set_pixel(iw->sur, tip->x, tip->y, tip->color);
-		tip->y += tip->dy;
-		tip->d += 2 * tip->lengthx;
-		if (tip->d > 0)
-		{
-			tip->d -= 2 * tip->lengthy;
-			tip->x += tip->dx;
-		}
-	}
-}
-
-void	ft_line(t_hud *den, t_col *vec, t_sdl *iw)
-{
-	t_brz	tip;
-	int		x2;
-	int		x1;
-	int		y2;
-	int		y1;
-
-	x1 = vec->x1;
-	x2 = vec->x2;
-	y1 = vec->y1;
-	y2 = vec->y2;
-	tip.color = den->color;
-	tip.dx = (x2 - x1 >= 0 ? 1 : -1);
-	tip.dy = (y2 - y1 >= 0 ? 1 : -1);
-	tip.lengthx = abs(x2 - x1);
-	tip.lengthy = abs(y2 - y1);
-	tip.length = (tip.lengthx > tip.lengthy ? tip.lengthx : tip.lengthy);
-	if (tip.length == 0 && y2 < 1000 && x1 >= 0 && y2 >= 0 )
-		set_pixel(iw->sur, x1, y2, tip.color);
-	if (tip.lengthy <= tip.lengthx)
-		ft_line_x(iw, &tip, x1, y1);
-	else
-		ft_line_y(iw, &tip, x1, y1);
-}
-
-void drawCircle(t_hud *den, int xc, int yc, int x, int y) 
+void	drawCircle(t_hud *den, int xc, int yc, int x, int y) 
 { 
 	den->koord += 4;
-	
-
 	den->mas[den->i].x = xc - y;
 	den->mas[den->i].y = yc - x;
 	den->mas[150 - den->i].x = xc - x;
@@ -939,15 +871,18 @@ void drawCircle(t_hud *den, int xc, int yc, int x, int y)
 	den->mas2[300 - den->i].x = xc+y;
 	den->mas2[300 - den->i].y = yc+x;
 	den->i += 1;
-
 }
 
-void circle(t_hud *den, int xc, int yc)
+void	circle(t_hud *den, int xc, int yc)
 {
 	den->koord = 0;
 	den->i = 0;
 	int	r;
 
+	den->rect.x = FOOTX - 88;
+	den->rect.y = FOOTY - 98;
+	den->rect.h = 20;
+	den->rect.w = 20;
 	r = den->rad;
     int x = 0, y = r; 
     int d = 3 - 2 * r; 
@@ -966,62 +901,83 @@ void circle(t_hud *den, int xc, int yc)
     }
 }
 
-
-void	load_image_foot(t_hud *den, t_sdl *iw)
+void	ft_line(t_sdl *iw, int x, int y, int color)
 {
-	den->rect.x = WINDOW_W - 288;//412;
-	den->rect.y = WINDOW_H - 218;
-	den->rect.h = 20;
-	den->rect.w = 20;
-	SDL_BlitSurface(den->enot, NULL, iw->sur, &den->rect);
+	int		i;
+
+	i = x - 1;
+	while (++i < x + 30)
+		set_pixel(iw->sur, i, y, color);
 }
 
 void	make_health(t_hud *den, t_sdl *iw)
 {
 	int		i;
-	t_col	vec;	
 
-	load_image_foot(den, iw);
-	den->color = 0xAA0000;
-	i = 0;
-	while (i < (3 * iw->p.health))
-	{
-		vec.x1 = den->mas[i].x;
-		vec.x2 = den->mas[i].x + 30;
-		vec.y1 = den->mas[i].y;
-		vec.y2 = den->mas[i].y;
-		ft_line(den, &vec, iw);
-		i++;
-	}
-	i = 0;
-	den->color = 0x0000AA;
-	while (i < (3 * den->shell))
-	{
-		vec.x1 = den->mas2[i].x;
-		vec.x2 = den->mas2[i].x + 30;
-		vec.y1 = den->mas2[i].y;
-		vec.y2 = den->mas2[i].y;
-		ft_line(den, &vec, iw);
-		i++;
-	}
+	i = -1;
+	while (++i < (3 * iw->p.health))
+		ft_line(iw, den->mas[i].x, den->mas[i].y, 0xAA0000);
+	i = -1;
+	while (++i < (3 * den->shell))
+		ft_line(iw, den->mas2[i].x, den->mas2[i].y, 0x0000AA);
+	SDL_BlitSurface(den->enot, NULL, iw->sur, &den->rect);
 }
 
 //////////////////////////////////////////////////////////////////
 
 void	draw_gun(t_sdl *iw)
 {
+	int		i;
+	int		j;
+	int		to_i;
+	int		start_j;
+	int		to_j;
+	int		pixel;
+	SDL_Rect	changed_rect;
 
+	changed_rect = iw->guns.t_rect[iw->guns.t];
+	changed_rect.x += iw->v.weapon_change_x;
+	changed_rect.y += iw->v.weapon_change_y + iw->v.weapon_change_y_hide;
+	to_i = changed_rect.y + changed_rect.h;
+	if (to_i > WINDOW_H)
+		to_i = WINDOW_H;
+	if (changed_rect.y < 0)
+		i = -1;
+	else
+		i = changed_rect.y - 1;
+	if (changed_rect.x < 0)
+		start_j = -1;
+	else
+		start_j = changed_rect.x - 1;
+	to_j = changed_rect.w + changed_rect.x;
+	if (to_j > WINDOW_W)
+		to_j = WINDOW_W;
+	while (++i < to_i)
+	{
+		j = start_j;
+		while (++j < to_j)
+		{
+			pixel = get_pixel(iw->t_weap[iw->guns.t],
+				(j - changed_rect.x) * iw->t_weap[iw->guns.t]->w / changed_rect.w,
+				(i - changed_rect.y) * iw->t_weap[iw->guns.t]->h / changed_rect.h);
+			if (pixel != 0x010000)
+				set_pixel(iw->sur, j, i, get_light_color(pixel, iw->sectors[iw->d.cs].light));
+		}
+	}
 }
 
 void	update(t_sdl *iw)
 {
 	SDL_FillRect(iw->sur, &iw->winrect, 0x000000);
 	draw(iw);
-	draw_crosshair(iw);
+	
 	draw_some_info(iw);
-
 	if (iw->v.game_mode)
+	{
+		
 		make_health(&iw->hud, iw);
+	}
+	draw_crosshair(iw);
 	draw_selected_tex(iw);
 	draw_selected_sprite(iw);
 	SDL_UpdateWindowSurface(iw->win);
@@ -1124,6 +1080,22 @@ void	key_up(int code, t_sdl *iw)
 	else if (code == 6 && *iw->v.look_wall != 0 &&
 		(*iw->v.look_wall)->t >= 0 && (*iw->v.look_wall)->t < TEXTURES_COUNT)
 		iw->v.tex_to_fill = (*iw->v.look_wall)->t;
+
+	else if (code == 32 && iw->guns.status == 0 && iw->guns.gun_in_hands != 0)
+	{
+		iw->guns.status = 3;
+		iw->guns.gun_in_hands = 0;
+	}
+	else if (code == 31 && iw->guns.status == 0 && iw->guns.gun_in_hands != 2)
+	{
+		iw->guns.status = 3;
+		iw->guns.gun_in_hands = 2;
+	}
+	else if (code == 30 && iw->guns.status == 0 && iw->guns.gun_in_hands != 1)
+	{
+		iw->guns.status = 3;
+		iw->guns.gun_in_hands = 1;
+	}
 	// 	iw->v.edit_mode = (iw->v.edit_mode == 0) ? 1 : 0;
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
 }
@@ -1258,6 +1230,8 @@ void	rotate_fc(t_sector_fc *fc, int xy, int pl)
 void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 {
 	int		i;
+
+	iw->v.left_mouse_pressed = 0;
 	if (iw->v.game_mode)
 	{
 
@@ -2221,7 +2195,7 @@ void	sprite_physics(t_sdl *iw, t_sprite *s)
 {
 	int		tmp;
 
-	if (s->fall_time != 1)
+	if (s->fall_time != 1 /*&& s->e.enemy_numb != 0*/)
 		s->z -= (int)(iw->v.accel * ((float)(clock() - s->fall_time) /
 			(float)CLKS_P_S) * 50.0f);
 	tmp = get_ceil_z_sec(iw, s->x, s->y, s->num_sec);
@@ -2307,6 +2281,103 @@ void	check_enemies(t_sdl *iw)
 
 //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
+void	attack(t_sdl *iw)
+{
+	if (iw->guns.gun_in_hands == 0 && iw->guns.status == 0 && clock() - iw->guns.prev_update_time > CLKS_P_S / 10)
+	{
+		iw->guns.status = 1;
+		iw->guns.t = 18;
+		iw->guns.prev_update_time = clock();
+	}
+	else if (iw->guns.gun_in_hands == 1 && iw->guns.status == 0 && clock() - iw->guns.prev_update_time > CLKS_P_S / 5)
+	{
+		iw->guns.status = 1;
+		iw->guns.t = 1;
+		iw->guns.prev_update_time = clock();
+	}
+	else if (iw->guns.gun_in_hands == 2 && iw->guns.status == 0 && clock() - iw->guns.prev_update_time > CLKS_P_S / 5)
+	{
+		iw->guns.status = 1;
+		iw->guns.t = 8;
+		iw->guns.prev_update_time = clock();
+	}
+}
+
+void	guns_loop(t_sdl *iw)
+{
+	if (iw->guns.status == 1 && iw->guns.gun_in_hands == 0 && clock() - iw->guns.prev_update_time > CLKS_P_S / 10)
+	{
+		iw->guns.status = 0;
+		iw->guns.t = 17;
+		iw->guns.prev_update_time = clock();
+	}
+	else if (iw->guns.status == 1 && iw->guns.gun_in_hands == 1 && clock() - iw->guns.prev_update_time > CLKS_P_S / 5)
+	{
+		iw->guns.status = 0;
+		iw->guns.t = 0;
+		iw->guns.prev_update_time = clock();
+	}
+	else if (iw->guns.status == 1 && iw->guns.gun_in_hands == 2 && clock() - iw->guns.prev_update_time > CLKS_P_S / 5)
+	{
+		if (iw->guns.t == 8)
+			iw->guns.t = 9;
+		else
+		{
+			iw->guns.status = 0;
+			iw->guns.t = 7;
+		}
+		iw->guns.prev_update_time = clock();
+	}
+}
+
+void	guns_movements(t_sdl *iw)
+{
+	int		t;
+
+	if (iw->v.game_mode &&
+		(iw->v.front != 1 || iw->v.back != 1 || iw->v.left != 1 || iw->v.right != 1))
+	{
+		printf("FPS %d\n", iw->v.fps);
+		if (iw->v.fps != 0)
+			t = 300 / iw->v.fps;
+		else
+			t = 10;
+		iw->v.weapon_change_x += ((iw->v.weapon_change_xdir > 0) ? t : -t);
+		if (abs(iw->v.weapon_change_x) > WEAPONS_MOVING_CHANGE_VALUE)
+		{
+			iw->v.weapon_change_xdir *= -1;
+			iw->v.weapon_change_x = ((iw->v.weapon_change_x > 0) ? WEAPONS_MOVING_CHANGE_VALUE : -WEAPONS_MOVING_CHANGE_VALUE);
+		}
+		iw->v.weapon_change_y += ((iw->v.weapon_change_ydir > 0) ? t : -t);
+		if (iw->v.weapon_change_y > WEAPONS_MOVING_CHANGE_VALUE || iw->v.weapon_change_y < 10)
+			iw->v.weapon_change_ydir *= -1;
+		if (iw->v.weapon_change_y > WEAPONS_MOVING_CHANGE_VALUE)
+			iw->v.weapon_change_y = WEAPONS_MOVING_CHANGE_VALUE;
+		if (iw->v.weapon_change_y < 10)
+			iw->v.weapon_change_y = 10;
+	}
+	if (iw->guns.status == 3)
+	{
+		iw->v.weapon_change_y_hide += 500 / iw->v.fps;
+		if (iw->v.weapon_change_y_hide >= iw->guns.t_rect[iw->guns.t].h)
+		{
+			if (iw->guns.gun_in_hands == 0)
+				iw->guns.t = 17;
+			else if (iw->guns.gun_in_hands == 1)
+				iw->guns.t = 0;
+			else if (iw->guns.gun_in_hands == 2)
+				iw->guns.t = 7;
+			iw->guns.status = 0;
+		}
+	}
+	else if (iw->v.weapon_change_y_hide > 0)
+	{
+		iw->v.weapon_change_y_hide -= 1000 / iw->v.fps;
+		if (iw->v.weapon_change_y_hide < 0)
+			iw->v.weapon_change_y_hide = 0;
+	}
+}
+
 void	loop(t_sdl *iw)
 {
 	int		t;
@@ -2314,6 +2385,11 @@ void	loop(t_sdl *iw)
 
 	if ((double)(clock() - iw->loop_update_time) < (double)CLKS_P_S / (double)MAX_FPS)
 		return;
+	if (iw->v.left_mouse_pressed)
+		attack(iw);
+	if (iw->guns.status != 0)
+		guns_loop(iw);
+	guns_movements(iw);
 	if (iw->v.rot_right != 1)
 	{
 		iw->p.rot += (ROTATION_SPEED_PER_HALF_SEC * (double)(clock() - iw->v.rot_right)
@@ -2461,6 +2537,8 @@ void	main_loop(t_sdl *iw)
 			}
 			else if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_LEFT)
 				mouse_buttonleft_up(e.button.x, e.button.y, iw);
+			else if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT && iw->v.game_mode)
+				iw->v.left_mouse_pressed = 1;
 			else if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_RIGHT)
 				mouse_buttonright_up(e.button.x, e.button.y, iw);
 			else if (e.type == SDL_MOUSEWHEEL && e.wheel.y != 0)
@@ -4797,6 +4875,10 @@ void	draw(t_sdl *iw)
 	else
 		draw_sprites(iw);
 	
+	if (iw->v.game_mode && !iw->v.kernel)
+		draw_gun(iw);
+	else if (iw->v.game_mode)
+		draw_gun_kernel(iw);
 	if (iw->v.kernel)
 		iw->k.ret = clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_sur, CL_TRUE, 0,
 			WINDOW_W * WINDOW_H * sizeof(int), iw->sur->pixels, 0, NULL, NULL);
@@ -4805,6 +4887,8 @@ void	draw(t_sdl *iw)
 	iw->d.vw = *(iw->vw_save);
 	*(iw->vw_save) = 0;
 	free_walls(iw);
+
+	//draw_gun(iw);
 }
 
 void	read_textures(t_sdl *iw)
@@ -4890,6 +4974,29 @@ void	read_sprites_textures(t_sdl *iw)
 
 	iw->t_pickup_sur[0] = SDL_LoadBMP("sprites/to_pick_up/0.bmp");
 	iw->t_pickup_sur[1] = SDL_LoadBMP("sprites/to_pick_up/1.bmp");
+}
+
+void	read_weapons_textures(t_sdl *iw)
+{
+	iw->t_weap_sur[0] = SDL_LoadBMP("weapons/0.bmp");
+	iw->t_weap_sur[1] = SDL_LoadBMP("weapons/1.bmp");
+	iw->t_weap_sur[2] = SDL_LoadBMP("weapons/2.bmp");
+	iw->t_weap_sur[3] = SDL_LoadBMP("weapons/3.bmp");
+	iw->t_weap_sur[4] = SDL_LoadBMP("weapons/4.bmp");
+	iw->t_weap_sur[5] = SDL_LoadBMP("weapons/5.bmp");
+	iw->t_weap_sur[6] = SDL_LoadBMP("weapons/6.bmp");
+	iw->t_weap_sur[7] = SDL_LoadBMP("weapons/7.bmp");
+	iw->t_weap_sur[8] = SDL_LoadBMP("weapons/8.bmp");
+	iw->t_weap_sur[9] = SDL_LoadBMP("weapons/9.bmp");
+	iw->t_weap_sur[10] = SDL_LoadBMP("weapons/10.bmp");
+	iw->t_weap_sur[11] = SDL_LoadBMP("weapons/11.bmp");
+	iw->t_weap_sur[12] = SDL_LoadBMP("weapons/12.bmp");
+	iw->t_weap_sur[13] = SDL_LoadBMP("weapons/13.bmp");
+	iw->t_weap_sur[14] = SDL_LoadBMP("weapons/14.bmp");
+	iw->t_weap_sur[15] = SDL_LoadBMP("weapons/15.bmp");
+	iw->t_weap_sur[16] = SDL_LoadBMP("weapons/16.bmp");
+	iw->t_weap_sur[17] = SDL_LoadBMP("weapons/17.bmp");
+	iw->t_weap_sur[18] = SDL_LoadBMP("weapons/18.bmp");
 }
 
 void add_sprite(t_sdl *iw, int x, int y, int z, int t, int num, int type, float scale)
@@ -5014,7 +5121,14 @@ void	get_def(t_sdl *iw)
 	iw->hud.rad = 105;
 	iw->p.health = 100;
 	iw->hud.shell = 100;
-	iw->hud.enot = SDL_LoadBMP("weapons/enot.bmp");
+	iw->hud.enot = SDL_LoadBMP("HUD/enot.bmp");
+
+	iw->v.weapon_change_x = 0;
+	iw->v.weapon_change_y = 20;
+	iw->v.weapon_change_xdir = 1;
+	iw->v.weapon_change_ydir = 1;
+	iw->v.left_mouse_pressed = 0;
+	iw->v.weapon_change_y_hide = 0;
 }
 
 void	get_kernel_mem(t_sdl *iw)
@@ -5052,6 +5166,14 @@ void	get_kernel_mem(t_sdl *iw)
 			iw->t_pickup[i]->pitch * iw->t_pickup[i]->h, NULL, &iw->k.ret);
 		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t_pickup[i], CL_TRUE, 0,
 			iw->t_pickup[i]->pitch * iw->t_pickup[i]->h, iw->t_pickup[i]->pixels, 0, NULL, NULL);
+	}
+	i = -1;
+	while (++i < WEAPONS_TEXTURES_COUNT)
+	{
+		iw->k.m_t_weap[i] = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
+			iw->t_weap[i]->pitch * iw->t_weap[i]->h, NULL, &iw->k.ret);
+		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t_weap[i], CL_TRUE, 0,
+			iw->t_weap[i]->pitch * iw->t_weap[i]->h, iw->t_weap[i]->pixels, 0, NULL, NULL);
 	}
 	iw->k.m_top = clCreateBuffer(iw->k.context, CL_MEM_READ_WRITE,
 		(WINDOW_W + 1) * sizeof(int), NULL, &iw->k.ret);
@@ -5373,6 +5495,18 @@ void	get_packaging_textures(t_sdl *iw)
 		ft_memcpy(iw->t_pickup[i]->pixels, iw->t_pickup_sur[i]->pixels, iw->t_pickup[i]->pitch * iw->t_pickup[i]->h);
 		SDL_FreeSurface(iw->t_pickup_sur[i]);
 	}
+	i = -1;
+	while (++i < WEAPONS_TEXTURES_COUNT)
+	{
+		iw->t_weap[i] = (t_packaging_texture *)malloc(sizeof(t_packaging_texture));
+		iw->t_weap[i]->w = iw->t_weap_sur[i]->w;
+		iw->t_weap[i]->h = iw->t_weap_sur[i]->h;
+		iw->t_weap[i]->pitch = iw->t_weap_sur[i]->pitch;
+		iw->t_weap[i]->bpp = iw->t_weap_sur[i]->format->BytesPerPixel;
+		iw->t_weap[i]->pixels = malloc(iw->t_weap[i]->pitch * iw->t_weap[i]->h);
+		ft_memcpy(iw->t_weap[i]->pixels, iw->t_weap_sur[i]->pixels, iw->t_weap[i]->pitch * iw->t_weap[i]->h);
+		SDL_FreeSurface(iw->t_weap_sur[i]);
+	}
 }
 
 void	set_sprites_z(t_sdl *iw)
@@ -5388,17 +5522,80 @@ void	set_sprites_z(t_sdl *iw)
 	}
 }
 
+void	get_guns_center(t_sdl *iw, int i, int scale)
+{
+	iw->guns.t_rect[i].w = iw->t_weap[i]->w * WINDOW_W / scale;
+	iw->guns.t_rect[i].h = iw->guns.t_rect[i].w * iw->t_weap[i]->h / iw->t_weap[i]->w;
+	iw->guns.t_rect[i].x = (WINDOW_W - iw->guns.t_rect[i].w) / 2;
+	iw->guns.t_rect[i].y = (WINDOW_H - iw->guns.t_rect[i].h) / 2;
+}
+
+void	get_guns_center_down(t_sdl *iw, int i, int scale)
+{
+	iw->guns.t_rect[i].w = iw->t_weap[i]->w * WINDOW_W / scale;
+	iw->guns.t_rect[i].h = iw->guns.t_rect[i].w * iw->t_weap[i]->h / iw->t_weap[i]->w;
+	iw->guns.t_rect[i].x = (WINDOW_W - iw->guns.t_rect[i].w) / 2;
+	iw->guns.t_rect[i].y = WINDOW_H - iw->guns.t_rect[i].h;
+}
+
+void	get_guns(t_sdl *iw)
+{
+	iw->guns.t = 7;
+	iw->guns.max_bullets[0] = 1;
+	iw->guns.max_bullets[1] = 7;
+	iw->guns.max_bullets[2] = 30;
+	iw->guns.bullets[0] = 1;
+	iw->guns.bullets[1] = 0;
+	iw->guns.bullets[2] = 0;
+
+	iw->guns.gun_in_hands = 2;
+	iw->guns.status = 0;
+
+	get_guns_center_down(iw, 17, 1000);
+	get_guns_center_down(iw, 18, 1000);
+	get_guns_center_down(iw, 0, 3000);
+	iw->guns.t_rect[0].x += iw->guns.t_rect[0].w / 3 * 2;
+	get_guns_center_down(iw, 1, 3000);
+	iw->guns.t_rect[1].x += iw->guns.t_rect[1].w * 4 / 5;
+	get_guns_center(iw, 2, 1700);
+	iw->guns.t_rect[2].x += WINDOW_W / 10;
+	get_guns_center(iw, 3, 1700);
+	iw->guns.t_rect[3].x += WINDOW_W / 9;
+	get_guns_center(iw, 4, 2200);
+	iw->guns.t_rect[4].x += WINDOW_W / 8;
+	get_guns_center(iw, 5, 2200);
+	iw->guns.t_rect[5].x += WINDOW_W / 7;
+	get_guns_center(iw, 6, 2200);
+	iw->guns.t_rect[6].x += WINDOW_W / 6;
+	get_guns_center_down(iw, 7, 2500);
+	iw->guns.t_rect[7].x += iw->guns.t_rect[7].w * 3 / 5;
+	get_guns_center_down(iw, 8, 2500);
+	iw->guns.t_rect[8].x += iw->guns.t_rect[8].w * 3 / 5;
+	get_guns_center_down(iw, 9, 2500);
+	iw->guns.t_rect[9].x += iw->guns.t_rect[9].w * 3 / 5;
+	get_guns_center_down(iw, 10, 1500);
+	get_guns_center_down(iw, 11, 1500);
+	get_guns_center_down(iw, 12, 1500);
+	get_guns_center_down(iw, 13, 1500);
+	get_guns_center_down(iw, 14, 1500);
+	get_guns_center_down(iw, 15, 1500);
+	get_guns_center_down(iw, 16, 1500);
+
+	iw->guns.prev_update_time = clock();
+}
+
 int		main(void)
 {
 	t_sdl	iw;
 
-	iw.v.game_mode = 0;
+	iw.v.game_mode = 1;
 	get_def(&iw);
 	read_textures(&iw);
 	read_sprites_textures(&iw);
+	read_weapons_textures(&iw);
 	get_packaging_textures(&iw);
 	get_kernel_mem(&iw);
-
+	get_guns(&iw);
 	//add_sprite(&iw, 7240, 2640, 500, 0, 1, 0, 2.0f);
 	add_sprite(&iw, 4700, -900, 0, 0, 0, 0, 2.0f);
 	(*iw.sprite)->type = 2;
@@ -5432,9 +5629,8 @@ int		main(void)
 	// draw
 	get_map(&iw);
 	set_sprites_z(&iw);
-	get_sectors_ways(&iw); //////////////////////////////
-	add_picture1(&iw); ///////
-	//get_animation(&iw);
+	get_sectors_ways(&iw);
+	add_picture1(&iw); ///////////////
 	create_map(&iw);
 	draw(&iw);
 	SDL_UpdateWindowSurface(iw.win);

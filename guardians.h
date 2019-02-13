@@ -51,5 +51,6 @@ void	get_wall_line2(t_wall *wall);
 void	draw_sprite(t_sdl *iw, t_sprite *sprite);
 void	draw_glass_sprites_kernel(t_sdl *iw);
 void	sort_sprites(t_sdl *iw);
+void	draw_gun_kernel(t_sdl *iw);
 
 #endif

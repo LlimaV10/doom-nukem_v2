@@ -547,7 +547,7 @@ typedef struct		s_hud
 {
 	SDL_Surface		*enot;
 	SDL_Rect		rect;
-	int				color;
+//	int				color;
 	int				shell;
 	int				i;
 	t_xy			mas[300];
@@ -619,6 +619,8 @@ typedef struct	s_kernel
 	cl_mem		m_t_decor[DECOR_TEXTURES_COUNT];
 	cl_mem		m_t_enemies[ENEMIES_TEXTURES_COUNT];
 	cl_mem		m_t_pickup[PICK_UP_TEXTURES_COUNT];
+
+	cl_mem		m_t_weap[WEAPONS_TEXTURES_COUNT];
 }				t_kernel;
 
 typedef struct	s_variables
@@ -686,6 +688,12 @@ typedef struct	s_variables
 	int		fly_mode;
 	clock_t	fly_up;
 	clock_t	fly_down;
+	int		weapon_change_x;
+	int		weapon_change_xdir;
+	int		weapon_change_y;
+	int		weapon_change_y_hide;
+	int		weapon_change_ydir;
+	int		left_mouse_pressed;
 }				t_variables;
 
 typedef struct	s_level
@@ -724,6 +732,21 @@ typedef struct	s_get_sectors_ways
 //	SDL_Surface	*(t)[];
 //}				t_draw_gun;
 
+typedef struct	s_guns
+{
+	// 0 - texture numb
+	int			t;
+	// 0 - hands, 1 - pistol, 2 - rifle
+	int			gun_in_hands;
+	// 0 - in_hand, 1 - shooting,
+	// 2 - reload, 3 - changing
+	int			status;
+	int			bullets[WEAPONS_COUNT];
+	int			max_bullets[WEAPONS_COUNT];
+	SDL_Rect	t_rect[WEAPONS_TEXTURES_COUNT];
+	clock_t		prev_update_time;
+}				t_guns;
+
 typedef struct	s_sdl
 {
 	SDL_Window	*win;
@@ -758,12 +781,16 @@ typedef struct	s_sdl
 	SDL_Surface	*(t_pickup_sur)[PICK_UP_TEXTURES_COUNT];
 	t_packaging_texture	*(t_pickup)[PICK_UP_TEXTURES_COUNT];
 
+	SDL_Surface	*(t_weap_sur)[WEAPONS_TEXTURES_COUNT];
+	t_packaging_texture	*(t_weap)[WEAPONS_TEXTURES_COUNT];
+
 	t_sector_animation	*sector_animations;
 	t_wall_animation	*wall_animations;
 	t_save_wall			**vw_save;
 	t_sector_ways		***ways;
 
 	t_hud		hud;
+	t_guns		guns;
 }				t_sdl;
 
 #endif
