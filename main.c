@@ -4200,7 +4200,7 @@ int		draw_picture(t_sdl *iw, t_picture *pic)
 				d.pic_y = d.dy_plus * (iw->d.top_save[i] - j);
 				j = iw->d.top_save[i];
 			}
-			while (j++ <= d.ry1_down + (float)d.dy_down && j <= iw->d.bottom_save[i])
+			while (j++ < d.ry1_down + (float)d.dy_down && j < iw->d.bottom_save[i])
 			{
 				d.pixel = get_pixel(iw->t[pic->t], (int)d.pic_x, (int)d.pic_y);
 				if (d.pixel != 0x010000)
@@ -5048,7 +5048,7 @@ void	get_def(t_sdl *iw)
 	iw->v.ls = 0;
 	iw->v.angle = (float)WINDOW_W / (float)WINDOW_H * 22.0f * G1;// 0.698132f;
 	iw->v.kernel = 1;
-	load_kernel(&iw->k);
+	load_kernel(&iw->k, iw);
 	//fill_floor_coefficients(iw);
 	iw->v.front = 1;
 	iw->v.back = 1;
@@ -5595,6 +5595,7 @@ int		main(void)
 	read_weapons_textures(&iw);
 	get_packaging_textures(&iw);
 	get_kernel_mem(&iw);
+	get_kernels(&iw);
 	get_guns(&iw);
 	//add_sprite(&iw, 7240, 2640, 500, 0, 1, 0, 2.0f);
 	add_sprite(&iw, 4700, -900, 0, 0, 0, 0, 2.0f);

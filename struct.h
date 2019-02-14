@@ -598,7 +598,7 @@ typedef struct	s_kernel
 	cl_int	ret;
 	cl_command_queue command_queue;
 	cl_program program;
-	cl_kernel kernel;
+	//cl_kernel kernel;
 	cl_mem		m_sur;
 	cl_mem		m_t[TEXTURES_COUNT];
 	cl_mem		m_top;
@@ -621,6 +621,24 @@ typedef struct	s_kernel
 	cl_mem		m_t_pickup[PICK_UP_TEXTURES_COUNT];
 
 	cl_mem		m_t_weap[WEAPONS_TEXTURES_COUNT];
+	// draw_inclined_wall_floor_ceil_tex_kernel
+	cl_kernel kernel0;
+	// draw_wall_floor_ceil_tex_kernel
+	cl_kernel kernel1;
+	// draw_inclined_floor_ceil_betw_walls_tex_kernel
+	cl_kernel kernel2;
+	// draw_floor_ceil_betw_walls_tex_kernel
+	cl_kernel kernel3;
+	// draw_skybox_kernel
+	cl_kernel kernel4;
+	// draw_glass_tex_kernel
+	cl_kernel kernel5;
+	// draw_picture_kernel
+	cl_kernel kernel6;
+	// draw_sprite_kernel
+	cl_kernel kernel7;
+	// draw_gun_kernel
+	cl_kernel kernel8;
 }				t_kernel;
 
 typedef struct	s_variables

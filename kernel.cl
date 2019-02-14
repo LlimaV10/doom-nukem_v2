@@ -1014,7 +1014,7 @@ __kernel void draw_picture_kernel(
 		pic_y = dy_plus * (float)(top[i] - j);
 		j = top[i];
 	}
-	while (j++ <= cint[2] + (int)dy_down && j <= bottom[i] && (int)pic_y < cint[1])
+	while (j++ < cint[2] + (int)dy_down && j < bottom[i] && (int)pic_y < cint[1])
 	{
 		tp = (int)pic_x * cint[6] + (int)pic_y * cint[7];//* 3 * cint[4];
 		tp = (int)(picture_pixels[tp] | picture_pixels[tp + 1] << 8 | picture_pixels[tp + 2] << 16);

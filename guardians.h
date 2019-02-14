@@ -28,7 +28,7 @@
 void	get_map(t_sdl *iw);
 void	get_map2(t_sdl *iw);
 //void	get_animation(t_sdl *iw);
-void	load_kernel(t_kernel *k);
+void	load_kernel(t_kernel *k, t_sdl *iw);
 int		get_ceil_z(t_sdl *iw, int x, int y);
 int		get_floor_z(t_sdl *iw, int x, int y);
 void	draw_inclined_wall_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len);
