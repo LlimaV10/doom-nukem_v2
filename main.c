@@ -1085,16 +1085,19 @@ void	key_up(int code, t_sdl *iw)
 	{
 		iw->guns.status = 3;
 		iw->guns.gun_in_hands = 0;
+		iw->hud.shell = 100 * iw->guns.bullets[0] / iw->guns.max_bullets[0];
 	}
 	else if (code == 31 && iw->guns.status == 0 && iw->guns.gun_in_hands != 2)
 	{
 		iw->guns.status = 3;
 		iw->guns.gun_in_hands = 2;
+		iw->hud.shell = 100 * iw->guns.bullets[2] / iw->guns.max_bullets[2];
 	}
 	else if (code == 30 && iw->guns.status == 0 && iw->guns.gun_in_hands != 1)
 	{
 		iw->guns.status = 3;
 		iw->guns.gun_in_hands = 1;
+		iw->hud.shell = 100 * iw->guns.bullets[1] / iw->guns.max_bullets[1];
 	}
 	// 	iw->v.edit_mode = (iw->v.edit_mode == 0) ? 1 : 0;
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
@@ -2283,24 +2286,72 @@ void	check_enemies(t_sdl *iw)
 
 void	attack(t_sdl *iw)
 {
-	if (iw->guns.gun_in_hands == 0 && iw->guns.status == 0 && clock() - iw->guns.prev_update_time > CLKS_P_S / 10)
+	if (iw->guns.gun_in_hands == 0 && iw->guns.status == 0 &&
+		clock() - iw->guns.prev_update_time > CLKS_P_S / 10)
 	{
 		iw->guns.status = 1;
 		iw->guns.t = 18;
 		iw->guns.prev_update_time = clock();
+		iw->guns.bullets[0] -= 1;
+		iw->hud.shell = 100 * iw->guns.bullets[0] / iw->guns.max_bullets[0];
 	}
 	else if (iw->guns.gun_in_hands == 1 && iw->guns.status == 0 && clock() - iw->guns.prev_update_time > CLKS_P_S / 5)
 	{
 		iw->guns.status = 1;
 		iw->guns.t = 1;
 		iw->guns.prev_update_time = clock();
+		iw->guns.bullets[1] -= 1;
+		iw->hud.shell = 100 * iw->guns.bullets[1] / iw->guns.max_bullets[1];
 	}
 	else if (iw->guns.gun_in_hands == 2 && iw->guns.status == 0 && clock() - iw->guns.prev_update_time > CLKS_P_S / 5)
 	{
 		iw->guns.status = 1;
 		iw->guns.t = 8;
 		iw->guns.prev_update_time = clock();
+		iw->guns.bullets[2] -= 1;
+		iw->hud.shell = 100 * iw->guns.bullets[2] / iw->guns.max_bullets[2];
 	}
+}
+
+void	reload_gun(t_sdl *iw)
+{
+	if (iw->guns.gun_in_hands == 0)
+	{
+		iw->guns.bullets[iw->guns.gun_in_hands] = iw->guns.max_bullets[iw->guns.gun_in_hands];
+		iw->hud.shell = 100;
+		iw->guns.status = 0;
+	}
+	else if (iw->guns.gun_in_hands == 1)
+	{
+		if (iw->guns.t == 0)
+			iw->guns.t = 2;
+		else if (iw->guns.t < 6)
+			iw->guns.t++;
+		else
+		{
+			iw->guns.bullets[iw->guns.gun_in_hands] = iw->guns.max_bullets[iw->guns.gun_in_hands];
+			iw->hud.shell = 100;
+			iw->guns.status = 0;
+			iw->guns.t = 0;
+			iw->v.weapon_change_y_hide = iw->guns.t_rect[iw->guns.t].h / 2;
+		}
+	}
+	else if (iw->guns.gun_in_hands == 2)
+	{
+		if (iw->guns.t == 7)
+			iw->guns.t = 10;
+		else if (iw->guns.t < 16)
+			iw->guns.t++;
+		else
+		{
+			iw->guns.bullets[iw->guns.gun_in_hands] = iw->guns.max_bullets[iw->guns.gun_in_hands];
+			iw->hud.shell = 100;
+			iw->guns.status = 0;
+			iw->guns.t = 7;
+			iw->v.weapon_change_y_hide = iw->guns.t_rect[iw->guns.t].h / 2;
+		}
+	}
+	iw->guns.prev_update_time = clock();
 }
 
 void	guns_loop(t_sdl *iw)
@@ -2309,12 +2360,16 @@ void	guns_loop(t_sdl *iw)
 	{
 		iw->guns.status = 0;
 		iw->guns.t = 17;
+		if (iw->guns.bullets[iw->guns.gun_in_hands] <= 0)
+			iw->guns.status = 2;
 		iw->guns.prev_update_time = clock();
 	}
 	else if (iw->guns.status == 1 && iw->guns.gun_in_hands == 1 && clock() - iw->guns.prev_update_time > CLKS_P_S / 5)
 	{
 		iw->guns.status = 0;
 		iw->guns.t = 0;
+		if (iw->guns.bullets[iw->guns.gun_in_hands] <= 0)
+			iw->guns.status = 2;
 		iw->guns.prev_update_time = clock();
 	}
 	else if (iw->guns.status == 1 && iw->guns.gun_in_hands == 2 && clock() - iw->guns.prev_update_time > CLKS_P_S / 5)
@@ -2323,8 +2378,21 @@ void	guns_loop(t_sdl *iw)
 			iw->guns.t = 9;
 		else
 		{
-			iw->guns.status = 0;
-			iw->guns.t = 7;
+			if (!iw->v.left_mouse_pressed ||
+				iw->guns.bullets[iw->guns.gun_in_hands] <= 0)
+			{
+				iw->guns.status = 0;
+				iw->guns.t = 7;
+			}
+			else
+			{
+				iw->guns.t = 8;
+				iw->guns.bullets[iw->guns.gun_in_hands]--;
+				iw->hud.shell = 100 * iw->guns.bullets[iw->guns.gun_in_hands] /
+					iw->guns.max_bullets[iw->guns.gun_in_hands];
+			}
+			if (iw->guns.bullets[iw->guns.gun_in_hands] <= 0)
+				iw->guns.status = 2;
 		}
 		iw->guns.prev_update_time = clock();
 	}
@@ -2389,6 +2457,8 @@ void	loop(t_sdl *iw)
 		attack(iw);
 	if (iw->guns.status != 0)
 		guns_loop(iw);
+	if (iw->guns.status == 2 && clock() - iw->guns.prev_update_time > CLKS_P_S / 8)
+		reload_gun(iw);
 	guns_movements(iw);
 	if (iw->v.rot_right != 1)
 	{
@@ -5542,11 +5612,11 @@ void	get_guns(t_sdl *iw)
 {
 	iw->guns.t = 7;
 	iw->guns.max_bullets[0] = 1;
-	iw->guns.max_bullets[1] = 7;
-	iw->guns.max_bullets[2] = 30;
-	iw->guns.bullets[0] = 1;
-	iw->guns.bullets[1] = 0;
-	iw->guns.bullets[2] = 0;
+	iw->guns.max_bullets[1] = 4;
+	iw->guns.max_bullets[2] = 10;
+	iw->guns.bullets[0] = iw->guns.max_bullets[0];//1;
+	iw->guns.bullets[1] = iw->guns.max_bullets[1];//0;
+	iw->guns.bullets[2] = iw->guns.max_bullets[2];//0;
 
 	iw->guns.gun_in_hands = 2;
 	iw->guns.status = 0;
