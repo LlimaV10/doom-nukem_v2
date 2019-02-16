@@ -496,6 +496,25 @@ void	draw_text(t_sdl *iw, const char *s, int x, int y)
 	SDL_FreeSurface(stext);
 }
 
+void	draw_text_blue(t_sdl *iw, const char *s, int x, int y)
+{
+	SDL_Color	col;
+	SDL_Rect	rect;
+	SDL_Surface	*stext;
+
+	col.a = 0;
+	col.r = 0;
+	col.g = 0;
+	col.b = 170;
+	rect.x = x;
+	rect.y = y;
+	rect.h = 100;
+	rect.w = 100;
+	stext = TTF_RenderText_Solid(iw->arial_font, s, col);
+	SDL_BlitSurface(stext, NULL, iw->sur, &rect);
+	SDL_FreeSurface(stext);
+}
+
 void	draw_some_info(t_sdl *iw)
 {
 	t_draw_info	d;
@@ -618,14 +637,18 @@ void	ft_scaled_blit(t_packaging_texture *tex, SDL_Surface *winsur, SDL_Rect *rec
 {
 	int		i;
 	int		j;
+	int		p;
 
 	i = -1;
 	while (++i < rect->h)
 	{
 		j = -1;
 		while (++j < rect->w)
-			set_pixel(winsur, rect->x + j, rect->y + i, get_pixel(tex,
-				tex->w * j / rect->w, tex->h * i / rect->h));
+		{
+			p = get_pixel(tex, tex->w * j / rect->w, tex->h * i / rect->h);
+			if (p != 0x010000)
+				set_pixel(winsur, rect->x + j, rect->y + i, p);
+		}
 	}
 }
 
@@ -879,10 +902,10 @@ void	circle(t_hud *den, int xc, int yc)
 	den->i = 0;
 	int	r;
 
-	den->rect.x = FOOTX - 88;
-	den->rect.y = FOOTY - 98;
-	den->rect.h = 20;
-	den->rect.w = 20;
+	den->rect.x = FOOTX - den->rad + 20;
+	den->rect.y = FOOTY - den->rad + 2;
+	den->rect.h = den->rad * 2 - 5;
+	den->rect.w = den->rad * 2 - 5;
 	r = den->rad;
     int x = 0, y = r; 
     int d = 3 - 2 * r; 
@@ -913,6 +936,7 @@ void	ft_line(t_sdl *iw, int x, int y, int color)
 void	make_health(t_hud *den, t_sdl *iw)
 {
 	int		i;
+	char	*s;
 
 	i = -1;
 	while (++i < (3 * iw->p.health))
@@ -920,7 +944,14 @@ void	make_health(t_hud *den, t_sdl *iw)
 	i = -1;
 	while (++i < (3 * den->shell))
 		ft_line(iw, den->mas2[i].x, den->mas2[i].y, 0x0000AA);
-	SDL_BlitSurface(den->enot, NULL, iw->sur, &den->rect);
+	//SDL_BlitSurface(den->enot, NULL, iw->sur, &den->rect);
+	ft_scaled_blit(den->enot, iw->sur, &den->rect);
+	draw_text_blue(iw, "/", WINDOW_W - 50, 185);
+	if (iw->guns.bullets_in_stock[iw->guns.gun_in_hands] > 0)
+	{
+		draw_text_blue(iw, (s = ft_itoa(iw->guns.bullets_in_stock[iw->guns.gun_in_hands])), WINDOW_W - 40, 185);
+		free(s);
+	}
 }
 
 //////////////////////////////////////////////////////////////////
@@ -1087,13 +1118,13 @@ void	key_up(int code, t_sdl *iw)
 		iw->guns.gun_in_hands = 0;
 		iw->hud.shell = 100 * iw->guns.bullets[0] / iw->guns.max_bullets[0];
 	}
-	else if (code == 31 && iw->guns.status == 0 && iw->guns.gun_in_hands != 2)
+	else if (code == 31 && iw->guns.status == 0 && iw->guns.gun_in_hands != 2 && iw->guns.bullets[2] > 0)
 	{
 		iw->guns.status = 3;
 		iw->guns.gun_in_hands = 2;
 		iw->hud.shell = 100 * iw->guns.bullets[2] / iw->guns.max_bullets[2];
 	}
-	else if (code == 30 && iw->guns.status == 0 && iw->guns.gun_in_hands != 1)
+	else if (code == 30 && iw->guns.status == 0 && iw->guns.gun_in_hands != 1 && iw->guns.bullets[1] > 0)
 	{
 		iw->guns.status = 3;
 		iw->guns.gun_in_hands = 1;
@@ -1101,6 +1132,8 @@ void	key_up(int code, t_sdl *iw)
 	}
 	// 	iw->v.edit_mode = (iw->v.edit_mode == 0) ? 1 : 0;
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
+	//if (code == 8)
+	//	iw->guns.t++;
 }
 
 void	key_down(int code, t_sdl *iw)
@@ -1158,6 +1191,9 @@ void	key_down(int code, t_sdl *iw)
 		iw->v.fly_up = clock();
 	else if (code == 224 && iw->v.fly_mode)
 		iw->v.fly_down = clock();
+	else if (code == 21 && iw->v.game_mode && iw->guns.status == 0
+		&& iw->guns.bullets[iw->guns.gun_in_hands] < iw->guns.max_bullets[iw->guns.gun_in_hands])
+		iw->guns.status = 2;
 	/*else if (code == 9)
 		check_animations(iw);*/
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
@@ -2287,7 +2323,7 @@ void	check_enemies(t_sdl *iw)
 void	attack(t_sdl *iw)
 {
 	if (iw->guns.gun_in_hands == 0 && iw->guns.status == 0 &&
-		clock() - iw->guns.prev_update_time > CLKS_P_S / 10)
+		clock() - iw->guns.prev_update_time > CLKS_P_S / 15)
 	{
 		iw->guns.status = 1;
 		iw->guns.t = 18;
@@ -2295,7 +2331,7 @@ void	attack(t_sdl *iw)
 		iw->guns.bullets[0] -= 1;
 		iw->hud.shell = 100 * iw->guns.bullets[0] / iw->guns.max_bullets[0];
 	}
-	else if (iw->guns.gun_in_hands == 1 && iw->guns.status == 0 && clock() - iw->guns.prev_update_time > CLKS_P_S / 5)
+	else if (iw->guns.gun_in_hands == 1 && iw->guns.status == 0 && clock() - iw->guns.prev_update_time > CLKS_P_S / 15)
 	{
 		iw->guns.status = 1;
 		iw->guns.t = 1;
@@ -2323,12 +2359,18 @@ void	reload_gun(t_sdl *iw)
 	}
 	else if (iw->guns.gun_in_hands == 1)
 	{
-		if (iw->guns.t == 0)
+		if (iw->guns.bullets_in_stock[1] < iw->guns.max_bullets[1])
+		{
+			iw->guns.gun_in_hands = 0;
+			iw->guns.status = 3;
+		}
+		else if (iw->guns.t == 0)
 			iw->guns.t = 2;
 		else if (iw->guns.t < 6)
 			iw->guns.t++;
 		else
 		{
+			iw->guns.bullets_in_stock[1] -= iw->guns.max_bullets[1] - iw->guns.bullets[1];;
 			iw->guns.bullets[iw->guns.gun_in_hands] = iw->guns.max_bullets[iw->guns.gun_in_hands];
 			iw->hud.shell = 100;
 			iw->guns.status = 0;
@@ -2338,12 +2380,18 @@ void	reload_gun(t_sdl *iw)
 	}
 	else if (iw->guns.gun_in_hands == 2)
 	{
-		if (iw->guns.t == 7)
+		if (iw->guns.bullets_in_stock[2] < iw->guns.max_bullets[2])
+		{
+			iw->guns.gun_in_hands = 0;
+			iw->guns.status = 3;
+		}
+		else if (iw->guns.t == 7)
 			iw->guns.t = 10;
 		else if (iw->guns.t < 16)
 			iw->guns.t++;
 		else
 		{
+			iw->guns.bullets_in_stock[2] -= iw->guns.max_bullets[2] - iw->guns.bullets[2];
 			iw->guns.bullets[iw->guns.gun_in_hands] = iw->guns.max_bullets[iw->guns.gun_in_hands];
 			iw->hud.shell = 100;
 			iw->guns.status = 0;
@@ -2356,7 +2404,7 @@ void	reload_gun(t_sdl *iw)
 
 void	guns_loop(t_sdl *iw)
 {
-	if (iw->guns.status == 1 && iw->guns.gun_in_hands == 0 && clock() - iw->guns.prev_update_time > CLKS_P_S / 10)
+	if (iw->guns.status == 1 && iw->guns.gun_in_hands == 0 && clock() - iw->guns.prev_update_time > CLKS_P_S / 15)
 	{
 		iw->guns.status = 0;
 		iw->guns.t = 17;
@@ -2372,7 +2420,7 @@ void	guns_loop(t_sdl *iw)
 			iw->guns.status = 2;
 		iw->guns.prev_update_time = clock();
 	}
-	else if (iw->guns.status == 1 && iw->guns.gun_in_hands == 2 && clock() - iw->guns.prev_update_time > CLKS_P_S / 5)
+	else if (iw->guns.status == 1 && iw->guns.gun_in_hands == 2 && clock() - iw->guns.prev_update_time > CLKS_P_S / 10)
 	{
 		if (iw->guns.t == 8)
 			iw->guns.t = 9;
@@ -4963,6 +5011,7 @@ void	draw(t_sdl *iw)
 
 void	read_textures(t_sdl *iw)
 {
+	iw->hud.enot_sur = SDL_LoadBMP("HUD/enot.bmp");
 	iw->t_sur[0] = SDL_LoadBMP("textures/0.bmp");
 	iw->tsz[0] = 1.0f;
 	iw->t_sur[1] = SDL_LoadBMP("textures/1.bmp");
@@ -5188,10 +5237,9 @@ void	get_def(t_sdl *iw)
 	iw->v.fly_down = -1;
 	iw->v.fly_up = -1;
 
-	iw->hud.rad = 105;
+	iw->hud.rad = 100;
 	iw->p.health = 100;
 	iw->hud.shell = 100;
-	iw->hud.enot = SDL_LoadBMP("HUD/enot.bmp");
 
 	iw->v.weapon_change_x = 0;
 	iw->v.weapon_change_y = 20;
@@ -5513,70 +5561,38 @@ void	get_sectors_ways(t_sdl *iw)
 }
 //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
+void	get_packaging_texture(t_packaging_texture **pack, SDL_Surface *sur)
+{
+	*pack = (t_packaging_texture *)malloc(sizeof(t_packaging_texture));
+	(*pack)->w = sur->w;
+	(*pack)->h = sur->h;
+	(*pack)->pitch = sur->pitch;
+	(*pack)->bpp = sur->format->BytesPerPixel;
+	(*pack)->pixels = malloc(sur->pitch * sur->h);
+	ft_memcpy((*pack)->pixels, sur->pixels, sur->pitch * sur->h);
+	SDL_FreeSurface(sur);
+}
+
 void	get_packaging_textures(t_sdl *iw)
 {
 	int		i;
 
+	get_packaging_texture(&iw->hud.enot, iw->hud.enot_sur);
 	i = -1;
 	while (++i < TEXTURES_COUNT)
-	{
-		iw->t[i] = (t_packaging_texture *)malloc(sizeof(t_packaging_texture));
-		iw->t[i]->w = iw->t_sur[i]->w;
-		iw->t[i]->h = iw->t_sur[i]->h;
-		iw->t[i]->pitch = iw->t_sur[i]->pitch;
-		iw->t[i]->bpp = iw->t_sur[i]->format->BytesPerPixel;
-		iw->t[i]->pixels = malloc(iw->t[i]->pitch * iw->t[i]->h);
-		ft_memcpy(iw->t[i]->pixels, iw->t_sur[i]->pixels, iw->t[i]->pitch * iw->t[i]->h);
-		SDL_FreeSurface(iw->t_sur[i]);
-	}
+		get_packaging_texture(&iw->t[i], iw->t_sur[i]);
 	i = -1;
 	while (++i < DECOR_TEXTURES_COUNT)
-	{
-		iw->t_decor[i] = (t_packaging_texture *)malloc(sizeof(t_packaging_texture));
-		iw->t_decor[i]->w = iw->t_decor_sur[i]->w;
-		iw->t_decor[i]->h = iw->t_decor_sur[i]->h;
-		iw->t_decor[i]->pitch = iw->t_decor_sur[i]->pitch;
-		iw->t_decor[i]->bpp = iw->t_decor_sur[i]->format->BytesPerPixel;
-		iw->t_decor[i]->pixels = malloc(iw->t_decor[i]->pitch * iw->t_decor[i]->h);
-		ft_memcpy(iw->t_decor[i]->pixels, iw->t_decor_sur[i]->pixels, iw->t_decor[i]->pitch * iw->t_decor[i]->h);
-		SDL_FreeSurface(iw->t_decor_sur[i]);
-	}
+		get_packaging_texture(&iw->t_decor[i], iw->t_decor_sur[i]);
 	i = -1;
 	while (++i < ENEMIES_TEXTURES_COUNT)
-	{
-		iw->t_enemies[i] = (t_packaging_texture *)malloc(sizeof(t_packaging_texture));
-		iw->t_enemies[i]->w = iw->t_enemies_sur[i]->w;
-		iw->t_enemies[i]->h = iw->t_enemies_sur[i]->h;
-		iw->t_enemies[i]->pitch = iw->t_enemies_sur[i]->pitch;
-		iw->t_enemies[i]->bpp = iw->t_enemies_sur[i]->format->BytesPerPixel;
-		iw->t_enemies[i]->pixels = malloc(iw->t_enemies[i]->pitch * iw->t_enemies[i]->h);
-		ft_memcpy(iw->t_enemies[i]->pixels, iw->t_enemies_sur[i]->pixels, iw->t_enemies[i]->pitch * iw->t_enemies[i]->h);
-		SDL_FreeSurface(iw->t_enemies_sur[i]);
-	}
+		get_packaging_texture(&iw->t_enemies[i], iw->t_enemies_sur[i]);
 	i = -1;
 	while (++i < PICK_UP_TEXTURES_COUNT)
-	{
-		iw->t_pickup[i] = (t_packaging_texture *)malloc(sizeof(t_packaging_texture));
-		iw->t_pickup[i]->w = iw->t_pickup_sur[i]->w;
-		iw->t_pickup[i]->h = iw->t_pickup_sur[i]->h;
-		iw->t_pickup[i]->pitch = iw->t_pickup_sur[i]->pitch;
-		iw->t_pickup[i]->bpp = iw->t_pickup_sur[i]->format->BytesPerPixel;
-		iw->t_pickup[i]->pixels = malloc(iw->t_pickup[i]->pitch * iw->t_pickup[i]->h);
-		ft_memcpy(iw->t_pickup[i]->pixels, iw->t_pickup_sur[i]->pixels, iw->t_pickup[i]->pitch * iw->t_pickup[i]->h);
-		SDL_FreeSurface(iw->t_pickup_sur[i]);
-	}
+		get_packaging_texture(&iw->t_pickup[i], iw->t_pickup_sur[i]);
 	i = -1;
 	while (++i < WEAPONS_TEXTURES_COUNT)
-	{
-		iw->t_weap[i] = (t_packaging_texture *)malloc(sizeof(t_packaging_texture));
-		iw->t_weap[i]->w = iw->t_weap_sur[i]->w;
-		iw->t_weap[i]->h = iw->t_weap_sur[i]->h;
-		iw->t_weap[i]->pitch = iw->t_weap_sur[i]->pitch;
-		iw->t_weap[i]->bpp = iw->t_weap_sur[i]->format->BytesPerPixel;
-		iw->t_weap[i]->pixels = malloc(iw->t_weap[i]->pitch * iw->t_weap[i]->h);
-		ft_memcpy(iw->t_weap[i]->pixels, iw->t_weap_sur[i]->pixels, iw->t_weap[i]->pitch * iw->t_weap[i]->h);
-		SDL_FreeSurface(iw->t_weap_sur[i]);
-	}
+		get_packaging_texture(&iw->t_weap[i], iw->t_weap_sur[i]);
 }
 
 void	set_sprites_z(t_sdl *iw)
@@ -5610,15 +5626,21 @@ void	get_guns_center_down(t_sdl *iw, int i, int scale)
 
 void	get_guns(t_sdl *iw)
 {
-	iw->guns.t = 7;
+	iw->guns.t = 17;
 	iw->guns.max_bullets[0] = 1;
 	iw->guns.max_bullets[1] = 4;
 	iw->guns.max_bullets[2] = 10;
-	iw->guns.bullets[0] = iw->guns.max_bullets[0];//1;
+	iw->guns.max_bullets_in_stock[0] = 0;
+	iw->guns.max_bullets_in_stock[1] = 40;
+	iw->guns.max_bullets_in_stock[2] = 100;
+	iw->guns.bullets[0] = iw->guns.max_bullets[0];
 	iw->guns.bullets[1] = iw->guns.max_bullets[1];//0;
 	iw->guns.bullets[2] = iw->guns.max_bullets[2];//0;
+	iw->guns.bullets_in_stock[0] = 0;
+	iw->guns.bullets_in_stock[1] = 8;//iw->guns.max_bullets_in_stock[1];
+	iw->guns.bullets_in_stock[2] = 10;// iw->guns.max_bullets_in_stock[2];
 
-	iw->guns.gun_in_hands = 2;
+	iw->guns.gun_in_hands = 0;
 	iw->guns.status = 0;
 
 	get_guns_center_down(iw, 17, 1000);
@@ -5629,14 +5651,19 @@ void	get_guns(t_sdl *iw)
 	iw->guns.t_rect[1].x += iw->guns.t_rect[1].w * 4 / 5;
 	get_guns_center(iw, 2, 1700);
 	iw->guns.t_rect[2].x += WINDOW_W / 10;
+	iw->guns.t_rect[2].y -= WINDOW_H / 5;
 	get_guns_center(iw, 3, 1700);
 	iw->guns.t_rect[3].x += WINDOW_W / 9;
+	iw->guns.t_rect[3].y -= WINDOW_H / 3;
 	get_guns_center(iw, 4, 2200);
 	iw->guns.t_rect[4].x += WINDOW_W / 8;
+	iw->guns.t_rect[4].y -= WINDOW_H / 3;
 	get_guns_center(iw, 5, 2200);
 	iw->guns.t_rect[5].x += WINDOW_W / 7;
+	iw->guns.t_rect[5].y -= WINDOW_H / 5;
 	get_guns_center(iw, 6, 2200);
 	iw->guns.t_rect[6].x += WINDOW_W / 6;
+	iw->guns.t_rect[6].y += WINDOW_H / 10;
 	get_guns_center_down(iw, 7, 2500);
 	iw->guns.t_rect[7].x += iw->guns.t_rect[7].w * 3 / 5;
 	get_guns_center_down(iw, 8, 2500);

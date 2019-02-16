@@ -545,7 +545,8 @@ typedef struct		s_brz
 
 typedef struct		s_hud
 {
-	SDL_Surface		*enot;
+	SDL_Surface		*enot_sur;
+	t_packaging_texture	*enot;
 	SDL_Rect		rect;
 //	int				color;
 	int				shell;
@@ -712,6 +713,9 @@ typedef struct	s_variables
 	int		weapon_change_y_hide;
 	int		weapon_change_ydir;
 	int		left_mouse_pressed;
+
+	char	*on_screen_text;
+	clock_t	on_screen_text_time;
 }				t_variables;
 
 typedef struct	s_level
@@ -761,6 +765,8 @@ typedef struct	s_guns
 	int			status;
 	int			bullets[WEAPONS_COUNT];
 	int			max_bullets[WEAPONS_COUNT];
+	int			bullets_in_stock[WEAPONS_COUNT];
+	int			max_bullets_in_stock[WEAPONS_COUNT];
 	SDL_Rect	t_rect[WEAPONS_TEXTURES_COUNT];
 	clock_t		prev_update_time;
 }				t_guns;

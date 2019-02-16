@@ -35,7 +35,7 @@
 # define COUNT_WALLS_TO_ANIM 10
 # define FLY_SPEED	2000.0f
 
-# define FOOTX WINDOW_W - 200
+# define FOOTX WINDOW_W - 150
 # define FOOTY 120
 
 # define SPRITE_HEIGHT 400
