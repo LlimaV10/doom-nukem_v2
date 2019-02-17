@@ -1,8 +1,8 @@
 #ifndef __DEFINES_H
 # define __DEFINES_H
 
-# define WINDOW_W 1000
-# define WINDOW_H 550
+# define WINDOW_W 800
+# define WINDOW_H 400
 # define MAX_SOURCE_SIZE 0x100000
 # define TEXTURES_COUNT 21
 # define DECOR_TEXTURES_COUNT 1
@@ -45,6 +45,8 @@
 
 #ifdef __APPLE__
 # define CLKS_P_S (CLOCKS_PER_SEC * 2)
+#elif __linux__
+# define CLKS_P_S (CLOCKS_PER_SEC / 3)
 #else
 # define CLKS_P_S CLOCKS_PER_SEC
 #endif

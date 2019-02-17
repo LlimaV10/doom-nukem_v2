@@ -3,10 +3,19 @@
 
 # define _CRT_SECURE_NO_WARNINGS
 //# include "SDL2/SDL2.framework/Headers/SDL.h"
-# include <SDL.h>
-# include <SDL_ttf.h>
+#ifdef __linux__
+    # include <SDL2/SDL.h>
+    # include <SDL2/SDL_ttf.h>
+#else
+    # include <SDL.h>
+    # include <SDL_ttf.h>
+#endif
+
 #ifdef __APPLE__
 # include <OpenCL/cl.h>
+# include <unistd.h>
+#elif __linux__
+# include <CL/cl.h>
 # include <unistd.h>
 #else
 # include <CL/cl.h>
@@ -52,5 +61,8 @@ void	draw_sprite(t_sdl *iw, t_sprite *sprite);
 void	draw_glass_sprites_kernel(t_sdl *iw);
 void	sort_sprites(t_sdl *iw);
 void	draw_gun_kernel(t_sdl *iw);
+int		get_ceil_z_sec(t_sdl *iw, int x, int y, int sector);
+int		get_floor_z_sec(t_sdl *iw, int x, int y, int sector);
+void	get_kernels(t_sdl *iw);
 
 #endif
