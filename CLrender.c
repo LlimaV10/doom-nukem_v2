@@ -1005,7 +1005,7 @@ void	draw_sprite_kernel(t_sdl *iw, t_sprite *sprite)
 	iw->k.ret = clSetKernelArg(iw->k.kernel7, 3, sizeof(cl_mem), (void *)sprite->t_kernel);
 	//iw->k.ret = clSetKernelArg(iw->k.kernel, 4, sizeof(cl_mem), (void *)&iw->k.m_cint);
 
-	size_t global_item_size = get_min(WINDOW_W, sprite->ex) - get_max(0, sprite->sx);//sprite->ex - sprite->sx;
+	size_t global_item_size = ft_min(WINDOW_W, sprite->ex) - ft_max(0, sprite->sx);//sprite->ex - sprite->sx;
 	size_t local_item_size = 1;
 
 	iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel7, 1, NULL,

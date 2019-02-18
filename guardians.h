@@ -52,8 +52,6 @@ void	draw_pictures_kernel(t_sdl *iw, t_save_wall *left);
 float	get_vectors_angle(float x1, float y1, float x2, float y2);
 void	calculate_picture(t_sdl *iw, t_wall *wall, t_picture *pic);
 void	draw_sprites_kernel(t_sdl *iw);
-int		get_max(int i1, int i2);
-int		get_min(int i1, int i2);
 void	draw_submenu(t_sdl *iw);
 void	calculate_picture(t_sdl *iw, t_wall *wall, t_picture *pic);
 void	get_wall_line2(t_wall *wall);
@@ -66,4 +64,13 @@ int		get_floor_z_sec(t_sdl *iw, int x, int y, int sector);
 void	get_kernels(t_sdl *iw);
 
 void add_sprite(t_sdl *iw, int x, int y, int z, int t, int num, int type, float scale);///// delete
+
+int		ft_max(int p1, int p2);
+int		ft_min(int p1, int p2);
+void	set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel);
+
+void	print_brez_m(t_brez *b, int d, int d1, int d2);
+void	bresen(t_sdl *iw, t_draw_line line, int color);
+void    draw_minimap(t_sdl *iw);
+
 #endif

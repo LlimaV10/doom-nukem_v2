@@ -146,19 +146,6 @@ typedef struct	s_draw_line
 	int			y1;
 }				t_draw_line;
 
-typedef struct	s_brez
-{
-	int			x;
-	int			y;
-	int			dx;
-	int			dy;
-	int			sx;
-	int			sy;
-	int			k;
-	int			*wall_y;
-	int			prev_x;
-}				t_brez;
-
 typedef struct	s_draw_wall_tex
 {
 	float	tx;
@@ -789,6 +776,25 @@ typedef struct s_bag
 	int			click_y;
 }				t_bag;
 
+typedef struct    s_map
+{
+    int back;
+    int mid_x;
+    int    mid_y;
+    int min_x;
+    int max_x;
+    int min_y;
+    int max_y;
+
+}                t_map;
+
+typedef struct    s_menu
+{
+    int					count;
+	SDL_Surface			*icons_sur[6];
+	t_packaging_texture	*icons[6];
+}                t_menu;
+
 typedef struct	s_sdl
 {
 	SDL_Window	*win;
@@ -834,6 +840,23 @@ typedef struct	s_sdl
 	t_hud		hud;
 	t_guns		guns;
 	t_bag		bag;
+	t_map		map;
+	t_menu		menu;
 }				t_sdl;
+
+typedef struct	s_brez
+{
+	int			x;
+	int			y;
+	int			dx;
+	int			dy;
+	int			sx;
+	int			sy;
+	int			k;
+	int			*wall_y;
+	int			prev_x;
+	struct s_sdl		*iw;
+	int            color;
+}				t_brez;
 
 #endif

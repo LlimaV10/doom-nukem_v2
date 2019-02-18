@@ -1269,9 +1269,10 @@ void	update(t_sdl *iw)
 		make_health(&iw->hud, iw);
 	}
 	draw_crosshair(iw);
-	if (iw->bag.bag == 1)
+	if (iw->bag.bag == 1 || iw->map.back == 1)
 		transparency(iw);
-	
+	if(iw->map.back == 1)
+		draw_minimap(iw);
 	draw_icon_bag(iw);
 	draw_selected_tex(iw);
 	draw_selected_sprite(iw);
@@ -1468,6 +1469,13 @@ void	key_down(int code, t_sdl *iw)
 		add_item(iw);
 	else if (code == 8 && iw->v.game_mode)
 		use_item(iw);
+	else if (code == 14)
+	{
+		if (iw->map.back == 1)
+		iw->map.back = 0;
+		else if (iw->map.back == 0)
+		iw->map.back = 1;
+	}
 	/*else if (code == 9)
 		check_animations(iw);*/
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
@@ -2775,7 +2783,7 @@ void	loop(t_sdl *iw)
 
 	if ((double)(clock() - iw->loop_update_time) < (double)CLKS_P_S / (double)MAX_FPS)
 		return;
-	if (iw->v.left_mouse_pressed)
+	if (iw->v.left_mouse_pressed && iw->v.mouse_mode == 1)
 		attack(iw);
 	if (iw->guns.status != 0)
 		guns_loop(iw);
@@ -4866,21 +4874,21 @@ void	draw_skybox(t_sdl *iw)
 	}
 }
 
-int		get_max(int i1, int i2)
-{
-	if (i1 > i2)
-		return (i1);
-	else
-		return (i2);
-}
+// int		get_max(int i1, int i2)
+// {
+// 	if (i1 > i2)
+// 		return (i1);
+// 	else
+// 		return (i2);
+// }
 
-int		get_min(int i1, int i2)
-{
-	if (i1 < i2)
-		return (i1);
-	else
-		return (i2);
-}
+// int		get_min(int i1, int i2)
+// {
+// 	if (i1 < i2)
+// 		return (i1);
+// 	else
+// 		return (i2);
+// }
 // SPRITES DRAW /////////////////////////////////////////////////////////////////////////////////////////////////////
 void	draw_sprite(t_sdl *iw, t_sprite *sprite)
 {
@@ -5035,8 +5043,8 @@ void	get_sprites_top_bottom(t_sdl *iw, t_save_wall_pairs	*tmp)
 			|| (tmp1->sx <= tmp->left->x && tmp1->ex >= tmp->right->x))
 			if (find_point(tmp, tmp1) == 1)
 			{
-				j = get_max(tmp1->sx, get_max(tmp->left->x, iw->d.screen_left)) - 1;
-				jend = get_min(tmp1->ex, get_min(tmp->right->x, iw->d.screen_right));
+				j = ft_max(tmp1->sx, ft_max(tmp->left->x, iw->d.screen_left)) - 1;
+				jend = ft_min(tmp1->ex, ft_min(tmp->right->x, iw->d.screen_right));
 				while (++j <= jend)
 					if (tmp1->top[j] == -1)
 					{
@@ -5342,6 +5350,13 @@ void	read_textures(t_sdl *iw)
 	iw->bag.button_sur[0] = SDL_LoadBMP("backpack/frame.bmp");
 	iw->bag.button_sur[1] = SDL_LoadBMP("backpack/del.bmp");
 	iw->bag.button_sur[2] = SDL_LoadBMP("backpack/ok.bmp");
+
+	iw->menu.icons_sur[0] = SDL_LoadBMP("menu/0.bmp");
+	iw->menu.icons_sur[1] = SDL_LoadBMP("menu/1.bmp");
+	iw->menu.icons_sur[2] = SDL_LoadBMP("menu/2.bmp");
+	iw->menu.icons_sur[3] = SDL_LoadBMP("menu/3.bmp");
+	iw->menu.icons_sur[4] = SDL_LoadBMP("menu/4.bmp");
+	iw->menu.icons_sur[5] = SDL_LoadBMP("menu/5.bmp");
 }
 
 void	read_sprites_textures(t_sdl *iw)
@@ -5546,6 +5561,9 @@ void	get_def(t_sdl *iw)
 	iw->bag.bag = 0;
 	iw->bag.count_items = 0;
 	iw->bag.selected_item = 0;
+
+	iw->map.back = 0;
+	iw->menu.count = 0;
 }
 
 void	get_kernel_mem(t_sdl *iw)
@@ -5892,9 +5910,14 @@ void	get_packaging_textures(t_sdl *iw)
 	i = -1;
 	while (++i < WEAPONS_TEXTURES_COUNT)
 		get_packaging_texture(&iw->t_weap[i], iw->t_weap_sur[i]);
+
 	get_packaging_texture(&iw->bag.button[0], iw->bag.button_sur[0]);
 	get_packaging_texture(&iw->bag.button[1], iw->bag.button_sur[1]);
 	get_packaging_texture(&iw->bag.button[2], iw->bag.button_sur[2]);
+
+	i = -1;
+	while (++i < 6)
+		get_packaging_texture(&iw->menu.icons[i], iw->menu.icons_sur[i]);
 }
 
 void	set_sprites_z(t_sdl *iw)
@@ -5983,11 +6006,106 @@ void	get_guns(t_sdl *iw)
 	iw->guns.prev_update_time = clock();
 }
 
+void find_max_min(t_sdl *iw)
+{
+	int sec;
+	int w;
+
+	sec = -1;
+	iw->map.max_x = iw->walls->x;
+	iw->map.max_y = iw->walls->y;
+	iw->map.min_x = iw->walls->x;
+	iw->map.min_y = iw->walls->y;
+    while (++sec < iw->v.sc)
+    {
+        w = iw->sectors[sec].sw - 1;
+        while (++w < iw->sectors[sec].sw + iw->sectors[sec].nw)
+	{
+		iw->map.max_x = ft_max(iw->map.max_x, iw->walls[w].x);
+		iw->map.max_y = ft_max(iw->map.max_y, iw->walls[w].y);
+		iw->map.min_x = ft_min(iw->map.min_x, iw->walls[w].x);
+		iw->map.min_y = ft_min(iw->map.min_y, iw->walls[w].y);
+	}
+	}
+}
+
+void	game_start_menu(t_sdl *iw)
+{
+	SDL_Rect player;
+	SDL_Rect zast;
+	SDL_Rect diff;
+
+	player.x = 0;
+	player.y = 0;
+	player.w = WINDOW_W;
+	player.h = WINDOW_H;
+	zast.x = WINDOW_W / 10;
+	zast.y = WINDOW_H / 8;
+	zast.w = WINDOW_W / 4;
+	zast.h = WINDOW_H / 8;
+	diff.w = WINDOW_W / 6;
+	diff.h = WINDOW_H / 10;
+	diff.x = zast.x + (zast.w - diff.w) / 2;
+	diff.y = zast.y + (zast.h - diff.h) / 2;
+	ft_scaled_blit(iw->menu.icons[0], iw->sur, &player);
+	if(iw->menu.count == 0)
+		ft_scaled_blit(iw->menu.icons[2],iw->sur, &zast);
+	else 
+		ft_scaled_blit(iw->menu.icons[1], iw->sur, &zast);
+	ft_scaled_blit(iw->menu.icons[3], iw->sur, &diff);
+	zast.y += zast.h + WINDOW_H / 10;
+	diff.y = zast.y + (zast.h - diff.h) / 2;
+	if(iw->menu.count == 1)
+		ft_scaled_blit(iw->menu.icons[2],iw->sur, &zast);
+	else
+		ft_scaled_blit(iw->menu.icons[1],iw->sur, &zast);
+	ft_scaled_blit(iw->menu.icons[4], iw->sur, &diff);
+	zast.y += zast.h + WINDOW_H / 10;
+	diff.y = zast.y + (zast.h - diff.h) / 2;
+	if(iw->menu.count == 2)
+		ft_scaled_blit(iw->menu.icons[2],iw->sur, &zast);
+	else 
+		ft_scaled_blit(iw->menu.icons[1],iw->sur, &zast);
+	ft_scaled_blit(iw->menu.icons[5], iw->sur, &diff);
+	SDL_UpdateWindowSurface(iw->win);
+}
+
+void	menu_loop(t_sdl *iw)
+{
+	SDL_Event	e;
+	int			quit;
+
+	game_start_menu(iw);
+	quit = 0;
+	while (!quit)
+	{
+		while (SDL_PollEvent(&e) != 0)
+			if (e.type == SDL_KEYDOWN)
+			{
+				if (e.key.keysym.scancode == 81)
+				{
+					iw->menu.count += ((iw->menu.count < 2) ? 1 : -2);
+					game_start_menu(iw);
+				}
+				else if (e.key.keysym.scancode == 82)
+				{
+					iw->menu.count -= ((iw->menu.count > 0) ? 1 : -2);
+					game_start_menu(iw);
+				}
+				else if (e.key.keysym.scancode == 40)
+					quit = 1;
+				else if (e.key.keysym.scancode == 41)
+					exit_x(iw);
+			}
+			
+	}
+}
+
 int		main(void)
 {
 	t_sdl	iw;
 	
-	iw.v.game_mode = 1;
+	iw.v.game_mode = 0;
 	get_def(&iw);
 	read_textures(&iw);
 	read_sprites_textures(&iw);
@@ -6043,12 +6161,18 @@ int		main(void)
 	//SDL_SetWindowFullscreen(iw.win, SDL_WINDOW_FULLSCREEN_DESKTOP);
 	//iw.ren = SDL_CreateRenderer(iw.win, -1, 0);
 	iw.sur = SDL_GetWindowSurface(iw.win);
+	if (iw.v.game_mode)
+		menu_loop(&iw);
+
 	circle(&iw.hud, FOOTX, FOOTY);
 	draw_tex_to_select(&iw);
 	draw_decor_tex_to_select(&iw);
 	draw_menu(&iw);
 	// draw
 	get_map(&iw);
+
+	find_max_min(&iw);
+
 	set_sprites_z(&iw);
 	get_sectors_ways(&iw);
 	add_picture1(&iw); ///////////////

@@ -14,7 +14,8 @@ NAME = doom-nukem
 
 SRC =	main.c \
 		CLrender.c \
-		map.c
+		map.c \
+		minimap.c
 
 OBJ = $(SRC:.c=.o)
 
