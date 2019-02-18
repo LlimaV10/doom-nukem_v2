@@ -1066,13 +1066,11 @@ void	draw_item(t_packaging_texture *tex, SDL_Surface *winsur, SDL_Rect *rect)
 
 void	drop_item(t_sdl *iw)
 {
-	// int x;
-	// int y;
 	int i;
 	int flag = 0;
 
-	// x = iw->p.x;
-	// y = iw->p.y;
+	if (iw->bag.selected_item == 0)
+		return;
 	i = 0;
 	while(i < iw->bag.count_items)
 	{
@@ -1115,7 +1113,8 @@ void	delete_used_sprite(t_sdl *iw, t_sprite *s)
 	*iw->sprite = head.next;
 }
 
-void	use_item(t_sdl *iw)
+// just deletes item from inventory
+void	use_item_delete(t_sdl *iw)
 {
 	int i;
 	int flag;
@@ -1135,15 +1134,48 @@ void	use_item(t_sdl *iw)
 	iw->bag.selected_item = 0;
 }
 
+void	use_item(t_sdl *iw)
+{
+	if (iw->bag.selected_item == 0)
+		return;
+	if (iw->bag.selected_item->t_numb)
+	{
+
+	}
+}
+
 void	add_item(t_sdl *iw)
 {
-	if (iw->v.look_sprite != 0 && iw->v.look_sprite->taken == 0
-		&& iw->v.look_sprite->type == 1 && iw->v.look_sprite->plen < BUTTON_PRESS_DIST)
+	if (!(iw->v.look_sprite != 0 && iw->v.look_sprite->type == 1
+		&& iw->v.look_sprite->taken == 0 && iw->v.look_sprite->plen < BUTTON_PRESS_DIST))
+		return;
+	if (iw->v.look_sprite->t_numb == 1)
+	{
+		iw->guns.bullets[1] = iw->guns.max_bullets[1];
+		iw->guns.bullets_in_stock[1] = iw->guns.max_bullets_in_stock[1];
+		if (iw->guns.status == 0)
+		{
+			iw->guns.gun_in_hands = 1;
+			iw->guns.status = 3;
+		}
+		delete_used_sprite(iw, iw->v.look_sprite);
+	}
+	else if (iw->v.look_sprite->t_numb == 0)
+	{
+		iw->guns.bullets[2] = iw->guns.max_bullets[2];
+		iw->guns.bullets_in_stock[2] = iw->guns.max_bullets_in_stock[2];
+		if (iw->guns.status == 0)
+		{
+			iw->guns.gun_in_hands = 2;
+			iw->guns.status = 3;
+		}
+		delete_used_sprite(iw, iw->v.look_sprite);
+	}
+	else
 	{
 		iw->bag.item_in_bag1[iw->bag.count_items] = iw->v.look_sprite;
 		iw->bag.count_items++;
 		iw->v.look_sprite->taken = 1;
-
 	}
 }
 
@@ -2560,7 +2592,7 @@ void	sprite_physics(t_sdl *iw, t_sprite *s)
 {
 	int		tmp;
 
-	if (s->fall_time != 1 /*&& s->e.enemy_numb != 0*/)
+	if (s->fall_time != 1 && s->e.enemy_numb != 0)
 		s->z -= (int)(iw->v.accel * ((float)(clock() - s->fall_time) /
 			(float)CLKS_P_S) * 50.0f);
 	tmp = get_ceil_z_sec(iw, s->x, s->y, s->num_sec);
@@ -6157,7 +6189,7 @@ int		main(void)
 {
 	t_sdl	iw;
 	
-	iw.v.game_mode = 1;
+	iw.v.game_mode = 0;
 	get_def(&iw);
 	read_textures(&iw);
 	read_sprites_textures(&iw);
