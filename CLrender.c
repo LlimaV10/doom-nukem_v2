@@ -1024,7 +1024,7 @@ void	draw_sprites_kernel(t_sdl *iw)
 	tmp1 = *iw->sprite;
 	while (tmp1 != 0)
 	{
-		if (iw->sectors[tmp1->num_sec].visited && tmp1->draweble)
+		if (iw->sectors[tmp1->num_sec].visited && tmp1->draweble && tmp1->taken == 0)
 		{
 			if (tmp1->top[WINDOW_W / 2] != -1 && tmp1->sx < WINDOW_W / 2 && tmp1->ex > WINDOW_W / 2 &&
 				tmp1->top[WINDOW_W / 2] < WINDOW_H / 2 && tmp1->bottom[WINDOW_W / 2] > WINDOW_H / 2

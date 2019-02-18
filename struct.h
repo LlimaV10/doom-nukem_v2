@@ -454,6 +454,9 @@ typedef struct	s_sprite
 	// 0 - decor, 1 - pickup, 2 - enemy
 	int		type;
 	t_enemy	e;
+
+//	int		index;
+	int		taken;
 }           t_sprite;
 
 typedef struct	s_sector_animation
@@ -771,6 +774,21 @@ typedef struct	s_guns
 	clock_t		prev_update_time;
 }				t_guns;
 
+typedef struct s_bag
+{
+	int			bag;
+	t_packaging_texture *(button)[3];
+	SDL_Surface *(button_sur)[3];
+	//int			item_in_bag[20];
+	t_sprite	*item_in_bag1[20];
+	int 		count_items;
+	t_sprite 	*selected_item;
+	int 		num_item_in_line;
+	int 		indent;
+	int			click_x;
+	int			click_y;
+}				t_bag;
+
 typedef struct	s_sdl
 {
 	SDL_Window	*win;
@@ -815,6 +833,7 @@ typedef struct	s_sdl
 
 	t_hud		hud;
 	t_guns		guns;
+	t_bag		bag;
 }				t_sdl;
 
 #endif

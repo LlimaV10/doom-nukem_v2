@@ -65,4 +65,5 @@ int		get_ceil_z_sec(t_sdl *iw, int x, int y, int sector);
 int		get_floor_z_sec(t_sdl *iw, int x, int y, int sector);
 void	get_kernels(t_sdl *iw);
 
+void add_sprite(t_sdl *iw, int x, int y, int z, int t, int num, int type, float scale);///// delete
 #endif

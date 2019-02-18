@@ -50,6 +50,18 @@ Uint32	get_pixel(t_packaging_texture *sur, const int x, const int y)
 	return (0);*/
 }
 
+Uint32	get_pixel_surface(SDL_Surface *sur, const int x, const int y)
+{
+	uint8_t *v;
+	int		bpp;
+
+	if (x < 0 || x >= sur->w || y < 0 || y >= sur->h)
+		return (0);
+	bpp = sur->format->BytesPerPixel;
+	v = (uint8_t *)sur->pixels + y * sur->pitch + x * bpp;
+	return (v[0] | v[1] << 8 | v[2] << 16);
+}
+
 void	exit_x(t_sdl *iw)
 {
 	SDL_FreeSurface(iw->sur);
@@ -997,6 +1009,239 @@ void	draw_gun(t_sdl *iw)
 	}
 }
 
+//BACKPACK/////////////////////////////////////////////////////////
+
+void	draw_frame(t_sdl *iw, SDL_Surface *winsur, SDL_Rect *rect)
+{
+	int i;
+	int j;
+	int color;
+	i = -1;
+	while(++i < rect->w)
+	{
+		j = -1;
+		while(++j < rect->h)
+		{
+			color = get_pixel(iw->bag.button[0], iw->bag.button[0]->w * i / rect->w, iw->bag.button[0]->h * j / rect->h);
+            if (color != 0x010000)
+                set_pixel(winsur, rect->x + i, rect->y + j, color);
+		}
+	}
+}
+
+void	draw_item(t_packaging_texture *tex, SDL_Surface *winsur, SDL_Rect *rect)
+{
+	int		i;
+	int		j;
+    int     color;
+
+	i = -1;
+	while (++i < rect->w)
+	{
+		j = -1;
+		while (++j < rect->h)
+        {
+            color = get_pixel(tex, tex->w * j / rect->w, tex->h * i / rect->h);
+            if (color != 0x010000)
+                set_pixel(winsur, rect->x + j, rect->y + i, color);
+        }
+	}
+	
+}
+
+void	drop_item(t_sdl *iw)
+{
+	// int x;
+	// int y;
+	int i;
+	int flag = 0;
+
+	// x = iw->p.x;
+	// y = iw->p.y;
+	i = 0;
+	while(i < iw->bag.count_items)
+	{
+		if (iw->bag.selected_item == iw->bag.item_in_bag1[i])
+			flag = 1;
+		if (flag == 1)
+			iw->bag.item_in_bag1[i] = iw->bag.item_in_bag1[i + 1];
+		i++;
+	}
+	iw->bag.count_items--;
+	iw->bag.selected_item->x = iw->p.x;
+	iw->bag.selected_item->y = iw->p.y;
+	iw->bag.selected_item->z = get_floor_z(iw, iw->p.x, iw->p.y);
+	iw->bag.selected_item->num_sec = iw->d.cs;
+	iw->bag.selected_item->taken = 0;
+	//add_sprite(iw, x, y, 500, iw->bag.selected_item, iw->d.cs, 1, 0.1f);	
+	iw->bag.selected_item = 0;
+}
+
+void	use_item(t_sdl *iw)
+{
+	int i;
+	int flag;
+
+	flag = 0;
+	i = 0;
+	while(i < iw->bag.count_items)
+	{
+		if (iw->bag.selected_item == iw->bag.item_in_bag1[i])
+			flag = 1;
+		if (flag == 1)
+			iw->bag.item_in_bag1[i] = iw->bag.item_in_bag1[i + 1];
+		i++;
+	}
+	iw->bag.count_items--;
+	iw->bag.selected_item = 0;
+}
+
+void	add_item(t_sdl *iw)
+{
+	if (iw->v.look_sprite != 0 && iw->v.look_sprite->taken == 0
+		&& iw->v.look_sprite->type == 1 && iw->v.look_sprite->plen < BUTTON_PRESS_DIST)
+	{
+		iw->bag.item_in_bag1[iw->bag.count_items] = iw->v.look_sprite;
+		iw->bag.count_items++;
+		iw->v.look_sprite->taken = 1;
+
+	}
+}
+
+void draw_button(t_sdl	*iw, SDL_Rect	*rect, t_packaging_texture *texture)
+{
+	int x;
+	int y;
+	int color;
+
+	x = -1;
+	while(++x < rect->w)
+	{
+		y = -1;
+		while(++y < rect->h)
+		{
+			color = get_pixel(texture, texture->w * x / rect->w, texture->h * y / rect->h);
+            if (color != 0xff00e3 && color != 0x000000)
+                set_pixel(iw->sur, rect->x + x, rect->y + y, color);
+		}
+	}
+}
+
+void draw_butttons(t_sdl	*iw, SDL_Rect	*rect)
+{
+	rect->w = ((((WINDOW_W - (WINDOW_W / 4.5)) - (WINDOW_W - (WINDOW_W / 2.5))) / 3) <
+	((WINDOW_H - (WINDOW_H / 5)) - (WINDOW_H - (WINDOW_H / 2.5)))) ?
+	(((WINDOW_W - (WINDOW_W / 4.5)) - (WINDOW_W - (WINDOW_W / 2.5))) / 3) :
+	((WINDOW_H - (WINDOW_H / 5)) - (WINDOW_H - (WINDOW_H / 2.5)));
+	
+	rect->h = rect->w;
+	
+	// rect->w = ((WINDOW_W - (WINDOW_W / 4.5)) - (WINDOW_W - (WINDOW_W / 2.5))) / 3;
+	// rect->h = (WINDOW_H - (WINDOW_H / 5)) - (WINDOW_H - (WINDOW_H / 2.5));
+	rect->x = (WINDOW_W - (WINDOW_W / 2.5));
+	rect->y = (WINDOW_H - (WINDOW_H / 2.6));
+	draw_button(iw, rect, iw->bag.button[2]);
+	if (iw->bag.click_x >= rect->x && iw->bag.click_x <= rect->x + rect->w && iw->bag.click_y >= rect->y && iw->bag.click_y <= rect->y + rect->h && iw->v.mouse_mode == 0)
+		use_item(iw);
+	rect->x = WINDOW_W - (WINDOW_W / 2.5) + rect->w * 2;
+	draw_button(iw, rect, iw->bag.button[1]);
+	if (iw->bag.click_x >= rect->x && iw->bag.click_x <= rect->x + rect->w && iw->bag.click_y >= rect->y && iw->bag.click_y <= rect->y + rect->h && iw->v.mouse_mode == 0)
+		drop_item(iw);
+}
+
+void	draw_selected_item(t_packaging_texture *tex, SDL_Surface *winsur, SDL_Rect *rect, t_sdl *iw)
+{
+	int		i;
+	int		j;
+    int     color;
+
+	i = -1;
+	rect->w = (WINDOW_W - (WINDOW_W / 4.5)) - (WINDOW_W - (WINDOW_W / 2.5));
+	rect->h = (WINDOW_H - (WINDOW_H / 4.5)) - (WINDOW_H / 2.5);
+	while (++i < (WINDOW_W - (WINDOW_W / 4.5)) - (WINDOW_W - (WINDOW_W / 2.5)) - 1)
+	{
+		j = -1;
+		while (++j < (WINDOW_H - (WINDOW_H / 4.5)) - (WINDOW_H / 2.5) - 1)
+        {
+			color = get_pixel(tex, tex->w * i / rect->w, tex->h * j / rect->h);
+            if (color != 0xff00e3 && color != 0x010000)
+                set_pixel(winsur, WINDOW_W - (WINDOW_W / 2.5) + i, rect->y + j, color);
+        }
+	}
+	draw_butttons(iw, rect);
+}
+
+void	draw_items(t_sdl *iw)
+{
+	int		i;
+	int w_transparency;
+	SDL_Rect	rect;
+
+	w_transparency = (WINDOW_W - (WINDOW_W / 2.5)) - (WINDOW_W / 4.5);
+	rect.w = w_transparency * 0.15;
+	rect.h = w_transparency * 0.15;
+	iw->bag.num_item_in_line = w_transparency / rect.w - 1;
+	iw->bag.indent = (w_transparency - (iw->bag.num_item_in_line * rect.w)) / iw->bag.num_item_in_line;
+	(iw->bag.indent < 1) ? iw->bag.indent++ : 0;
+	rect.x = (WINDOW_W / 4.5);
+	rect.y = (WINDOW_H / 4.5);
+	i = -1;
+	while (++i < iw->bag.count_items && rect.x <= WINDOW_W - (WINDOW_W / 2.5))
+	{
+		if (rect.x + iw->bag.indent + rect.w > WINDOW_W - (WINDOW_W / 2.5))
+		{
+			rect.y += rect.h + iw->bag.indent;
+			rect.x = (WINDOW_W / 4.5);
+			if (rect.y + rect.h >= WINDOW_H - (WINDOW_H / 4.5))
+				break ;
+		}
+		draw_item(iw->t_pickup[iw->bag.item_in_bag1[i]->t_numb], iw->sur, &rect);
+		if (iw->bag.click_x >= rect.x && iw->bag.click_x <= rect.x + rect.w &&
+			iw->bag.click_y >= rect.y && iw->bag.click_y <= rect.y + rect.h &&
+			iw->v.mouse_mode == 0)
+		{
+			iw->bag.selected_item = iw->bag.item_in_bag1[i];
+			draw_frame(iw, iw->sur, &rect);
+		}
+		rect.x += rect.w + iw->bag.indent;
+	}
+	rect.y = (WINDOW_H / 4.5);
+	if (iw->bag.selected_item != 0)
+		draw_selected_item(iw->t_pickup[iw->bag.selected_item->t_numb], iw->sur, &rect, iw);
+}
+
+void	transparency(t_sdl	*iw)
+{
+	int i;
+	int j;
+	Uint32 pix;
+	int color;
+
+	i = WINDOW_W / 5 - 10;
+	while(i++ <= WINDOW_W - (WINDOW_W / 5) + 9)
+	{
+		j = WINDOW_H / 5 - 10;
+		while (j++ <= WINDOW_H - (WINDOW_H / 5) + 9)
+		{
+			if ((i >= WINDOW_W / 5 - 10 && i <= WINDOW_W / 5) || (j >= WINDOW_H / 5 - 10 && j <= WINDOW_H / 5) || 
+				(i <= WINDOW_W - (WINDOW_W / 5) + 10 && i >=  WINDOW_W - (WINDOW_W / 5)) || 
+				(j <= WINDOW_H - (WINDOW_H / 5) + 10 && j >=  WINDOW_H - (WINDOW_H / 5)))
+				set_pixel(iw->sur, i, j, 0x999999);
+			else
+			{
+				pix = get_pixel_surface(iw->sur, i, j);
+				color = (((int)((float)(pix >> 16) * 0.3)) << 16) +
+						(((int)((float)((pix >> 8) - (pix >> 16 << 8)) * 0.3)) << 8) +
+						(int)((float)(pix - (pix >> 8 << 8)) * 0.3);
+				set_pixel(iw->sur, i, j, color);
+			}
+		}
+	}
+    draw_items(iw);
+}
+
+//\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
 void	update(t_sdl *iw)
 {
 	SDL_FillRect(iw->sur, &iw->winrect, 0x000000);
@@ -1005,10 +1250,11 @@ void	update(t_sdl *iw)
 	draw_some_info(iw);
 	if (iw->v.game_mode)
 	{
-		
 		make_health(&iw->hud, iw);
 	}
 	draw_crosshair(iw);
+	if (iw->bag.bag == 1)
+		transparency(iw);
 	draw_selected_tex(iw);
 	draw_selected_sprite(iw);
 	SDL_UpdateWindowSurface(iw->win);
@@ -1194,6 +1440,10 @@ void	key_down(int code, t_sdl *iw)
 	else if (code == 21 && iw->v.game_mode && iw->guns.status == 0
 		&& iw->guns.bullets[iw->guns.gun_in_hands] < iw->guns.max_bullets[iw->guns.gun_in_hands])
 		iw->guns.status = 2;
+	else if(code == 5)
+		iw->bag.bag = ((iw->bag.bag == 1) ? 0 : 1);
+	else if(code == 9)
+		add_item(iw);
 	/*else if (code == 9)
 		check_animations(iw);*/
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
@@ -2654,7 +2904,11 @@ void	main_loop(t_sdl *iw)
 				iw->v.mouse_y = e.motion.y;
 			}
 			else if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_LEFT)
+			{
 				mouse_buttonleft_up(e.button.x, e.button.y, iw);
+				iw->bag.click_x = e.button.x;
+        		iw->bag.click_y = e.button.y;
+			}
 			else if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT && iw->v.game_mode)
 				iw->v.left_mouse_pressed = 1;
 			else if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_RIGHT)
@@ -4667,7 +4921,7 @@ void	draw_sprites(t_sdl *iw)
 	tmp1 = *iw->sprite;
 	while (tmp1 != 0)
 	{
-		if (iw->sectors[tmp1->num_sec].visited && tmp1->draweble)
+		if (iw->sectors[tmp1->num_sec].visited && tmp1->draweble && tmp1->taken == 0)
 		{
 			if (tmp1->top[WINDOW_W / 2] != -1 && tmp1->sx < WINDOW_W / 2 && tmp1->ex > WINDOW_W / 2 &&
 				tmp1->top[WINDOW_W / 2] < WINDOW_H / 2 && tmp1->bottom[WINDOW_W / 2] > WINDOW_H / 2
@@ -5061,11 +5315,15 @@ void	read_textures(t_sdl *iw)
 	//Uint8 *target_pixel = (Uint8 *)(iw->t)[0]->pixels;
 	//set_pixel((iw->t)[0], 0, 0, 0xFF0000);
 	//printf("%d\n", read_pixel((iw->t)[0], 2, 0));
+	iw->bag.button_sur[0] = SDL_LoadBMP("backpack/frame.bmp");
+	iw->bag.button_sur[1] = SDL_LoadBMP("backpack/del.bmp");
+	iw->bag.button_sur[2] = SDL_LoadBMP("backpack/ok.bmp");
 }
 
 void	read_sprites_textures(t_sdl *iw)
 {
 	iw->t_decor_sur[0] = SDL_LoadBMP("sprites/decorations/0.bmp");
+	iw->t_decor_sur[1] = SDL_LoadBMP("sprites/decorations/1.bmp");
 	/*iw->t_decor[1] = SDL_LoadBMP("sprites/decorations/1.bmp");
 	iw->t_decor[2] = SDL_LoadBMP("sprites/decorations/2.bmp");
 	iw->t_decor[3] = SDL_LoadBMP("sprites/decorations/3.bmp");*/
@@ -5093,6 +5351,16 @@ void	read_sprites_textures(t_sdl *iw)
 
 	iw->t_pickup_sur[0] = SDL_LoadBMP("sprites/to_pick_up/0.bmp");
 	iw->t_pickup_sur[1] = SDL_LoadBMP("sprites/to_pick_up/1.bmp");
+	iw->t_pickup_sur[2] = SDL_LoadBMP("sprites/to_pick_up/2.bmp");
+	iw->t_pickup_sur[3] = SDL_LoadBMP("sprites/to_pick_up/3.bmp");
+	iw->t_pickup_sur[4] = SDL_LoadBMP("sprites/to_pick_up/4.bmp");
+	iw->t_pickup_sur[5] = SDL_LoadBMP("sprites/to_pick_up/5.bmp");
+	iw->t_pickup_sur[6] = SDL_LoadBMP("sprites/to_pick_up/6.bmp");
+	iw->t_pickup_sur[7] = SDL_LoadBMP("sprites/to_pick_up/7.bmp");
+	iw->t_pickup_sur[8] = SDL_LoadBMP("sprites/to_pick_up/8.bmp");
+	iw->t_pickup_sur[9] = SDL_LoadBMP("sprites/to_pick_up/9.bmp");
+	iw->t_pickup_sur[10] = SDL_LoadBMP("sprites/to_pick_up/10.bmp");
+	iw->t_pickup_sur[11] = SDL_LoadBMP("sprites/to_pick_up/11.bmp");
 }
 
 void	read_weapons_textures(t_sdl *iw)
@@ -5135,6 +5403,9 @@ void add_sprite(t_sdl *iw, int x, int y, int z, int t, int num, int type, float 
 	tmp->e.previous_picture_change = 1;
 	tmp->e.prev_update_time = 1;
 	tmp->fall_time = 1;
+
+	tmp->taken = 0;
+
 	//tmp->e.previous_move_to_player_time = 1;
 	(*iw->sprite) = tmp;
 	tmp->t_numb = t;
@@ -5247,6 +5518,10 @@ void	get_def(t_sdl *iw)
 	iw->v.weapon_change_ydir = 1;
 	iw->v.left_mouse_pressed = 0;
 	iw->v.weapon_change_y_hide = 0;
+
+	iw->bag.bag = 0;
+	iw->bag.count_items = 0;
+	iw->bag.selected_item = 0;
 }
 
 void	get_kernel_mem(t_sdl *iw)
@@ -5593,6 +5868,9 @@ void	get_packaging_textures(t_sdl *iw)
 	i = -1;
 	while (++i < WEAPONS_TEXTURES_COUNT)
 		get_packaging_texture(&iw->t_weap[i], iw->t_weap_sur[i]);
+	get_packaging_texture(&iw->bag.button[0], iw->bag.button_sur[0]);
+	get_packaging_texture(&iw->bag.button[1], iw->bag.button_sur[1]);
+	get_packaging_texture(&iw->bag.button[2], iw->bag.button_sur[2]);
 }
 
 void	set_sprites_z(t_sdl *iw)
@@ -5684,7 +5962,7 @@ void	get_guns(t_sdl *iw)
 int		main(void)
 {
 	t_sdl	iw;
-
+	
 	iw.v.game_mode = 1;
 	get_def(&iw);
 	read_textures(&iw);
@@ -5694,7 +5972,7 @@ int		main(void)
 	get_kernel_mem(&iw);
 	get_kernels(&iw);
 	get_guns(&iw);
-	//add_sprite(&iw, 7240, 2640, 500, 0, 1, 0, 2.0f);
+	//enemy
 	add_sprite(&iw, 4700, -900, 0, 0, 0, 0, 2.0f);
 	(*iw.sprite)->type = 2;
 	(*iw.sprite)->e.enemy_numb = 0;
@@ -5703,6 +5981,27 @@ int		main(void)
 	(*iw.sprite)->e.status = 0;
 	(*iw.sprite)->t = iw.t_enemies[0];
 	(*iw.sprite)->t_kernel = &iw.k.m_t_enemies[0];
+	//pickup
+
+	// add_sprite(&iw, 7240, 2640, 200, 0, 1, 0, 0.5f);
+	// add_sprite(&iw, 6520, 2298, 200, 0, 1, 2, 0.5f);
+
+	add_sprite(&iw, 8640, 2200, 200, 0, 1, 1, 0.1f);
+	add_sprite(&iw, 7500, 2000, 200, 1, 1, 1, 0.5f);
+	add_sprite(&iw, 7500, 3000, 200, 2, 1, 1, 0.5f);
+	// add_sprite(&iw, 7500, 3000, 200, 3, 1, 1, 0.5f);
+
+	add_sprite(&iw, 8500, 1500, 200, 3, 1, 1, 0.5f);
+	add_sprite(&iw, 9000, 5500, 200, 4, 1, 1, 0.5f);
+	add_sprite(&iw, 10000, 500, 200, 5, 1, 1, 0.5f);
+
+	add_sprite(&iw, 9500, 5000, 200, 6, 1, 1, 0.5f);
+	add_sprite(&iw, 7500, 3000, 200, 7, 1, 1, 0.5f);
+	add_sprite(&iw, 7500, 3000, 200, 8, 1, 1, 0.5f);
+
+	add_sprite(&iw, 8500, 1000, 200, 9, 1, 1, 0.5f);
+	add_sprite(&iw, 8000, 5500, 200, 10, 1, 1, 0.5f);
+
 	/*add_sprite(&iw,8640,2200,400, 0, 1, 0, 1.0f);
 	add_sprite(&iw,6520,2298,200, 0, 1, 0, 1.0f);*/
 
