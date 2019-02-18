@@ -66,10 +66,7 @@ void    draw_minimap(t_sdl *iw)
     int w;
 	int k;
     t_draw_line line;
-	// iw->map.min_x = 0;
-	// iw->map.max_x = 10000;
-	// iw->map.min_y = -5000;
-	// iw->map.max_y = 6000;
+
 	k = ft_max((abs(iw->map.min_x)+ abs(iw->map.max_x))/WINDOW_W, (abs(iw->map.min_y)+ abs(iw->map.max_y))/WINDOW_H);
 	if (iw->map.max_x > 0 && iw->map.max_x < 0)
 		iw->map.mid_x = (iw->map.max_x - iw->map.min_x)/2 - abs(iw->map.min_x);
@@ -95,9 +92,10 @@ void    draw_minimap(t_sdl *iw)
 			}
         }
     }
-	SDL_Surface *icon = SDL_LoadBMP("textures/player.bmp");
-	SDL_Rect player = {WINDOW_W/2 -10, WINDOW_H/2 - 10, 20, 20};
-	SDL_BlitSurface(icon, NULL ,iw->sur, &player);
-	SDL_FreeSurface(icon);
+	//SDL_Surface *icon = SDL_LoadBMP("textures/player.bmp");
+	//SDL_Rect player = {WINDOW_W/2 -10, WINDOW_H/2 - 10, 20, 20};
+	/*SDL_BlitSurface(icon, NULL ,iw->sur, &player);*/
+	ft_scaled_blit(iw->map.player, iw->sur, &iw->map.pl_rect);
+	//SDL_FreeSurface(icon);
 }
 

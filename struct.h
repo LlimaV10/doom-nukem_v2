@@ -785,7 +785,9 @@ typedef struct    s_map
     int max_x;
     int min_y;
     int max_y;
-
+	SDL_Rect	pl_rect;
+	SDL_Surface *player_sur;
+	t_packaging_texture	*player;
 }                t_map;
 
 typedef struct    s_menu

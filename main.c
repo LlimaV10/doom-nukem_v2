@@ -3,7 +3,7 @@
 
 void	set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 {
-	if (x >= 0 && x < WINDOW_W && y >= 0 && y < WINDOW_H + 300)
+	if (x >= 0 && x < surface->w && y >= 0 && y < surface->h)
 	{
 		Uint8 *target_pixel = (Uint8 *)surface->pixels + y * surface->pitch + x * 4;
 		*(Uint32 *)target_pixel = pixel;
@@ -1093,6 +1093,28 @@ void	drop_item(t_sdl *iw)
 }
 
 //////////////////// NEED TO DELETE SPRITE AND DO SOME...
+void	delete_used_sprite(t_sdl *iw, t_sprite *s)
+{
+	t_sprite	head;
+	t_sprite	*tmp;
+	t_sprite	*tmp2;
+
+	head.next = *iw->sprite;
+	tmp = &head;
+	while (tmp->next)
+	{
+		if (tmp->next == s)
+		{
+			tmp2 = tmp->next;
+			tmp->next = tmp->next->next;
+			free(tmp2);
+			break;
+		}
+		tmp = tmp->next;
+	}
+	*iw->sprite = head.next;
+}
+
 void	use_item(t_sdl *iw)
 {
 	int i;
@@ -1109,6 +1131,7 @@ void	use_item(t_sdl *iw)
 		i++;
 	}
 	iw->bag.count_items--;
+	delete_used_sprite(iw, iw->bag.selected_item);
 	iw->bag.selected_item = 0;
 }
 
@@ -1234,7 +1257,7 @@ void	transparency(t_sdl	*iw)
 	int color;
 
 	i = WINDOW_W / 5 - 10;
-	while(i++ <= WINDOW_W - (WINDOW_W / 5) + 9)
+	while (i++ <= WINDOW_W - (WINDOW_W / 5) + 9)
 	{
 		j = WINDOW_H / 5 - 10;
 		while (j++ <= WINDOW_H - (WINDOW_H / 5) + 9)
@@ -1253,25 +1276,44 @@ void	transparency(t_sdl	*iw)
 			}
 		}
 	}
-    draw_items(iw);
 }
 
 //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+//
+//int		count_sprites(t_sdl *iw)
+//{
+//	int		i;
+//	t_sprite	*tmp;
+//
+//	tmp = *iw->sprite;
+//	i = 0;
+//	while (tmp != 0)
+//	{
+//		i++;
+//		tmp = tmp->next;
+//	}
+//	return (i);
+//}
 
 void	update(t_sdl *iw)
 {
 	SDL_FillRect(iw->sur, &iw->winrect, 0x000000);
 	draw(iw);
 	
+	//printf("sprites %d\n", count_sprites(iw));
 	draw_some_info(iw);
 	if (iw->v.game_mode)
 	{
 		make_health(&iw->hud, iw);
 	}
-	draw_crosshair(iw);
+	if (iw->bag.bag != 1 && iw->map.back != 1)
+		draw_crosshair(iw);
 	if (iw->bag.bag == 1 || iw->map.back == 1)
 		transparency(iw);
-	if(iw->map.back == 1)
+	if (iw->bag.bag == 1)
+		draw_items(iw);
+	if (iw->map.back == 1)
 		draw_minimap(iw);
 	draw_icon_bag(iw);
 	draw_selected_tex(iw);
@@ -1459,7 +1501,7 @@ void	key_down(int code, t_sdl *iw)
 	else if (code == 21 && iw->v.game_mode && iw->guns.status == 0
 		&& iw->guns.bullets[iw->guns.gun_in_hands] < iw->guns.max_bullets[iw->guns.gun_in_hands])
 		iw->guns.status = 2;
-	else if (code == 5 && iw->v.game_mode)
+	else if (code == 43 && iw->v.game_mode)
 	{
 		SDL_SetRelativeMouseMode(iw->bag.bag);
 		iw->v.mouse_mode = iw->bag.bag;
@@ -1469,7 +1511,9 @@ void	key_down(int code, t_sdl *iw)
 		add_item(iw);
 	else if (code == 8 && iw->v.game_mode)
 		use_item(iw);
-	else if (code == 14)
+	else if (code == 20 && iw->v.game_mode)
+		drop_item(iw);
+	else if (code == 57)
 	{
 		if (iw->map.back == 1)
 		iw->map.back = 0;
@@ -2570,7 +2614,7 @@ void	enemy_intelligence0(t_sdl *iw, t_sprite *s)
 		else if (s->t_numb == 3)
 		{
 			s->t_numb = 4;
-			iw->p.health -= 3;
+			iw->p.health -= 3 * iw->menu.count;
 		}
 		else
 		{
@@ -5297,7 +5341,7 @@ void	draw(t_sdl *iw)
 
 void	read_textures(t_sdl *iw)
 {
-	iw->hud.enot_sur = SDL_LoadBMP("HUD/enot.bmp");
+	iw->hud.enot_sur = SDL_LoadBMP("interface_textures/HUD/enot.bmp");
 	iw->t_sur[0] = SDL_LoadBMP("textures/0.bmp");
 	iw->tsz[0] = 1.0f;
 	iw->t_sur[1] = SDL_LoadBMP("textures/1.bmp");
@@ -5347,16 +5391,18 @@ void	read_textures(t_sdl *iw)
 	//Uint8 *target_pixel = (Uint8 *)(iw->t)[0]->pixels;
 	//set_pixel((iw->t)[0], 0, 0, 0xFF0000);
 	//printf("%d\n", read_pixel((iw->t)[0], 2, 0));
-	iw->bag.button_sur[0] = SDL_LoadBMP("backpack/frame.bmp");
-	iw->bag.button_sur[1] = SDL_LoadBMP("backpack/del.bmp");
-	iw->bag.button_sur[2] = SDL_LoadBMP("backpack/ok.bmp");
+	iw->bag.button_sur[0] = SDL_LoadBMP("interface_textures/backpack/frame.bmp");
+	iw->bag.button_sur[1] = SDL_LoadBMP("interface_textures/backpack/del.bmp");
+	iw->bag.button_sur[2] = SDL_LoadBMP("interface_textures/backpack/ok.bmp");
 
-	iw->menu.icons_sur[0] = SDL_LoadBMP("menu/0.bmp");
-	iw->menu.icons_sur[1] = SDL_LoadBMP("menu/1.bmp");
-	iw->menu.icons_sur[2] = SDL_LoadBMP("menu/2.bmp");
-	iw->menu.icons_sur[3] = SDL_LoadBMP("menu/3.bmp");
-	iw->menu.icons_sur[4] = SDL_LoadBMP("menu/4.bmp");
-	iw->menu.icons_sur[5] = SDL_LoadBMP("menu/5.bmp");
+	iw->menu.icons_sur[0] = SDL_LoadBMP("interface_textures/menu/0.bmp");
+	iw->menu.icons_sur[1] = SDL_LoadBMP("interface_textures/menu/1.bmp");
+	iw->menu.icons_sur[2] = SDL_LoadBMP("interface_textures/menu/2.bmp");
+	iw->menu.icons_sur[3] = SDL_LoadBMP("interface_textures/menu/3.bmp");
+	iw->menu.icons_sur[4] = SDL_LoadBMP("interface_textures/menu/4.bmp");
+	iw->menu.icons_sur[5] = SDL_LoadBMP("interface_textures/menu/5.bmp");
+
+	 iw->map.player_sur = SDL_LoadBMP("interface_textures/map/player.bmp");
 }
 
 void	read_sprites_textures(t_sdl *iw)
@@ -5563,7 +5609,12 @@ void	get_def(t_sdl *iw)
 	iw->bag.selected_item = 0;
 
 	iw->map.back = 0;
-	iw->menu.count = 0;
+	iw->map.pl_rect.x = WINDOW_W / 2 - WINDOW_W / 100;
+	iw->map.pl_rect.y = WINDOW_H / 2 + WINDOW_H / 34;
+	iw->map.pl_rect.w = 20;
+	iw->map.pl_rect.h = 20;
+
+	iw->menu.count = 1;
 }
 
 void	get_kernel_mem(t_sdl *iw)
@@ -5918,6 +5969,7 @@ void	get_packaging_textures(t_sdl *iw)
 	i = -1;
 	while (++i < 6)
 		get_packaging_texture(&iw->menu.icons[i], iw->menu.icons_sur[i]);
+	get_packaging_texture(&iw->map.player, iw->map.player_sur);
 }
 
 void	set_sprites_z(t_sdl *iw)
@@ -6048,21 +6100,21 @@ void	game_start_menu(t_sdl *iw)
 	diff.x = zast.x + (zast.w - diff.w) / 2;
 	diff.y = zast.y + (zast.h - diff.h) / 2;
 	ft_scaled_blit(iw->menu.icons[0], iw->sur, &player);
-	if(iw->menu.count == 0)
+	if (iw->menu.count == 1)
 		ft_scaled_blit(iw->menu.icons[2],iw->sur, &zast);
 	else 
 		ft_scaled_blit(iw->menu.icons[1], iw->sur, &zast);
 	ft_scaled_blit(iw->menu.icons[3], iw->sur, &diff);
 	zast.y += zast.h + WINDOW_H / 10;
 	diff.y = zast.y + (zast.h - diff.h) / 2;
-	if(iw->menu.count == 1)
+	if (iw->menu.count == 2)
 		ft_scaled_blit(iw->menu.icons[2],iw->sur, &zast);
 	else
 		ft_scaled_blit(iw->menu.icons[1],iw->sur, &zast);
 	ft_scaled_blit(iw->menu.icons[4], iw->sur, &diff);
 	zast.y += zast.h + WINDOW_H / 10;
 	diff.y = zast.y + (zast.h - diff.h) / 2;
-	if(iw->menu.count == 2)
+	if (iw->menu.count == 3)
 		ft_scaled_blit(iw->menu.icons[2],iw->sur, &zast);
 	else 
 		ft_scaled_blit(iw->menu.icons[1],iw->sur, &zast);
@@ -6084,12 +6136,12 @@ void	menu_loop(t_sdl *iw)
 			{
 				if (e.key.keysym.scancode == 81)
 				{
-					iw->menu.count += ((iw->menu.count < 2) ? 1 : -2);
+					iw->menu.count += ((iw->menu.count < 3) ? 1 : -2);
 					game_start_menu(iw);
 				}
 				else if (e.key.keysym.scancode == 82)
 				{
-					iw->menu.count -= ((iw->menu.count > 0) ? 1 : -2);
+					iw->menu.count -= ((iw->menu.count > 1) ? 1 : -2);
 					game_start_menu(iw);
 				}
 				else if (e.key.keysym.scancode == 40)
@@ -6105,7 +6157,7 @@ int		main(void)
 {
 	t_sdl	iw;
 	
-	iw.v.game_mode = 0;
+	iw.v.game_mode = 1;
 	get_def(&iw);
 	read_textures(&iw);
 	read_sprites_textures(&iw);
