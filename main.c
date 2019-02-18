@@ -1077,6 +1077,7 @@ void	drop_item(t_sdl *iw)
 	iw->bag.selected_item = 0;
 }
 
+//////////////////// NEED TO DELETE SPRITE AND DO SOME...
 void	use_item(t_sdl *iw)
 {
 	int i;
@@ -1383,7 +1384,7 @@ void	key_up(int code, t_sdl *iw)
 }
 
 void	key_down(int code, t_sdl *iw)
-{
+{ 
 	printf("keydown = %d\n", code);
 	if (code == 41)
 		exit_x(iw);
@@ -1440,9 +1441,13 @@ void	key_down(int code, t_sdl *iw)
 	else if (code == 21 && iw->v.game_mode && iw->guns.status == 0
 		&& iw->guns.bullets[iw->guns.gun_in_hands] < iw->guns.max_bullets[iw->guns.gun_in_hands])
 		iw->guns.status = 2;
-	else if(code == 5)
+	else if (code == 5 && iw->v.game_mode)
+	{
+		SDL_SetRelativeMouseMode(iw->bag.bag);
+		iw->v.mouse_mode = iw->bag.bag;
 		iw->bag.bag = ((iw->bag.bag == 1) ? 0 : 1);
-	else if(code == 9)
+	}
+	else if (code == 9 && iw->v.game_mode)
 		add_item(iw);
 	/*else if (code == 9)
 		check_animations(iw);*/
