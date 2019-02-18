@@ -1010,6 +1010,21 @@ void	draw_gun(t_sdl *iw)
 }
 
 //BACKPACK/////////////////////////////////////////////////////////
+void	draw_icon_bag(t_sdl *iw)
+{
+	SDL_Rect	rect;
+
+	rect.x = 0;
+	rect.y = WINDOW_H - 100;
+	rect.w = 100;
+	rect.h = 100;
+	if (iw->bag.selected_item != 0)
+		ft_scaled_blit(iw->t_pickup[iw->bag.selected_item->t_numb], iw->sur, &rect);
+	else
+		ft_scaled_blit(iw->t_weap[17], iw->sur, &rect);
+
+}
+
 
 void	draw_frame(t_sdl *iw, SDL_Surface *winsur, SDL_Rect *rect)
 {
@@ -1256,6 +1271,8 @@ void	update(t_sdl *iw)
 	draw_crosshair(iw);
 	if (iw->bag.bag == 1)
 		transparency(iw);
+	
+	draw_icon_bag(iw);
 	draw_selected_tex(iw);
 	draw_selected_sprite(iw);
 	SDL_UpdateWindowSurface(iw->win);
@@ -1449,6 +1466,8 @@ void	key_down(int code, t_sdl *iw)
 	}
 	else if (code == 9 && iw->v.game_mode)
 		add_item(iw);
+	else if (code == 8 && iw->v.game_mode)
+		use_item(iw);
 	/*else if (code == 9)
 		check_animations(iw);*/
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
