@@ -2193,8 +2193,8 @@ void	move(t_sdl *iw, int pl, clock_t *time)
 	ang = (iw->p.rot + (float)pl * G1);
 	while (ang >= G360)
 		ang -= G360;
-	speed = MOVING_SPEED_PER_HALF_SEC * (float)(clock() - *time) / (float)CLKS_P_S;
-	*time = clock();
+	speed = MOVING_SPEED_PER_HALF_SEC * ((float)(clock() - *time) / (float)CLKS_P_S);
+	*time = clock() - CLKS_P_S / 15;
 	if (ang < 90)
 	{
 		dx = (int)(speed * cosf(ang)) * 2;
@@ -5554,7 +5554,7 @@ void	get_def(t_sdl *iw)
 	iw->p.rotup = 2; //550
 	iw->v.ls = 0;
 	iw->v.angle = (float)WINDOW_W / (float)WINDOW_H * 22.0f * G1;// 0.698132f;
-	iw->v.kernel = 1;
+	iw->v.kernel = 0;
 	load_kernel(&iw->k, iw);
 	//fill_floor_coefficients(iw);
 	iw->v.front = 1;
@@ -6189,7 +6189,7 @@ int		main(void)
 {
 	t_sdl	iw;
 	
-	iw.v.game_mode = 0;
+	iw.v.game_mode = 1;
 	get_def(&iw);
 	read_textures(&iw);
 	read_sprites_textures(&iw);

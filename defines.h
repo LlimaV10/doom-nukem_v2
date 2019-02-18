@@ -46,7 +46,7 @@
 #ifdef __APPLE__
 # define CLKS_P_S (CLOCKS_PER_SEC * 2)
 #elif __linux__
-# define CLKS_P_S (CLOCKS_PER_SEC / 3)
+# define CLKS_P_S (CLOCKS_PER_SEC)
 #else
 # define CLKS_P_S CLOCKS_PER_SEC
 #endif

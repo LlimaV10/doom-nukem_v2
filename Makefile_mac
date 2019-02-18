@@ -14,7 +14,8 @@ NAME = doom-nukem
 
 SRC =	main.c \
 		CLrender.c \
-		map.c
+		map.c \
+		minimap.c
 
 OBJ = $(SRC:.c=.o)
 
@@ -23,19 +24,21 @@ INC =	-I./SDL2/SDL2.framework/Headers\
 
 ERRFL = -Wall -Wextra -g # -Werror
 
-FL = `sdl2-config --cflags --libs` -lSDL2_ttf -lOpenCL -lm #-F SDL2/ -framework SDL2 -framework SDL2_ttf -framework OpenCL
+FL = -F SDL2/ -framework SDL2 -framework SDL2_ttf -framework OpenCL
+
+PRINT = yes
 
 all: $(NAME)
 
 $(OBJ): %.o: %.c
 	@echo "\033[93mCompiling \033[0m$@"
-	@cc $(ERRFL) -c -o $@ $<
+	@cc $(ERRFL) -c -o $@ $< $(INC)
 
 $(NAME): $(OBJ)
 	@echo "\033[93mCompiling libft\033[0m"
 	@make -C ./libft
 	@echo "\033[93mCompiling $(NAME)\033[0m"
-	@gcc $(ERRFL) -o $@ $(OBJ) -L libft/ ./libft/libft.a $(FL)
+	@gcc $(ERRFL) $(FL) -o $@ $(OBJ) -L libft/ ./libft/libft.a 
 	@echo "\033[92mDONE\033[0m"
 	
 
