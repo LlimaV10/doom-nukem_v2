@@ -395,7 +395,6 @@ typedef struct	s_enemy
 {
 	int		enemy_numb;
 	int		health;
-	int		damage;
 	// 0 - passive turned on player,
 	// 1 - passive turned away player,
 	// 2 - haunting player
@@ -537,6 +536,9 @@ typedef struct		s_hud
 {
 	SDL_Surface		*enot_sur;
 	t_packaging_texture	*enot;
+	SDL_Surface		*miss_sur;
+	t_packaging_texture	*miss;
+	clock_t			miss_time;
 	SDL_Rect		rect;
 //	int				color;
 	int				shell;

@@ -73,5 +73,5 @@ void	print_brez_m(t_brez *b, int d, int d1, int d2);
 void	bresen(t_sdl *iw, t_draw_line line, int color);
 void    draw_minimap(t_sdl *iw);
 void	ft_scaled_blit(t_packaging_texture *tex, SDL_Surface *winsur, SDL_Rect *rect);
-
+void	draw_miss(t_sdl *iw);
 #endif

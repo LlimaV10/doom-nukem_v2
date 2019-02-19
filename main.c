@@ -1018,15 +1018,20 @@ void	draw_icon_bag(t_sdl *iw)
 {
 	SDL_Rect	rect;
 
-	rect.x = 0;
-	rect.y = WINDOW_H - 100;
-	rect.w = 100;
-	rect.h = 100;
+	rect.x = WINDOW_W / 120;
+	rect.y = WINDOW_H - WINDOW_W / 12;
+	rect.w = WINDOW_W / 14;
+	rect.h = WINDOW_W / 14;
+	
 	if (iw->bag.selected_item != 0)
 		ft_scaled_blit(iw->t_pickup[iw->bag.selected_item->t_numb], iw->sur, &rect);
 	else
 		ft_scaled_blit(iw->t_weap[17], iw->sur, &rect);
-
+	rect.x = 0;
+	rect.y = WINDOW_H - WINDOW_W / 11;
+	rect.w = WINDOW_W / 11;
+	rect.h = WINDOW_W / 11;
+	ft_scaled_blit(iw->bag.button[0], iw->sur, &rect);
 }
 
 
@@ -1048,25 +1053,25 @@ void	draw_frame(t_sdl *iw, SDL_Surface *winsur, SDL_Rect *rect)
 	}
 }
 
-void	draw_item(t_packaging_texture *tex, SDL_Surface *winsur, SDL_Rect *rect)
-{
-	int		i;
-	int		j;
-    int     color;
+// void	draw_item(t_packaging_texture *tex, SDL_Surface *winsur, SDL_Rect *rect)
+// {
+// 	int		i;
+// 	int		j;
+//     int     color;
 
-	i = -1;
-	while (++i < rect->w)
-	{
-		j = -1;
-		while (++j < rect->h)
-        {
-            color = get_pixel(tex, tex->w * j / rect->w, tex->h * i / rect->h);
-            if (color != 0x010000)
-                set_pixel(winsur, rect->x + j, rect->y + i, color);
-        }
-	}
+// 	i = -1;
+// 	while (++i < rect->w)
+// 	{
+// 		j = -1;
+// 		while (++j < rect->h)
+//         {
+//             color = get_pixel(tex, tex->w * j / rect->w, tex->h * i / rect->h);
+//             if (color != 0x010000)
+//                 set_pixel(winsur, rect->x + j, rect->y + i, color);
+//         }
+// 	}
 	
-}
+// }
 
 void	drop_item(t_sdl *iw)
 {
@@ -1140,12 +1145,13 @@ void	use_item_delete(t_sdl *iw)
 
 void	use_item(t_sdl *iw)
 {
-	if (iw->bag.selected_item == 0)
-		return;
-	if (iw->bag.selected_item->t_numb)
-	{
+	use_item_delete(iw);
+	// if (iw->bag.selected_item == 0)
+	// 	return;
+	// if (iw->bag.selected_item->t_numb)
+	// {
 
-	}
+	// }
 }
 
 void	add_item(t_sdl *iw)
@@ -1161,6 +1167,7 @@ void	add_item(t_sdl *iw)
 		{
 			iw->guns.gun_in_hands = 1;
 			iw->guns.status = 3;
+			iw->hud.shell = 100;
 		}
 		delete_used_sprite(iw, iw->v.look_sprite);
 	}
@@ -1270,7 +1277,7 @@ void	draw_items(t_sdl *iw)
 			if (rect.y + rect.h >= WINDOW_H - (WINDOW_H / 4.5))
 				break ;
 		}
-		draw_item(iw->t_pickup[iw->bag.item_in_bag1[i]->t_numb], iw->sur, &rect);
+		ft_scaled_blit(iw->t_pickup[iw->bag.item_in_bag1[i]->t_numb], iw->sur, &rect);
 		if (iw->bag.click_x >= rect.x && iw->bag.click_x <= rect.x + rect.w &&
 			iw->bag.click_y >= rect.y && iw->bag.click_y <= rect.y + rect.h &&
 			iw->v.mouse_mode == 0)
@@ -1427,13 +1434,21 @@ void	update(t_sdl *iw)
 	}
 	if (iw->bag.bag != 1 && iw->map.back != 1)
 		draw_crosshair(iw);
+	if (iw->hud.miss_time != 1)
+	{
+		if (clock() - iw->hud.miss_time < HUD_MISS_TIME)
+			draw_miss(iw);
+		else
+			iw->hud.miss_time = 1;
+	}
 	if (iw->bag.bag == 1 || iw->map.back == 1)
 		transparency(iw);
 	if (iw->bag.bag == 1)
 		draw_items(iw);
 	if (iw->map.back == 1)
 		draw_minimap(iw);
-	draw_icon_bag(iw);
+	if (iw->v.game_mode)
+		draw_icon_bag(iw);
 	draw_selected_tex(iw);
 	draw_selected_sprite(iw);
 	SDL_UpdateWindowSurface(iw->win);
@@ -1627,7 +1642,7 @@ void	key_down(int code, t_sdl *iw)
 	}
 	else if (code == 9 && iw->v.game_mode)
 		add_item(iw);
-	else if (code == 8 && iw->v.game_mode)
+	else if (code == 8 && iw->v.game_mode && iw->bag.selected_item != 0)
 		use_item(iw);
 	else if (code == 20 && iw->v.game_mode)
 		drop_item(iw);
@@ -2067,22 +2082,19 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 			iw->v.look_sprite->e.status = 0;
 			if (iw->v.selected_sprite == 0)
 			{
-				iw->v.look_sprite->e.health = 10;
-				iw->v.look_sprite->e.damage = 5;
+				iw->v.look_sprite->e.health = ENEMY_HEALTH0;
 				iw->v.look_sprite->t = iw->t_enemies[0];
 				iw->v.look_sprite->t_kernel = &iw->k.m_t_enemies[0];
 			}
 			else if (iw->v.selected_sprite == 1)
 			{
-				iw->v.look_sprite->e.health = 20;
-				iw->v.look_sprite->e.damage = 8;
+				iw->v.look_sprite->e.health = ENEMY_HEALTH1;
 				iw->v.look_sprite->t = iw->t_enemies[8];
 				iw->v.look_sprite->t_kernel = &iw->k.m_t_enemies[8];
 			}
 			else if (iw->v.selected_sprite == 2)
 			{
-				iw->v.look_sprite->e.health = 20;
-				iw->v.look_sprite->e.damage = 8;
+				iw->v.look_sprite->e.health = ENEMY_HEALTH2;
 				iw->v.look_sprite->t = iw->t_enemies[20];
 				iw->v.look_sprite->t_kernel = &iw->k.m_t_enemies[20];
 			}
@@ -2572,7 +2584,6 @@ int		enemy_sees_player(t_sdl *iw, t_sprite *s)
 	t_sector_ways		*ways;
 	t_sector_way		*way;
 
-	//return (-1);
 	esp.px = iw->p.x;
 	esp.py = iw->p.y;
 	esp.ex = s->x;
@@ -2723,7 +2734,7 @@ void	enemy_intelligence0(t_sdl *iw, t_sprite *s)
 		}
 		if ((i = enemy_sees_player(iw, s)) != -1)
 		{
-			if (i < 10000 && i > 800)
+			if ((i < 10000 || s->e.health < ENEMY_HEALTH0) && i > 800)
 				move_enemy(iw, s);
 			else if (i <= 800)
 				s->e.status = 3;
@@ -2743,7 +2754,7 @@ void	enemy_intelligence0(t_sdl *iw, t_sprite *s)
 		else if (s->t_numb == 3)
 		{
 			s->t_numb = 4;
-			iw->p.health -= 3 * iw->menu.count;
+			iw->p.health -= ENEMY_DAMAGE0 * iw->menu.count;
 		}
 		else
 		{
@@ -2765,9 +2776,206 @@ void	enemy_intelligence0(t_sdl *iw, t_sprite *s)
 		s->t = iw->t_enemies[s->t_numb];
 		s->t_kernel = &iw->k.m_t_enemies[s->t_numb];
 	}
+	else if (s->e.status == 1)
+	{
+		if (s->e.health < 10 || ((i = enemy_sees_player(iw, s)) != -1 && i < 1000))
+		{
+			s->e.status = 0;
+			s->t_numb = 0;
+			s->t = iw->t_enemies[s->t_numb];
+			s->t_kernel = &iw->k.m_t_enemies[s->t_numb];
+		}
+	}
 	sprite_physics(iw, s);
 	if (s->e.health < 0 && s->e.status < 4)
 		s->e.status = 4;
+}
+
+void	enemy_intelligence1(t_sdl *iw, t_sprite *s)
+{
+	int		i;
+
+	//printf("STATUS %d\n", s->e.status);
+	if (s->e.status == 0)
+	{
+		if ((i = enemy_sees_player(iw, s)) != -1 && (i < 1000 || s->e.health < ENEMY_HEALTH1))
+			s->e.status = 2;
+	}
+	else if (s->e.status == 2)
+	{
+		if (clock() - s->e.previous_picture_change > CLKS_P_S / 3)
+		{
+			s->e.previous_picture_change = clock();
+			if (s->t_numb <= 8 || s->t_numb >= 12)
+				s->t_numb = 10;
+			else
+				s->t_numb++;
+			s->t = iw->t_enemies[s->t_numb];
+			s->t_kernel = &iw->k.m_t_enemies[s->t_numb];
+		}
+		if ((i = enemy_sees_player(iw, s)) != -1)
+		{
+			if (i > 2000)
+				move_enemy(iw, s);
+			else
+				s->e.status = 3;
+		}
+		else if (s->e.vis_esp.curr_sector != -1)
+		{
+			i = (int)sqrtf(powf(s->x - s->e.vis_esp.px, 2.0f) + powf(s->y - s->e.vis_esp.py, 2.0f));
+			if (i > 10)
+				move_enemy(iw, s);
+			else
+			{
+				s->t_numb = 8;
+				s->e.status = 0;
+			}
+			
+		}
+	}
+	else if (s->e.status == 3 && clock() - s->e.previous_picture_change > CLKS_P_S / 2)
+	{
+		s->e.previous_picture_change = clock();
+		if (s->t_numb < 13)
+		{
+			s->t_numb = 13;
+			iw->p.health -= ENEMY_DAMAGE1 * iw->menu.count;
+		}
+		else if (s->t_numb == 13)
+			s->t_numb = 14;
+		else
+		{
+			s->e.status = 0;
+			s->t_numb = 8;
+		}
+		s->t = iw->t_enemies[s->t_numb];
+		s->t_kernel = &iw->k.m_t_enemies[s->t_numb];
+	}
+	else if (s->e.status == 4 && clock() - s->e.previous_picture_change > CLKS_P_S / 4)
+	{
+		s->e.previous_picture_change = clock();
+		if (s->t_numb < 15)
+			s->t_numb = 15;
+		else if (s->t_numb < 19)
+			s->t_numb++;
+		else
+			s->e.status = 5;
+		s->t = iw->t_enemies[s->t_numb];
+		s->t_kernel = &iw->k.m_t_enemies[s->t_numb];
+	}
+	else if (s->e.status == 1)
+		if ((i = enemy_sees_player(iw, s)) != -1 && (i < 1000 || s->e.health < ENEMY_HEALTH1))
+			s->e.status = 0;
+	if (s->e.health <= 0 && s->e.status < 4)
+		s->e.status = 4;
+	sprite_physics(iw, s);
+}
+
+void	enemy_intelligence2(t_sdl *iw, t_sprite *s)
+{
+	int	i;
+
+	i = 0;
+	if (s->e.status == 0)
+	{
+		if (clock() - s->e.previous_picture_change > CLKS_P_S / 3)
+		{
+			s->e.previous_picture_change = clock();
+			if (s->t_numb == 20)
+				s->t_numb = 20;
+			else
+				s->t_numb = 20;
+			s->t = iw->t_enemies[s->t_numb];
+			s->t_kernel = &iw->k.m_t_enemies[s->t_numb];
+		}
+		if ((i = enemy_sees_player(iw, s)) != -1)
+		{
+			if ((i < 10000 || s->e.health < ENEMY_HEALTH2) && i > 4000)
+				s->e.status = 2;
+			else if (i <= 4000)
+				s->e.status = 3;
+		}
+	}
+	else if (s->e.status == 1)
+	{
+		if ((s->e.health < ENEMY_HEALTH2) || ((i = enemy_sees_player(iw, s)) != -1 && i <= 2000))
+		{	
+			s->e.status = 0;
+			s->t_numb = 20;
+		}
+	}
+	else if (s->e.status == 2)
+	{
+
+		if (clock() - s->e.previous_picture_change > CLKS_P_S / 7)
+		{
+			s->e.previous_picture_change = clock();
+			if (s->t_numb == 20 || s->t_numb == 25)
+				s->t_numb = 22;
+			else if (s->t_numb == 22)
+				s->t_numb = 23;
+			else if (s->t_numb == 23)
+				s->t_numb = 24;
+			else if (s->t_numb == 24)
+				s->t_numb = 22;
+			s->t = iw->t_enemies[s->t_numb];
+			s->t_kernel = &iw->k.m_t_enemies[s->t_numb];
+		}
+		if ((i = enemy_sees_player(iw, s)) != -1)
+		{		
+			if (i > 4000)
+				move_enemy(iw, s);
+			else
+				s->e.status = 3;
+		}
+		else if (s->e.vis_esp.curr_sector != -1)
+		{
+			i = (int)sqrtf(powf(s->x - s->e.vis_esp.px, 2.0f) + powf(s->y - s->e.vis_esp.py, 2.0f));
+			if (i > 10)
+				move_enemy(iw, s);
+			else
+			{
+				s->t_numb = 20;
+				s->e.status = 0;
+			}
+			
+		}
+	}
+	else if (s->e.status == 3 && clock() - s->e.previous_picture_change > CLKS_P_S / 5)
+	{
+	 	s->e.previous_picture_change = clock();
+		if (s->t_numb != 25)
+		{
+			s->t_numb = 25;
+			iw->p.health -= ENEMY_DAMAGE2 * iw->menu.count;
+		}
+		else if (s->t_numb == 25)
+			s->t_numb = 20;
+		s->t = iw->t_enemies[s->t_numb];
+		s->t_kernel = &iw->k.m_t_enemies[s->t_numb];
+		if ((i = enemy_sees_player(iw, s)) == -1)
+			s->e.status = 2;
+	}
+	else if (s->e.status == 4 && clock() - s->e.previous_picture_change > CLKS_P_S / 7)
+	{
+		s->e.previous_picture_change = clock();
+		if (s->t_numb < 26)
+			s->t_numb = 26;
+		else if (s->t_numb == 26)
+			s->t_numb = 27;
+		else if (s->t_numb == 27)
+			s->t_numb = 28;
+		else if (s->t_numb == 28)
+			s->t_numb = 29;
+		else if (s->t_numb == 29)
+			s->e.status = 5;
+		s->t = iw->t_enemies[s->t_numb];
+		s->t_kernel = &iw->k.m_t_enemies[s->t_numb];
+	}
+
+	if (s->e.health <= 0 && s->e.status < 4)
+		s->e.status = 4;
+	sprite_physics(iw, s);
 }
 
 void	check_enemies(t_sdl *iw)
@@ -2781,6 +2989,10 @@ void	check_enemies(t_sdl *iw)
 		{
 			if (tmp->e.enemy_numb == 0)
 				enemy_intelligence0(iw, tmp);
+			else if (tmp->e.enemy_numb == 1)
+				enemy_intelligence1(iw, tmp);
+			else if (tmp->e.enemy_numb == 2)
+				enemy_intelligence2(iw, tmp);
 			tmp->e.prev_update_time = clock();
 		}
 		tmp = tmp->next;
@@ -2789,17 +3001,28 @@ void	check_enemies(t_sdl *iw)
 
 //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
+void	draw_miss(t_sdl *iw)
+{
+	SDL_Rect	rect;
+
+	rect.w = WINDOW_W / 10;
+	rect.h = rect.w * iw->hud.miss->h / iw->hud.miss->w;
+	rect.x = WINDOW_W / 2 - rect.w / 2;
+	rect.y = WINDOW_H / 3 - WINDOW_H / 10 * (clock() - iw->hud.miss_time) / CLKS_P_S;
+	ft_scaled_blit(iw->hud.miss, iw->sur, &rect);
+}
+
 void	damaging_enemy(t_sdl *iw, int damage, int max_distance)
 {
 	int		dist;
-	if (iw->v.look_sprite == 0 || iw->v.look_sprite->type != 2)
+	if (iw->v.look_sprite == 0 || iw->v.look_sprite->type != 2 || iw->v.look_sprite->e.status >= 4)
 		return;
 	if ((int)sqrtf(powf(iw->p.x - iw->v.look_sprite->x, 2.0f) +
 			powf(iw->p.y - iw->v.look_sprite->y, 2.0f) +
 			powf(iw->p.z - iw->v.look_sprite->z, 2.0f)) < max_distance)
 		iw->v.look_sprite->e.health -= damage;
 	else
-		printf("");
+		iw->hud.miss_time = clock();
 }
 
 void	attack(t_sdl *iw)
@@ -2807,6 +3030,7 @@ void	attack(t_sdl *iw)
 	if (iw->guns.gun_in_hands == 0 && iw->guns.status == 0 &&
 		clock() - iw->guns.prev_update_time > CLKS_P_S / 15)
 	{
+		damaging_enemy(iw, 3, 1000);
 		iw->guns.status = 1;
 		iw->guns.t = 18;
 		iw->guns.prev_update_time = clock();
@@ -2815,6 +3039,7 @@ void	attack(t_sdl *iw)
 	}
 	else if (iw->guns.gun_in_hands == 1 && iw->guns.status == 0 && clock() - iw->guns.prev_update_time > CLKS_P_S / 15)
 	{
+		damaging_enemy(iw, 3, 5000);
 		iw->guns.status = 1;
 		iw->guns.t = 1;
 		iw->guns.prev_update_time = clock();
@@ -2888,7 +3113,6 @@ void	guns_loop(t_sdl *iw)
 {
 	if (iw->guns.status == 1 && iw->guns.gun_in_hands == 0 && clock() - iw->guns.prev_update_time > CLKS_P_S / 15)
 	{
-		damaging_enemy(iw, 3, 1000);
 		iw->guns.status = 0;
 		iw->guns.t = 17;
 		if (iw->guns.bullets[iw->guns.gun_in_hands] <= 0)
@@ -2897,7 +3121,6 @@ void	guns_loop(t_sdl *iw)
 	}
 	else if (iw->guns.status == 1 && iw->guns.gun_in_hands == 1 && clock() - iw->guns.prev_update_time > CLKS_P_S / 5)
 	{
-		damaging_enemy(iw, 3, 5000);
 		iw->guns.status = 0;
 		iw->guns.t = 0;
 		if (iw->guns.bullets[iw->guns.gun_in_hands] <= 0)
@@ -5502,7 +5725,6 @@ void	draw(t_sdl *iw)
 
 void	read_textures(t_sdl *iw)
 {
-	iw->hud.enot_sur = SDL_LoadBMP("interface_textures/HUD/enot.bmp");
 	iw->t_sur[0] = SDL_LoadBMP("textures/0.bmp");
 	iw->tsz[0] = 1.0f;
 	iw->t_sur[1] = SDL_LoadBMP("textures/1.bmp");
@@ -5564,6 +5786,8 @@ void	read_textures(t_sdl *iw)
 	iw->menu.icons_sur[5] = SDL_LoadBMP("interface_textures/menu/5.bmp");
 
 	 iw->map.player_sur = SDL_LoadBMP("interface_textures/map/player.bmp");
+	 iw->hud.enot_sur = SDL_LoadBMP("interface_textures/HUD/enot.bmp");
+	 iw->hud.miss_sur = SDL_LoadBMP("interface_textures/HUD/miss.bmp");
 }
 
 void	read_sprites_textures(t_sdl *iw)
@@ -5790,6 +6014,7 @@ void	get_def(t_sdl *iw)
 	iw->menu.count = 1;
 
 	iw->checkpoints = 0;
+	iw->hud.miss_time = 1;
 }
 
 void	get_kernel_mem(t_sdl *iw)
@@ -6121,6 +6346,7 @@ void	get_packaging_textures(t_sdl *iw)
 	int		i;
 
 	get_packaging_texture(&iw->hud.enot, iw->hud.enot_sur);
+	get_packaging_texture(&iw->hud.miss, iw->hud.miss_sur);
 	i = -1;
 	while (++i < TEXTURES_COUNT)
 		get_packaging_texture(&iw->t[i], iw->t_sur[i]);
@@ -6342,14 +6568,21 @@ int		main(void)
 	get_kernels(&iw);
 	get_guns(&iw);
 	//enemy
-	add_sprite(&iw, 4700, -900, 0, 0, 0, 0, 2.0f);
+	// add_sprite(&iw, 4700, -900, 0, 9, 0, 0, 2.0f);
+	// (*iw.sprite)->type = 2;
+	// (*iw.sprite)->e.enemy_numb = 1;
+	// (*iw.sprite)->e.health = ENEMY_HEALTH1;
+	// (*iw.sprite)->e.status = 1;
+	// (*iw.sprite)->t = iw.t_enemies[9];
+	// (*iw.sprite)->t_kernel = &iw.k.m_t_enemies[9];
+
+	add_sprite(&iw, 4700, -900, 0, 20, 0, 0, 0.5f);
 	(*iw.sprite)->type = 2;
-	(*iw.sprite)->e.enemy_numb = 0;
-	(*iw.sprite)->e.health = 10;
-	(*iw.sprite)->e.damage = 5;
+	(*iw.sprite)->e.enemy_numb = 2;
+	(*iw.sprite)->e.health = ENEMY_HEALTH2;
 	(*iw.sprite)->e.status = 0;
-	(*iw.sprite)->t = iw.t_enemies[0];
-	(*iw.sprite)->t_kernel = &iw.k.m_t_enemies[0];
+	(*iw.sprite)->t = iw.t_enemies[20];
+	(*iw.sprite)->t_kernel = &iw.k.m_t_enemies[20];
 	//pickup
 
 	// add_sprite(&iw, 7240, 2640, 200, 0, 1, 0, 0.5f);

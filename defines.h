@@ -54,4 +54,13 @@
 # define CLKS_P_S CLOCKS_PER_SEC
 #endif
 
+# define HUD_MISS_TIME CLKS_P_S / 2
+
+# define ENEMY_HEALTH0 10
+# define ENEMY_DAMAGE0 3
+# define ENEMY_HEALTH1 20
+# define ENEMY_DAMAGE1 10
+# define ENEMY_HEALTH2 12
+# define ENEMY_DAMAGE2 2
+
 #endif
