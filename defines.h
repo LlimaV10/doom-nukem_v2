@@ -43,6 +43,9 @@
 # define WEAPONS_COUNT	3
 # define WEAPONS_MOVING_CHANGE_VALUE WINDOW_W / 20
 
+# define INPUT_STRING_LEN 32
+# define INPUT_LINE_LEN 200
+
 #ifdef __APPLE__
 # define CLKS_P_S (CLOCKS_PER_SEC * 2)
 #elif __linux__
