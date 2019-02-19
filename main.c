@@ -751,6 +751,8 @@ void	draw_enemies_tex_to_select(t_sdl *iw)
 	ft_scaled_blit(iw->t_enemies[0], iw->sur, &rect);
 	rect.x += 100;
 	ft_scaled_blit(iw->t_enemies[8], iw->sur, &rect);
+	rect.x += 100;
+	ft_scaled_blit(iw->t_enemies[20], iw->sur, &rect);
 }
 
 void	draw_selected_tex(t_sdl *iw)
@@ -786,6 +788,8 @@ void	draw_selected_sprite(t_sdl *iw)
 			ft_scaled_blit(iw->t_enemies[0], iw->sur, &rect);
 		else if (iw->v.selected_sprite == 1)
 			ft_scaled_blit(iw->t_enemies[8], iw->sur, &rect);
+		else if (iw->v.selected_sprite == 2)
+			ft_scaled_blit(iw->t_enemies[20], iw->sur, &rect);
 	}
 }
 
@@ -1346,48 +1350,76 @@ t_keyb_inp  *input_loop(t_sdl *iw)
 	SDL_Event   e;
 	t_keyb_inp  *ki;
 	char		*alphabet;
+	int		shift;
 
+	shift = 0;
 	alphabet = ft_strdup("abcdefghijklmnopqrstuvwxyz");
 	ki = (t_keyb_inp *)malloc(sizeof(t_keyb_inp));
 	ki->s_len = 0;
 	draw_input_on_screen(iw, ki);
 	quit = 0;
 	while (!quit)
-	{
 		while (SDL_PollEvent(&e) != 0)
 			if (e.type == SDL_KEYDOWN)
 			{
-				if (e.key.keysym.scancode >= 4 && e.key.keysym.scancode <= 29
-					&& ki->s_len < INPUT_LINE_LEN)
+				if (e.key.keysym.scancode == 41)
+					exit_x(iw);
+				else if (e.key.keysym.scancode >= 4 && e.key.keysym.scancode <= 29
+					&& ki->s_len < INPUT_STRING_LEN)
 				{
-					ki->s[ki->s_len] = alphabet[e.key.keysym.scancode - 4];
+					if (shift == 0)
+						ki->s[ki->s_len++] = alphabet[e.key.keysym.scancode - 4];
+					else
+						ki->s[ki->s_len++] = ft_toupper(alphabet[e.key.keysym.scancode - 4]);
+					draw_input_on_screen(iw, ki);
 				}
+				else if (e.key.keysym.scancode == 44)
+				{
+					ki->s[ki->s_len++] = ' ';
+					draw_input_on_screen(iw, ki);
+				}
+				else if (e.key.keysym.scancode == 42)
+				{
+					ki->s_len -= ((ki->s_len > 0) ? 1 : 0);
+					draw_input_on_screen(iw, ki);
+				}
+				else if (e.key.keysym.scancode == 225)
+					shift = 1;
+				else if (e.key.keysym.scancode == 40)
+					quit = 1;
 			}
-	}
+			else if (e.type == SDL_KEYUP && e.key.keysym.scancode == 225)
+				shift = 0;
+	free (alphabet);
+	return (ki);
 }
 
-//
-//int		count_sprites(t_sdl *iw)
-//{
-//	int		i;
-//	t_sprite	*tmp;
-//
-//	tmp = *iw->sprite;
-//	i = 0;
-//	while (tmp != 0)
-//	{
-//		i++;
-//		tmp = tmp->next;
-//	}
-//	return (i);
-//}
+void	add_checkpoint(t_sdl *iw, t_sprite *s)
+{
+	t_keyb_inp 	*ki;
+	int			i;
+	t_sprite	*tmp;
+
+	ki = input_loop(iw);
+	ki->sprite = s;
+	i = 0;
+	tmp = *iw->sprite;
+	while (tmp)
+	{
+		if (tmp == s)
+			break;
+		i++;
+		tmp = tmp->next;
+	}
+	ki->sprite_numb = i;
+	ki->next = iw->checkpoints;
+	iw->checkpoints = ki;
+}
 
 void	update(t_sdl *iw)
 {
 	SDL_FillRect(iw->sur, &iw->winrect, 0x000000);
 	draw(iw);
-	
-	//printf("sprites %d\n", count_sprites(iw));
 	draw_some_info(iw);
 	if (iw->v.game_mode)
 	{
@@ -1687,11 +1719,7 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 	int		i;
 
 	iw->v.left_mouse_pressed = 0;
-	if (iw->v.game_mode)
-	{
-
-	}
-	else if (y > WINDOW_H && y < WINDOW_H + 100 && iw->v.mouse_mode == 0)
+	if (y > WINDOW_H && y < WINDOW_H + 100 && iw->v.mouse_mode == 0)
 	{
 		i = x / 100 + iw->v.scroll_first_tex;
 		if (i < TEXTURES_COUNT)
@@ -2023,6 +2051,8 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 			iw->v.look_sprite->type = 0;
 			iw->v.look_sprite->t = iw->t_decor[iw->v.selected_sprite];
 			iw->v.look_sprite->t_kernel = &iw->k.m_t_decor[iw->v.selected_sprite];
+			if (iw->v.selected_sprite == 1)
+				add_checkpoint(iw, iw->v.look_sprite);
 		}
 		else if (iw->v.selected_sprite_type == 1)
 		{
@@ -2048,6 +2078,13 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 				iw->v.look_sprite->e.damage = 8;
 				iw->v.look_sprite->t = iw->t_enemies[8];
 				iw->v.look_sprite->t_kernel = &iw->k.m_t_enemies[8];
+			}
+			else if (iw->v.selected_sprite == 2)
+			{
+				iw->v.look_sprite->e.health = 20;
+				iw->v.look_sprite->e.damage = 8;
+				iw->v.look_sprite->t = iw->t_enemies[20];
+				iw->v.look_sprite->t_kernel = &iw->k.m_t_enemies[20];
 			}
 		}
 	}
@@ -2252,7 +2289,7 @@ void	move(t_sdl *iw, int pl, clock_t *time)
 	while (ang >= G360)
 		ang -= G360;
 	speed = MOVING_SPEED_PER_HALF_SEC * ((float)(clock() - *time) / (float)CLKS_P_S);
-	*time = clock() - CLKS_P_S / 15;
+	*time = clock();
 	if (ang < 90)
 	{
 		dx = (int)(speed * cosf(ang)) * 2;
@@ -5524,6 +5561,18 @@ void	read_sprites_textures(t_sdl *iw)
 	iw->t_enemies_sur[18] = SDL_LoadBMP("sprites/enemies/18.bmp");
 	iw->t_enemies_sur[19] = SDL_LoadBMP("sprites/enemies/19.bmp");
 
+	iw->t_enemies_sur[20] = SDL_LoadBMP("sprites/enemies/20.bmp");
+	iw->t_enemies_sur[21] = SDL_LoadBMP("sprites/enemies/21.bmp");
+	iw->t_enemies_sur[22] = SDL_LoadBMP("sprites/enemies/22.bmp");
+	iw->t_enemies_sur[23] = SDL_LoadBMP("sprites/enemies/23.bmp");
+	iw->t_enemies_sur[24] = SDL_LoadBMP("sprites/enemies/24.bmp");
+	iw->t_enemies_sur[25] = SDL_LoadBMP("sprites/enemies/25.bmp");
+	iw->t_enemies_sur[26] = SDL_LoadBMP("sprites/enemies/26.bmp");
+	iw->t_enemies_sur[27] = SDL_LoadBMP("sprites/enemies/27.bmp");
+	iw->t_enemies_sur[28] = SDL_LoadBMP("sprites/enemies/28.bmp");
+	iw->t_enemies_sur[29] = SDL_LoadBMP("sprites/enemies/29.bmp");
+	
+
 	iw->t_pickup_sur[0] = SDL_LoadBMP("sprites/to_pick_up/0.bmp");
 	iw->t_pickup_sur[1] = SDL_LoadBMP("sprites/to_pick_up/1.bmp");
 	iw->t_pickup_sur[2] = SDL_LoadBMP("sprites/to_pick_up/2.bmp");
@@ -5612,7 +5661,7 @@ void	get_def(t_sdl *iw)
 	iw->p.rotup = 2; //550
 	iw->v.ls = 0;
 	iw->v.angle = (float)WINDOW_W / (float)WINDOW_H * 22.0f * G1;// 0.698132f;
-	iw->v.kernel = 0;
+	iw->v.kernel = 1;
 	load_kernel(&iw->k, iw);
 	//fill_floor_coefficients(iw);
 	iw->v.front = 1;
@@ -5705,6 +5754,8 @@ void	get_def(t_sdl *iw)
 	iw->map.pl_rect.h = 20;
 
 	iw->menu.count = 1;
+
+	iw->checkpoints = 0;
 }
 
 void	get_kernel_mem(t_sdl *iw)
@@ -6247,7 +6298,7 @@ int		main(void)
 {
 	t_sdl	iw;
 	
-	iw.v.game_mode = 1;
+	iw.v.game_mode = 0;
 	get_def(&iw);
 	read_textures(&iw);
 	read_sprites_textures(&iw);
@@ -6263,8 +6314,8 @@ int		main(void)
 	(*iw.sprite)->e.health = 10;
 	(*iw.sprite)->e.damage = 5;
 	(*iw.sprite)->e.status = 0;
-	(*iw.sprite)->t = iw.t_enemies[0];
-	(*iw.sprite)->t_kernel = &iw.k.m_t_enemies[0];
+	(*iw.sprite)->t = iw.t_enemies[20];
+	(*iw.sprite)->t_kernel = &iw.k.m_t_enemies[20];
 	//pickup
 
 	// add_sprite(&iw, 7240, 2640, 200, 0, 1, 0, 0.5f);

@@ -801,6 +801,9 @@ typedef struct	s_keyb_inp
 {
 	char	s[INPUT_STRING_LEN + 1];
 	int		s_len;
+	t_sprite	*sprite;
+	//starting from 0
+	int			sprite_numb;
 	struct s_keyb_inp	*next;
 }				t_keyb_inp;
 
@@ -845,7 +848,7 @@ typedef struct	s_sdl
 	t_wall_animation	*wall_animations;
 	t_save_wall			**vw_save;
 	t_sector_ways		***ways;
-
+	t_keyb_inp			*checkpoints;
 	t_hud		hud;
 	t_guns		guns;
 	t_bag		bag;
