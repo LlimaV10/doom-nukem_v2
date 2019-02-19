@@ -2088,12 +2088,13 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 			}
 		}
 	}
-	else if (iw->v.mouse_mode == 1 && *(iw->v.look_picture) != 0 && *(iw->v.look_wall) != 0)
+	else if (iw->v.mouse_mode == 1 && *(iw->v.look_picture) != 0
+		&& *(iw->v.look_wall) != 0 && !iw->v.game_mode)
 	{
 		(*(iw->v.look_picture))->t = iw->v.tex_to_fill;
 		calculate_picture(iw, *(iw->v.look_wall), *(iw->v.look_picture));
 	}
-	else if (iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0)
+	else if (iw->v.mouse_mode == 1 && *(iw->v.look_wall) != 0 && !iw->v.game_mode)
 	{
 		if (iw->v.look_portal == 0 || iw->v.look_portal->glass < 0)
 			(*(iw->v.look_wall))->t = iw->v.tex_to_fill;
@@ -2571,6 +2572,7 @@ int		enemy_sees_player(t_sdl *iw, t_sprite *s)
 	t_sector_ways		*ways;
 	t_sector_way		*way;
 
+	//return (-1);
 	esp.px = iw->p.x;
 	esp.py = iw->p.y;
 	esp.ex = s->x;
@@ -2687,7 +2689,7 @@ void	sprite_physics(t_sdl *iw, t_sprite *s)
 {
 	int		tmp;
 
-	if (s->fall_time != 1 && s->e.enemy_numb != 0)
+	if (s->fall_time != 1 && (s->e.enemy_numb != 0 || s->e.status >= 4))
 		s->z -= (int)(iw->v.accel * ((float)(clock() - s->fall_time) /
 			(float)CLKS_P_S) * 50.0f);
 	tmp = get_ceil_z_sec(iw, s->x, s->y, s->num_sec);
@@ -2751,7 +2753,21 @@ void	enemy_intelligence0(t_sdl *iw, t_sprite *s)
 		s->t = iw->t_enemies[s->t_numb];
 		s->t_kernel = &iw->k.m_t_enemies[s->t_numb];
 	}
+	else if (s->e.status == 4 && clock() - s->e.previous_picture_change > CLKS_P_S / 5)
+	{
+		s->e.previous_picture_change = clock();
+		if (s->t_numb < 5)
+			s->t_numb = 5;
+		else if (s->t_numb < 7)
+			s->t_numb++;
+		else
+			s->e.status = 5;
+		s->t = iw->t_enemies[s->t_numb];
+		s->t_kernel = &iw->k.m_t_enemies[s->t_numb];
+	}
 	sprite_physics(iw, s);
+	if (s->e.health < 0 && s->e.status < 4)
+		s->e.status = 4;
 }
 
 void	check_enemies(t_sdl *iw)
@@ -2772,6 +2788,19 @@ void	check_enemies(t_sdl *iw)
 }
 
 //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+void	damaging_enemy(t_sdl *iw, int damage, int max_distance)
+{
+	int		dist;
+	if (iw->v.look_sprite == 0 || iw->v.look_sprite->type != 2)
+		return;
+	if ((int)sqrtf(powf(iw->p.x - iw->v.look_sprite->x, 2.0f) +
+			powf(iw->p.y - iw->v.look_sprite->y, 2.0f) +
+			powf(iw->p.z - iw->v.look_sprite->z, 2.0f)) < max_distance)
+		iw->v.look_sprite->e.health -= damage;
+	else
+		printf("");
+}
 
 void	attack(t_sdl *iw)
 {
@@ -2859,6 +2888,7 @@ void	guns_loop(t_sdl *iw)
 {
 	if (iw->guns.status == 1 && iw->guns.gun_in_hands == 0 && clock() - iw->guns.prev_update_time > CLKS_P_S / 15)
 	{
+		damaging_enemy(iw, 3, 1000);
 		iw->guns.status = 0;
 		iw->guns.t = 17;
 		if (iw->guns.bullets[iw->guns.gun_in_hands] <= 0)
@@ -2867,6 +2897,7 @@ void	guns_loop(t_sdl *iw)
 	}
 	else if (iw->guns.status == 1 && iw->guns.gun_in_hands == 1 && clock() - iw->guns.prev_update_time > CLKS_P_S / 5)
 	{
+		damaging_enemy(iw, 3, 5000);
 		iw->guns.status = 0;
 		iw->guns.t = 0;
 		if (iw->guns.bullets[iw->guns.gun_in_hands] <= 0)
@@ -2876,7 +2907,10 @@ void	guns_loop(t_sdl *iw)
 	else if (iw->guns.status == 1 && iw->guns.gun_in_hands == 2 && clock() - iw->guns.prev_update_time > CLKS_P_S / 10)
 	{
 		if (iw->guns.t == 8)
+		{
+			damaging_enemy(iw, 2, 10000);
 			iw->guns.t = 9;
+		}
 		else
 		{
 			if (!iw->v.left_mouse_pressed ||
@@ -6298,7 +6332,7 @@ int		main(void)
 {
 	t_sdl	iw;
 	
-	iw.v.game_mode = 0;
+	iw.v.game_mode = 1;
 	get_def(&iw);
 	read_textures(&iw);
 	read_sprites_textures(&iw);
@@ -6314,8 +6348,8 @@ int		main(void)
 	(*iw.sprite)->e.health = 10;
 	(*iw.sprite)->e.damage = 5;
 	(*iw.sprite)->e.status = 0;
-	(*iw.sprite)->t = iw.t_enemies[20];
-	(*iw.sprite)->t_kernel = &iw.k.m_t_enemies[20];
+	(*iw.sprite)->t = iw.t_enemies[0];
+	(*iw.sprite)->t_kernel = &iw.k.m_t_enemies[0];
 	//pickup
 
 	// add_sprite(&iw, 7240, 2640, 200, 0, 1, 0, 0.5f);
