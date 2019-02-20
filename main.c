@@ -547,28 +547,30 @@ void	draw_some_info(t_sdl *iw)
 	draw_text_number(iw, &d, "Sector: ", iw->d.cs);
 	d.rect.y = 50;
 	draw_text_number(iw, &d, "Fly mode: ", iw->v.fly_mode);
+	d.rect.y = 100;
+	draw_text_number(iw, &d, "Story texture: ", iw->l.story);
 	d.rect.y = 75;
 	draw_text_number(iw, &d, "Lunar gravity: ", (int)(iw->l.accel));
 	d.rect.x = 165;
 	draw_text_number(iw, &d, ".", (int)(iw->l.accel * 100.0f) % 100);
 	if (iw->v.f_button_mode == 1)
 	{
-		draw_text(iw, "Select Sectors to control light by pressing F", 50, 100);
-		draw_text(iw, "Press G to exit this mode", 50, 125);
+		draw_text(iw, "Select Sectors to control light by pressing F", 50, 150);
+		draw_text(iw, "Press G to exit this mode", 50, 175);
 	}
 	else if (iw->v.f_button_mode == 2)
 	{
-		draw_text(iw, "Select Sector to be animated by pressing F", 50, 100);
-		draw_text(iw, "Press G to exit this mode", 50, 125);
+		draw_text(iw, "Select Sector to be animated by pressing F", 50, 150);
+		draw_text(iw, "Press G to exit this mode", 50, 175);
 	}
 	else if (iw->v.f_button_mode == 3)
 	{
-		draw_text(iw, "Select walls to be animated by pressing F", 50, 100);
-		draw_text(iw, "Press G to exit this mode", 50, 125);
+		draw_text(iw, "Select walls to be animated by pressing F", 50, 150);
+		draw_text(iw, "Press G to exit this mode", 50, 175);
 		if (iw->v.wall_anim != 0)
 		{
-			draw_text(iw, "Selected walls: ", 50, 150);
-			draw_text(iw, (s = ft_itoa(iw->v.wall_anim->count_walls)), 250, 150);
+			draw_text(iw, "Selected walls: ", 50, 200);
+			draw_text(iw, (s = ft_itoa(iw->v.wall_anim->count_walls)), 250, 200);
 			free(s);
 		}
 	}
@@ -665,6 +667,21 @@ void	ft_scaled_blit(t_packaging_texture *tex, SDL_Surface *winsur, SDL_Rect *rec
 			if (p != 0x010000)
 				set_pixel(winsur, rect->x + j, rect->y + i, p);
 		}
+	}
+}
+
+void	ft_scaled_blit2(t_packaging_texture *tex, SDL_Surface *winsur, SDL_Rect *rect)
+{
+	int		i;
+	int		j;
+
+	i = -1;
+	while (++i < rect->h)
+	{
+		j = -1;
+		while (++j < rect->w)
+			set_pixel(winsur, rect->x + j, rect->y + i, 
+				get_pixel(tex, tex->w * j / rect->w, tex->h * i / rect->h));
 	}
 }
 
@@ -1084,6 +1101,11 @@ void	drop_item(t_sdl *iw)
 
 	if (iw->bag.selected_item == 0)
 		return;
+	if (iw->bag.selected_item->t_numb == 6)
+	{
+		iw->v.have_clocks = 0;
+		iw->map.back = 0;
+	}
 	i = 0;
 	while(i < iw->bag.count_items)
 	{
@@ -1149,13 +1171,41 @@ void	use_item_delete(t_sdl *iw)
 
 void	use_item(t_sdl *iw)
 {
-	use_item_delete(iw);
-	// if (iw->bag.selected_item == 0)
-	// 	return;
-	// if (iw->bag.selected_item->t_numb)
-	// {
-
-	// }
+	if (iw->bag.selected_item == 0)
+		return;
+	if (iw->bag.selected_item->t_numb == 2)
+	{
+		iw->p.health = 100;
+		use_item_delete(iw);
+	}
+	else if (iw->bag.selected_item->t_numb == 3)
+	{
+		iw->p.health += 50;
+		if (iw->p.health > 100)
+			iw->p.health = 100;
+		use_item_delete(iw);
+	}
+	else if (iw->bag.selected_item->t_numb == 4)
+	{
+		iw->guns.bullets[2] = iw->guns.max_bullets[2];
+		iw->guns.bullets_in_stock[2] = iw->guns.max_bullets_in_stock[2];
+		use_item_delete(iw);
+	}
+	else if (iw->bag.selected_item->t_numb == 5)
+	{
+		iw->guns.bullets[1] = iw->guns.max_bullets[1];
+		iw->guns.bullets_in_stock[1] = iw->guns.max_bullets_in_stock[1];
+		use_item_delete(iw);
+	}
+	else if (iw->bag.selected_item->t_numb == 10)
+	{
+		iw->v.fly_mode = 1;
+		iw->v.fall = 1;
+		iw->v.fly_down = 1;
+		iw->v.fly_up = 1;
+		iw->v.jetpack = clock();
+		use_item_delete(iw);
+	}
 }
 
 void	add_item(t_sdl *iw)
@@ -1188,6 +1238,8 @@ void	add_item(t_sdl *iw)
 	}
 	else
 	{
+		if (iw->v.look_sprite->t_numb == 6)
+			iw->v.have_clocks = 1;
 		iw->bag.item_in_bag1[iw->bag.count_items] = iw->v.look_sprite;
 		iw->bag.count_items++;
 		iw->v.look_sprite->taken = 1;
@@ -1226,11 +1278,11 @@ void draw_butttons(t_sdl	*iw, SDL_Rect	*rect)
 	// rect->h = (WINDOW_H - (WINDOW_H / 5)) - (WINDOW_H - (WINDOW_H / 2.5));
 	rect->x = (WINDOW_W - (WINDOW_W / 2.5));
 	rect->y = (WINDOW_H - (WINDOW_H / 2.6));
-	draw_button(iw, rect, iw->bag.button[2]);
+	ft_scaled_blit(iw->bag.button[2], iw->sur, rect);
 	if (iw->bag.click_x >= rect->x && iw->bag.click_x <= rect->x + rect->w && iw->bag.click_y >= rect->y && iw->bag.click_y <= rect->y + rect->h && iw->v.mouse_mode == 0)
 		use_item(iw);
 	rect->x = WINDOW_W - (WINDOW_W / 2.5) + rect->w * 2;
-	draw_button(iw, rect, iw->bag.button[1]);
+	ft_scaled_blit(iw->bag.button[1], iw->sur, rect);
 	if (iw->bag.click_x >= rect->x && iw->bag.click_x <= rect->x + rect->w && iw->bag.click_y >= rect->y && iw->bag.click_y <= rect->y + rect->h && iw->v.mouse_mode == 0)
 		drop_item(iw);
 }
@@ -1471,6 +1523,30 @@ int		get_picture_dist(t_sdl *iw, t_picture *pic)
 		powf((pic->zu + pic->zd) / 2 - iw->p.z, 2.0f)));
 }
 
+t_sprite	*get_card_from_bag(t_sdl *iw, int t_numb)
+{
+	int		i;
+
+	i = -1;
+	while (++i < iw->bag.count_items)
+		if (iw->bag.item_in_bag1[i]->t_numb == t_numb)
+			return (iw->bag.item_in_bag1[i]);
+	return (0);
+}
+
+void	button_f_up_cards(t_sdl *iw)
+{
+	t_sprite	*tmp;
+
+	if (iw->v.f_button_mode == 0 && *(iw->v.look_picture) != 0
+		&& (*(iw->v.look_picture))->t == 22
+		&& get_picture_dist(iw, *(iw->v.look_picture)) < BUTTON_PRESS_DIST
+		&& (tmp = get_card_from_bag(iw, 9)) != 0)
+	{
+		
+	}
+}
+
 void	button_f_up(t_sdl *iw)
 {
 	if (iw->v.f_button_mode == 1 && *(iw->v.look_sector) != 0)
@@ -1499,6 +1575,8 @@ void	button_f_up(t_sdl *iw)
 		change_sector_animation_status(iw, *(iw->v.look_picture));
 		change_wall_animation_status(iw, *(iw->v.look_picture));
 	}
+	else
+		button_f_up_cards(iw);
 }
 
 void	key_up(int code, t_sdl *iw)
@@ -1574,6 +1652,10 @@ void	key_up(int code, t_sdl *iw)
 		iw->guns.gun_in_hands = 1;
 		iw->hud.shell = 100 * iw->guns.bullets[1] / iw->guns.max_bullets[1];
 	}
+	else if (code == 85 && !iw->v.game_mode)
+		iw->l.skybox = iw->v.tex_to_fill;
+	else if (code == 84 && !iw->v.game_mode)
+		iw->l.story = iw->v.tex_to_fill;
 	// 	iw->v.edit_mode = (iw->v.edit_mode == 0) ? 1 : 0;
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
 	//if (code == 8)
@@ -1581,7 +1663,7 @@ void	key_up(int code, t_sdl *iw)
 }
 
 void	key_down(int code, t_sdl *iw)
-{ 
+{
 	printf("keydown = %d\n", code);
 	if (code == 41)
 		exit_x(iw);
@@ -1650,17 +1732,12 @@ void	key_down(int code, t_sdl *iw)
 		use_item(iw);
 	else if (code == 20 && iw->v.game_mode)
 		drop_item(iw);
-	else if (code == 57)
-	{
-		if (iw->map.back == 1)
-		iw->map.back = 0;
-		else if (iw->map.back == 0)
-		iw->map.back = 1;
-	}
-	else if (code == 39) ////
-	{
-		input_loop(iw);
-	}
+	else if (code == 57 && iw->v.have_clocks)
+		iw->map.back = ((iw->map.back == 1) ? 0 : 1);
+	// else if (code == 39) ////
+	// {
+	// 	input_loop(iw);
+	// }
 	/*else if (code == 9)
 		check_animations(iw);*/
 	printf("rot = %d px %d py %d pz %d rotup %d\n", iw->p.introt, iw->p.x, iw->p.y, iw->p.z, iw->p.rotup);
@@ -1673,6 +1750,10 @@ void	key_down_repeat(int code, t_sdl *iw)
 		iw->v.jump_time = clock();
 		iw->v.jump = JUMP_HEIGHT;
 	}
+	else if (code == 87 && !iw->v.game_mode && iw->l.accel < 9.9f)
+		iw->l.accel += 0.1f;
+	else if (code == 86 && !iw->v.game_mode && iw->l.accel > 0.2f)
+		iw->l.accel -= 0.1f;
 }
 
 void	mouse_move(int xrel, int yrel, t_sdl *iw)
@@ -2144,7 +2225,7 @@ void	mouse_wheel(SDL_Event *e, t_sdl *iw)
 		draw_tex_to_select(iw);
 	}
 	else if (iw->v.mouse_y > WINDOW_H + 200 && iw->v.mouse_y < WINDOW_H + 300
-		&& iw->v.mouse_mode == 0)
+		&& iw->v.mouse_mode == 0 && iw->v.sprites_select_mode == 1)
 	{
 		iw->v.scroll_pickup_sprites -= e->wheel.y;
 		if (iw->v.scroll_pickup_sprites < 0)
@@ -3220,6 +3301,21 @@ void	guns_movements(t_sdl *iw)
 	}
 }
 
+void	death(t_sdl *iw)
+{
+	if (iw->v.game_mode && (iw->d.cs < 0 || iw->p.health < 1))
+	{
+		image_loop(iw, iw->hud.dead);
+		iw->p.x = iw->l.start_x;
+		iw->p.y = iw->l.start_y;
+		iw->p.introt = iw->l.start_rot;
+		iw->p.z = -1000000;
+		iw->p.rot = (float)iw->p.introt * G1;
+		iw->p.health = 100;
+		iw->p.rotup = 0;
+	}
+}
+
 void	loop(t_sdl *iw)
 {
 	int		t;
@@ -3234,6 +3330,14 @@ void	loop(t_sdl *iw)
 	if (iw->guns.status == 2 && clock() - iw->guns.prev_update_time > CLKS_P_S / 8)
 		reload_gun(iw);
 	guns_movements(iw);
+	if (iw->v.jetpack != 1 && clock() - iw->v.jetpack > JETPACK_TIME)
+	{
+		iw->v.jetpack = 1;
+		iw->v.fly_mode = 0;
+		iw->v.fall = 1;
+		iw->v.fly_down = 1;
+		iw->v.fly_up = 1;
+	}
 	if (iw->v.rot_right != 1)
 	{
 		iw->p.rot += (ROTATION_SPEED_PER_HALF_SEC * (double)(clock() - iw->v.rot_right)
@@ -3263,6 +3367,12 @@ void	loop(t_sdl *iw)
 		iw->v.rot_down = clock();
 	}
 	//do_animations(iw);
+	death(iw);
+	if (iw->v.game_mode && iw->d.cs == iw->l.win_sector)
+	{
+		image_loop(iw, iw->hud.win);
+		exit_x(iw);
+	}
 	if (iw->d.cs >= 0)
 	{
 		iw->v.plrzu = get_ceil_z(iw, iw->p.x, iw->p.y);
@@ -3329,7 +3439,6 @@ void	loop(t_sdl *iw)
 			iw->p.z = iw->v.plrzd + PLAYER_HEIGHT;
 			iw->v.fall = 1;
 		}
-		
 	}
 	else if (iw->v.fly_mode == 2)
 	{
@@ -5663,6 +5772,7 @@ void	draw(t_sdl *iw)
 	set_top_bottom(iw);
 	if ((iw->d.cs = get_sector(iw)) == -1)
 		return;
+	iw->v.ls = iw->d.cs;
 	get_direction(iw);
 	get_screen_line(iw);
 	get_left_right_lines_points(iw);
@@ -5783,6 +5893,14 @@ void	read_textures(t_sdl *iw)
 	iw->tsz[19] = 1.0f;
 	iw->t_sur[20] = SDL_LoadBMP("textures/20.bmp");
 	iw->tsz[20] = 1.0f;
+	iw->t_sur[21] = SDL_LoadBMP("textures/21.bmp");
+	iw->tsz[21] = 1.0f;
+	iw->t_sur[22] = SDL_LoadBMP("textures/22.bmp");
+	iw->tsz[22] = 1.0f;
+	iw->t_sur[23] = SDL_LoadBMP("textures/23.bmp");
+	iw->tsz[23] = 1.0f;
+	iw->t_sur[24] = SDL_LoadBMP("textures/24.bmp");
+	iw->tsz[24] = 1.0f;
 	// iw->t[17] = SDL_LoadBMP("textures/17.bmp");
 	// iw->tsz[17] = 1.0f;
 	//iw->t[18] = SDL_LoadBMP("textures/19.bmp");
@@ -5801,9 +5919,11 @@ void	read_textures(t_sdl *iw)
 	iw->menu.icons_sur[4] = SDL_LoadBMP("interface_textures/menu/4.bmp");
 	iw->menu.icons_sur[5] = SDL_LoadBMP("interface_textures/menu/5.bmp");
 
-	 iw->map.player_sur = SDL_LoadBMP("interface_textures/map/player.bmp");
-	 iw->hud.enot_sur = SDL_LoadBMP("interface_textures/HUD/enot.bmp");
-	 iw->hud.miss_sur = SDL_LoadBMP("interface_textures/HUD/miss.bmp");
+	iw->map.player_sur = SDL_LoadBMP("interface_textures/map/player.bmp");
+	iw->hud.enot_sur = SDL_LoadBMP("interface_textures/HUD/enot.bmp");
+	iw->hud.miss_sur = SDL_LoadBMP("interface_textures/HUD/miss.bmp");
+	iw->hud.dead_sur = SDL_LoadBMP("interface_textures/HUD/groot_lose.bmp");
+	iw->hud.win_sur = SDL_LoadBMP("interface_textures/HUD/groot_win.bmp");
 }
 
 void	read_sprites_textures(t_sdl *iw)
@@ -5858,7 +5978,6 @@ void	read_sprites_textures(t_sdl *iw)
 	iw->t_pickup_sur[8] = SDL_LoadBMP("sprites/to_pick_up/8.bmp");
 	iw->t_pickup_sur[9] = SDL_LoadBMP("sprites/to_pick_up/9.bmp");
 	iw->t_pickup_sur[10] = SDL_LoadBMP("sprites/to_pick_up/10.bmp");
-	iw->t_pickup_sur[11] = SDL_LoadBMP("sprites/to_pick_up/11.bmp");
 }
 
 void	read_weapons_textures(t_sdl *iw)
@@ -5927,12 +6046,15 @@ void add_sprite(t_sdl *iw, int x, int y, int z, int t, int num, int type, float 
 
 void	get_def(t_sdl *iw)
 {
-	iw->p.x = 511;
-	iw->p.y = 1684; //-2360
-	iw->p.z = 100;
-	iw->p.introt = 3;
+	iw->l.start_x = 511;
+	iw->l.start_y = 1684;
+	iw->l.start_rot = 3;
+	iw->p.x = iw->l.start_x;
+	iw->p.y = iw->l.start_y; //-2360
+	iw->p.z = -1000000;
+	iw->p.introt = iw->l.start_rot;
 	iw->p.rot = (float)iw->p.introt * G1;
-	iw->p.rotup = 2; //550
+	iw->p.rotup = 0; //550
 	iw->v.ls = 0;
 	iw->v.angle = (float)WINDOW_W / (float)WINDOW_H * 22.0f * G1;// 0.698132f;
 	iw->v.kernel = 1;
@@ -6003,8 +6125,8 @@ void	get_def(t_sdl *iw)
 	iw->v.sprite_editing = 0;
 
 	iw->v.fly_mode = 0;
-	iw->v.fly_down = -1;
-	iw->v.fly_up = -1;
+	iw->v.fly_down = 1;
+	iw->v.fly_up = 1;
 
 	iw->hud.rad = 100;
 	iw->p.health = 100;
@@ -6031,6 +6153,10 @@ void	get_def(t_sdl *iw)
 
 	iw->checkpoints = 0;
 	iw->hud.miss_time = 1;
+	iw->l.story = 8;
+	iw->l.win_sector = 2;
+	iw->v.have_clocks = 0;
+	iw->v.jetpack = 1;
 }
 
 void	get_kernel_mem(t_sdl *iw)
@@ -6363,6 +6489,8 @@ void	get_packaging_textures(t_sdl *iw)
 
 	get_packaging_texture(&iw->hud.enot, iw->hud.enot_sur);
 	get_packaging_texture(&iw->hud.miss, iw->hud.miss_sur);
+	get_packaging_texture(&iw->hud.win, iw->hud.win_sur);
+	get_packaging_texture(&iw->hud.dead, iw->hud.dead_sur);
 	i = -1;
 	while (++i < TEXTURES_COUNT)
 		get_packaging_texture(&iw->t[i], iw->t_sur[i]);
@@ -6570,11 +6698,35 @@ void	menu_loop(t_sdl *iw)
 	}
 }
 
+void	image_loop(t_sdl *iw, t_packaging_texture *tex)
+{
+	SDL_Event	e;
+	int			quit;
+	SDL_Rect	rect;
+
+	rect.w = WINDOW_W;
+	rect.h = WINDOW_H;
+	rect.x = 0;
+	rect.y = 0;
+	ft_scaled_blit2(tex, iw->sur, &rect);
+	SDL_UpdateWindowSurface(iw->win);
+	quit = 0;
+	while (!quit)
+		while (SDL_PollEvent(&e) != 0)
+			if (e.type == SDL_KEYDOWN)
+			{
+				if (e.key.keysym.scancode == 41)
+					exit_x(iw);
+				else if (e.key.keysym.scancode == 40)
+					quit = 1;
+			}
+}
+
 int		main(void)
 {
 	t_sdl	iw;
 	
-	iw.v.game_mode = 0;
+	iw.v.game_mode = 1;
 	get_def(&iw);
 	read_textures(&iw);
 	read_sprites_textures(&iw);
@@ -6638,8 +6790,10 @@ int		main(void)
 	//iw.ren = SDL_CreateRenderer(iw.win, -1, 0);
 	iw.sur = SDL_GetWindowSurface(iw.win);
 	if (iw.v.game_mode)
+	{
+		image_loop(&iw, iw.t[iw.l.story]);
 		menu_loop(&iw);
-
+	}
 	circle(&iw.hud, FOOTX, FOOTY);
 	draw_tex_to_select(&iw);
 	draw_decor_tex_to_select(&iw);

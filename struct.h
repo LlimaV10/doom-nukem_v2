@@ -547,6 +547,10 @@ typedef struct		s_hud
 	t_xy			mas2[300];
 	int				rad;
 	int				koord;
+	SDL_Surface		*dead_sur;
+	t_packaging_texture	*dead;
+	SDL_Surface		*win_sur;
+	t_packaging_texture	*win;
 }					t_hud;
 /////////////////////////////////////////////////
 
@@ -706,13 +710,23 @@ typedef struct	s_variables
 
 	char	*on_screen_text;
 	clock_t	on_screen_text_time;
+	int		have_clocks;
+	clock_t	jetpack;
 }				t_variables;
 
 typedef struct	s_level
 {
+	// Skybox texture number
 	int		skybox;
 	// acceleration (meters per second^2)
 	float	accel;
+	// Start story texture number
+	int		story;
+	int		start_x;
+	int		start_y;
+	int		start_rot;
+	// Level end sector
+	int		win_sector;
 }				t_level;
 
 // typedef struct	s_visited_portal

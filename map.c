@@ -61,12 +61,12 @@ void	get_map(t_sdl *iw)
 	iw->sectors[2].fr.n->c = 2;*/
 	iw->sectors[2].fr.x = 8000;
 	iw->sectors[2].fr.y = 4000;
-	iw->sectors[2].fr.z = 550;
+	iw->sectors[2].fr.z = 200;
 	iw->sectors[2].fr.t = 2;
 	iw->sectors[2].cl.n = 0;
 	iw->sectors[2].cl.x = 5000;
 	iw->sectors[2].cl.y = 0;
-	iw->sectors[2].cl.z = 900;
+	iw->sectors[2].cl.z = 1200;
 	iw->sectors[2].cl.t = 0;
 	iw->sectors[2].light = 0;
 

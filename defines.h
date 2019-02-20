@@ -1,13 +1,13 @@
 #ifndef __DEFINES_H
 # define __DEFINES_H
 
-# define WINDOW_W 800
-# define WINDOW_H 400
+# define WINDOW_W 2000
+# define WINDOW_H 1100
 # define MAX_SOURCE_SIZE 0x100000
-# define TEXTURES_COUNT 21
+# define TEXTURES_COUNT 25
 # define DECOR_TEXTURES_COUNT 2
 # define ENEMIES_TEXTURES_COUNT 30
-# define PICK_UP_TEXTURES_COUNT 12
+# define PICK_UP_TEXTURES_COUNT 11
 # define WEAPONS_TEXTURES_COUNT 19
 # define COUNT_ENEMIES 3
 # define G1 0.01745329f
@@ -62,5 +62,7 @@
 # define ENEMY_DAMAGE1 10
 # define ENEMY_HEALTH2 12
 # define ENEMY_DAMAGE2 2
+
+# define JETPACK_TIME CLKS_P_S * 10
 
 #endif
