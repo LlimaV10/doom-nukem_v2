@@ -81,7 +81,7 @@ void	get_map(t_sdl *iw)
 
 	i++;
 	new_wall(&(iw->walls[i]), 5000, -1000, 1, 14);
-	//iw->walls[i].glass = 15;
+	iw->walls[i].glass = 15;
 	iw->walls[i - 1].next = &iw->walls[i];
 	i++;
 	new_wall(&(iw->walls[i]), 5000, -2000, -1, -1);

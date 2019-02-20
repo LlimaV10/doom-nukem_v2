@@ -547,6 +547,10 @@ void	draw_some_info(t_sdl *iw)
 	draw_text_number(iw, &d, "Sector: ", iw->d.cs);
 	d.rect.y = 50;
 	draw_text_number(iw, &d, "Fly mode: ", iw->v.fly_mode);
+	d.rect.y = 75;
+	draw_text_number(iw, &d, "Lunar gravity: ", (int)(iw->l.accel));
+	d.rect.x = 165;
+	draw_text_number(iw, &d, ".", (int)(iw->l.accel * 100.0f) % 100);
 	if (iw->v.f_button_mode == 1)
 	{
 		draw_text(iw, "Select Sectors to control light by pressing F", 50, 100);
@@ -2139,6 +2143,16 @@ void	mouse_wheel(SDL_Event *e, t_sdl *iw)
 		SDL_FillRect(iw->sur, &iw->v.scroll_tex_rect, 0x000000);
 		draw_tex_to_select(iw);
 	}
+	else if (iw->v.mouse_y > WINDOW_H + 200 && iw->v.mouse_y < WINDOW_H + 300
+		&& iw->v.mouse_mode == 0)
+	{
+		iw->v.scroll_pickup_sprites -= e->wheel.y;
+		if (iw->v.scroll_pickup_sprites < 0)
+			iw->v.scroll_pickup_sprites = 0;
+		if (iw->v.scroll_pickup_sprites >= PICK_UP_TEXTURES_COUNT)
+			iw->v.scroll_pickup_sprites = PICK_UP_TEXTURES_COUNT - 1;
+		draw_pickup_tex_to_select(iw);
+	}
 	else if (iw->v.mouse_mode == 1 && iw->v.picture_changing != 0)
 	{
 		if (e->wheel.y < 0 && iw->v.picture_changing->tw - 30 > 50)
@@ -2701,7 +2715,7 @@ void	sprite_physics(t_sdl *iw, t_sprite *s)
 	int		tmp;
 
 	if (s->fall_time != 1 && (s->e.enemy_numb != 0 || s->e.status >= 4))
-		s->z -= (int)(iw->v.accel * ((float)(clock() - s->fall_time) /
+		s->z -= (int)(iw->l.accel * ((float)(clock() - s->fall_time) /
 			(float)CLKS_P_S) * 50.0f);
 	tmp = get_ceil_z_sec(iw, s->x, s->y, s->num_sec);
 	if (s->z + SPRITE_HEIGHT > tmp)
@@ -3014,7 +3028,9 @@ void	draw_miss(t_sdl *iw)
 
 void	damaging_enemy(t_sdl *iw, int damage, int max_distance)
 {
-	int		dist;
+	if (iw->v.look_portal != 0 && iw->v.look_portal->glass != -1
+		&& iw->guns.gun_in_hands != 0)
+		iw->v.look_portal->glass = -1;
 	if (iw->v.look_sprite == 0 || iw->v.look_sprite->type != 2 || iw->v.look_sprite->e.status >= 4)
 		return;
 	if ((int)sqrtf(powf(iw->p.x - iw->v.look_sprite->x, 2.0f) +
@@ -3274,13 +3290,13 @@ void	loop(t_sdl *iw)
 		if (iw->v.fall != 1 && !iw->v.fly_mode)
 		{
 			t = clock();
-			iw->p.z -= (int)(iw->v.accel * ((double)(t - iw->v.fall) /
+			iw->p.z -= (int)(iw->l.accel * ((double)(t - iw->v.fall) /
 				(double)CLKS_P_S) * 50.0f);
 		}
 		else if (iw->v.jump_time != 1)
 		{
 			jsz = (float)(clock() - iw->v.jump_time) / (float)CLKS_P_S * (float)JUMP_HEIGHT *
-				iw->v.accel / 10.0f;
+				iw->l.accel / 10.0f;
 			if ((int)jsz >= iw->v.jump)
 			{
 				iw->p.z += iw->v.jump;
@@ -5933,7 +5949,7 @@ void	get_def(t_sdl *iw)
 	iw->v.fall = 1;
 	iw->v.jump_time = 1;
 	iw->v.jump = 0;
-	iw->v.accel = 9.81f;
+	iw->l.accel = 9.81f;
 	iw->loop_update_time = clock();
 	iw->v.fps = 0;
 	iw->winrect.x = 0;
@@ -6558,7 +6574,7 @@ int		main(void)
 {
 	t_sdl	iw;
 	
-	iw.v.game_mode = 1;
+	iw.v.game_mode = 0;
 	get_def(&iw);
 	read_textures(&iw);
 	read_sprites_textures(&iw);

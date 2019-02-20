@@ -656,8 +656,6 @@ typedef struct	s_variables
 	clock_t		rot_down;
 	clock_t		fall;
 	clock_t		jump_time;
-	// acceleration (meters per second^2)
-	float	accel;
 	int		plrzu;
 	int		plrzd;
 	int		jump;
@@ -713,6 +711,8 @@ typedef struct	s_variables
 typedef struct	s_level
 {
 	int		skybox;
+	// acceleration (meters per second^2)
+	float	accel;
 }				t_level;
 
 // typedef struct	s_visited_portal
