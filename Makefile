@@ -24,21 +24,19 @@ INC =	-I./SDL2/SDL2.framework/Headers\
 
 ERRFL = -Wall -Wextra -g # -Werror
 
-FL = -F SDL2/ -framework SDL2 -framework SDL2_ttf -framework OpenCL
-
-PRINT = yes
+FL = `sdl2-config --cflags --libs` -lSDL2_ttf -lOpenCL -lm #-F SDL2/ -framework SDL2 -framework SDL2_ttf -framework OpenCL
 
 all: $(NAME)
 
 $(OBJ): %.o: %.c
 	@echo "\033[93mCompiling \033[0m$@"
-	@cc $(ERRFL) -c -o $@ $< $(INC)
+	@cc $(ERRFL) -c -o $@ $<
 
 $(NAME): $(OBJ)
 	@echo "\033[93mCompiling libft\033[0m"
 	@make -C ./libft
 	@echo "\033[93mCompiling $(NAME)\033[0m"
-	@gcc $(ERRFL) $(FL) -o $@ $(OBJ) -L libft/ ./libft/libft.a 
+	@gcc $(ERRFL) -o $@ $(OBJ) -L libft/ ./libft/libft.a $(FL)
 	@echo "\033[92mDONE\033[0m"
 	
 

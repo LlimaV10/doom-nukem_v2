@@ -1539,11 +1539,34 @@ void	button_f_up_cards(t_sdl *iw)
 	t_sprite	*tmp;
 
 	if (iw->v.f_button_mode == 0 && *(iw->v.look_picture) != 0
-		&& (*(iw->v.look_picture))->t == 22
+		&& (*iw->v.look_picture)->t == 22
 		&& get_picture_dist(iw, *(iw->v.look_picture)) < BUTTON_PRESS_DIST
 		&& (tmp = get_card_from_bag(iw, 9)) != 0)
 	{
-		
+		(*iw->v.look_picture)->t = 21;
+		change_sector_animation_status(iw, *(iw->v.look_picture));
+		change_wall_animation_status(iw, *(iw->v.look_picture));
+		delete_used_sprite(iw, tmp);
+	}
+	else if (iw->v.f_button_mode == 0 && *(iw->v.look_picture) != 0
+		&& (*iw->v.look_picture)->t == 23
+		&& get_picture_dist(iw, *(iw->v.look_picture)) < BUTTON_PRESS_DIST
+		&& (tmp = get_card_from_bag(iw, 7)) != 0)
+	{
+		(*iw->v.look_picture)->t = 21;
+		change_sector_animation_status(iw, *(iw->v.look_picture));
+		change_wall_animation_status(iw, *(iw->v.look_picture));
+		delete_used_sprite(iw, tmp);
+	}
+	else if (iw->v.f_button_mode == 0 && *(iw->v.look_picture) != 0
+		&& (*iw->v.look_picture)->t == 24
+		&& get_picture_dist(iw, *(iw->v.look_picture)) < BUTTON_PRESS_DIST
+		&& (tmp = get_card_from_bag(iw, 8)) != 0)
+	{
+		(*iw->v.look_picture)->t = 21;
+		change_sector_animation_status(iw, *(iw->v.look_picture));
+		change_wall_animation_status(iw, *(iw->v.look_picture));
+		delete_used_sprite(iw, tmp);
 	}
 }
 
@@ -2646,6 +2669,8 @@ int		esp_check_walls(t_sdl *iw, t_enemy_sees_player *esp)
 
 int		esp_check_portal(t_sdl *iw, t_enemy_sees_player *esp, int portal)
 {
+	if (iw->walls[portal].glass >= 0 || iw->walls[iw->walls[portal].nextsector_wall].glass >= 0)
+		return (0);
 	esp->k1 = iw->walls[portal].l.a * (float)esp->px + iw->walls[portal].l.b * (float)esp->py + iw->walls[portal].l.c;
 	esp->k2 = iw->walls[portal].l.a * (float)esp->ex + iw->walls[portal].l.b * (float)esp->ey + iw->walls[portal].l.c;
 	if ((esp->k1 > 0.0f && esp->k2 < 0.0f) || (esp->k1 < 0.0f && esp->k2 > 0.0f))
@@ -6729,7 +6754,7 @@ int		main(void)
 {
 	t_sdl	iw;
 	
-	iw.v.game_mode = 1;
+	iw.v.game_mode = 0;
 	get_def(&iw);
 	read_textures(&iw);
 	read_sprites_textures(&iw);
@@ -6747,7 +6772,7 @@ int		main(void)
 	// (*iw.sprite)->t = iw.t_enemies[9];
 	// (*iw.sprite)->t_kernel = &iw.k.m_t_enemies[9];
 
-	add_sprite(&iw, 4700, -900, 0, 20, 0, 0, 0.5f);
+	add_sprite(&iw, 9151, 2272, 0, 20, 1, 0, 0.5f);
 	(*iw.sprite)->type = 2;
 	(*iw.sprite)->e.enemy_numb = 2;
 	(*iw.sprite)->e.health = ENEMY_HEALTH2;
