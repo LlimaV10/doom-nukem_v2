@@ -1460,21 +1460,21 @@ t_keyb_inp  *input_loop(t_sdl *iw)
 void	add_checkpoint(t_sdl *iw, t_sprite *s)
 {
 	t_keyb_inp 	*ki;
-	int			i;
-	t_sprite	*tmp;
+	//int			i;
+	//t_sprite	*tmp;
 
 	ki = input_loop(iw);
 	ki->sprite = s;
-	i = 0;
-	tmp = *iw->sprite;
-	while (tmp)
-	{
-		if (tmp == s)
-			break;
-		i++;
-		tmp = tmp->next;
-	}
-	ki->sprite_numb = i;
+	//i = 0;
+	// tmp = *iw->sprite;
+	// while (tmp)
+	// {
+	// 	if (tmp == s)
+	// 		break;
+	// 	i++;
+	// 	tmp = tmp->next;
+	// }
+	// ki->sprite_numb = i;
 	ki->next = iw->checkpoints;
 	iw->checkpoints = ki;
 }
@@ -3335,6 +3335,44 @@ void	death(t_sdl *iw)
 	}
 }
 
+void	set_checkpoint(t_sdl *iw, t_sprite *s)
+{
+	t_keyb_inp	*tmp;
+
+	tmp = iw->checkpoints;
+	while (tmp)
+	{
+		if (tmp->sprite == s)
+			break;
+		tmp = tmp->next;
+	}
+	if (!tmp)
+		return;
+	iw->l.start_x = s->x;
+	iw->l.start_y = s->y;
+	iw->v.last_checkpoint = s;
+	iw->v.last_to_write = tmp;
+	iw->hud.saved_time = clock();
+}
+
+void	check_checkpoints(t_sdl *iw)
+{
+	t_sprite	*tmp;
+
+	tmp = *iw->sprite;
+	while (tmp)
+	{
+		if (tmp->type == 0 && tmp->t_numb == 2 &&
+			tmp->plen < CHECKPOINT_DIST)
+		{
+			if (tmp != iw->v.last_checkpoint)
+				set_checkpoint(iw, tmp);
+			return;
+		}
+		tmp = tmp->next;
+	}
+}
+
 void	loop(t_sdl *iw)
 {
 	int		t;
@@ -3349,6 +3387,7 @@ void	loop(t_sdl *iw)
 	if (iw->guns.status == 2 && clock() - iw->guns.prev_update_time > CLKS_P_S / 8)
 		reload_gun(iw);
 	guns_movements(iw);
+	//////////////////////////checkpoints
 	if (iw->v.jetpack != 1 && clock() - iw->v.jetpack > JETPACK_TIME)
 	{
 		iw->v.jetpack = 1;
@@ -5943,6 +5982,7 @@ void	read_textures(t_sdl *iw)
 	iw->hud.miss_sur = SDL_LoadBMP("interface_textures/HUD/miss.bmp");
 	iw->hud.dead_sur = SDL_LoadBMP("interface_textures/HUD/groot_lose.bmp");
 	iw->hud.win_sur = SDL_LoadBMP("interface_textures/HUD/groot_win.bmp");
+	iw->hud.miss_sur = SDL_LoadBMP("interface_textures/HUD/saved.bmp");
 }
 
 void	read_sprites_textures(t_sdl *iw)
@@ -6184,6 +6224,8 @@ void	get_def(t_sdl *iw)
 	iw->l.story = 9;
 	iw->l.win_sector = 2;
 	iw->v.have_clocks = 0;
+	iw->v.last_checkpoint = 0;
+	iw->hud.saved_time = 1;
 	get_birth_def(iw);
 }
 
@@ -6519,6 +6561,7 @@ void	get_packaging_textures(t_sdl *iw)
 	get_packaging_texture(&iw->hud.miss, iw->hud.miss_sur);
 	get_packaging_texture(&iw->hud.win, iw->hud.win_sur);
 	get_packaging_texture(&iw->hud.dead, iw->hud.dead_sur);
+	get_packaging_texture(&iw->hud.saved, iw->hud.saved_sur);
 	i = -1;
 	while (++i < TEXTURES_COUNT)
 		get_packaging_texture(&iw->t[i], iw->t_sur[i]);
@@ -6772,33 +6815,38 @@ int		main(void)
 	// (*iw.sprite)->t = iw.t_enemies[9];
 	// (*iw.sprite)->t_kernel = &iw.k.m_t_enemies[9];
 
-	add_sprite(&iw, 9151, 2272, 0, 20, 1, 0, 0.5f);
-	(*iw.sprite)->type = 2;
-	(*iw.sprite)->e.enemy_numb = 2;
-	(*iw.sprite)->e.health = ENEMY_HEALTH2;
-	(*iw.sprite)->e.status = 0;
-	(*iw.sprite)->t = iw.t_enemies[20];
-	(*iw.sprite)->t_kernel = &iw.k.m_t_enemies[20];
+	// add_sprite(&iw, 9151, 2272, 0, 20, 1, 0, 0.5f);
+	// (*iw.sprite)->type = 2;
+	// (*iw.sprite)->e.enemy_numb = 2;
+	// (*iw.sprite)->e.health = ENEMY_HEALTH2;
+	// (*iw.sprite)->e.status = 0;
+	// (*iw.sprite)->t = iw.t_enemies[20];
+	// (*iw.sprite)->t_kernel = &iw.k.m_t_enemies[20];
 	//pickup
 
 	// add_sprite(&iw, 7240, 2640, 200, 0, 1, 0, 0.5f);
 	// add_sprite(&iw, 6520, 2298, 200, 0, 1, 2, 0.5f);
 
-	add_sprite(&iw, 8640, 2200, 200, 0, 1, 1, 0.1f);
-	add_sprite(&iw, 7500, 2000, 200, 1, 1, 1, 0.5f);
-	add_sprite(&iw, 7500, 3000, 200, 2, 1, 1, 0.5f);
-	// add_sprite(&iw, 7500, 3000, 200, 3, 1, 1, 0.5f);
+	add_sprite(&iw, 8640, 2200, 200, 1, 1, 0, 0.1f);
+	iw.checkpoints = (t_keyb_inp *)malloc(sizeof(t_keyb_inp));
+	iw.checkpoints->next = 0;
+	ft_memcpy(iw.checkpoints->s, "Hello World!", 12);
+	iw.checkpoints->s_len = 12;
+	iw.checkpoints->sprite = *iw.sprite;
+	// add_sprite(&iw, 7500, 2000, 200, 1, 1, 1, 0.5f);
+	// add_sprite(&iw, 7500, 3000, 200, 2, 1, 1, 0.5f);
+	// // add_sprite(&iw, 7500, 3000, 200, 3, 1, 1, 0.5f);
 
-	add_sprite(&iw, 8500, 1500, 200, 3, 1, 1, 0.5f);
-	add_sprite(&iw, 9000, 5500, 200, 4, 1, 1, 0.5f);
-	add_sprite(&iw, 10000, 500, 200, 5, 1, 1, 0.5f);
+	// add_sprite(&iw, 8500, 1500, 200, 3, 1, 1, 0.5f);
+	// add_sprite(&iw, 9000, 5500, 200, 4, 1, 1, 0.5f);
+	// add_sprite(&iw, 10000, 500, 200, 5, 1, 1, 0.5f);
 
-	add_sprite(&iw, 9500, 5000, 200, 6, 1, 1, 0.5f);
-	add_sprite(&iw, 7500, 3000, 200, 7, 1, 1, 0.5f);
-	add_sprite(&iw, 7500, 3000, 200, 8, 1, 1, 0.5f);
+	// add_sprite(&iw, 9500, 5000, 200, 6, 1, 1, 0.5f);
+	// add_sprite(&iw, 7500, 3000, 200, 7, 1, 1, 0.5f);
+	// add_sprite(&iw, 7500, 3000, 200, 8, 1, 1, 0.5f);
 
-	add_sprite(&iw, 8500, 1000, 200, 9, 1, 1, 0.5f);
-	add_sprite(&iw, 8000, 5500, 200, 10, 1, 1, 0.5f);
+	// add_sprite(&iw, 8500, 1000, 200, 9, 1, 1, 0.5f);
+	// add_sprite(&iw, 8000, 5500, 200, 10, 1, 1, 0.5f);
 
 	/*add_sprite(&iw,8640,2200,400, 0, 1, 0, 1.0f);
 	add_sprite(&iw,6520,2298,200, 0, 1, 0, 1.0f);*/

@@ -55,6 +55,7 @@
 #endif
 
 # define HUD_MISS_TIME CLKS_P_S / 2
+# define HUD_SAVED_TIME CLKS_P_S / 2
 
 # define ENEMY_HEALTH0 10
 # define ENEMY_DAMAGE0 3
@@ -64,5 +65,6 @@
 # define ENEMY_DAMAGE2 2
 
 # define JETPACK_TIME CLKS_P_S * 10
+# define CHECKPOINT_DIST 2000
 
 #endif

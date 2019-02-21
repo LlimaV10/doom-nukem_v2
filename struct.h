@@ -539,6 +539,9 @@ typedef struct		s_hud
 	SDL_Surface		*miss_sur;
 	t_packaging_texture	*miss;
 	clock_t			miss_time;
+	SDL_Surface		*saved_sur;
+	t_packaging_texture	*saved;
+	clock_t			saved_time;
 	SDL_Rect		rect;
 //	int				color;
 	int				shell;
@@ -712,6 +715,8 @@ typedef struct	s_variables
 	clock_t	on_screen_text_time;
 	int		have_clocks;
 	clock_t	jetpack;
+	t_sprite	*last_checkpoint;
+	t_keyb_inp	*last_to_write;
 }				t_variables;
 
 typedef struct	s_level
