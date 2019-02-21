@@ -1479,6 +1479,28 @@ void	add_checkpoint(t_sdl *iw, t_sprite *s)
 	iw->checkpoints = ki;
 }
 
+void	draw_checkpoint_text(t_sdl *iw)
+{
+	SDL_Rect	rect;
+	SDL_Surface	*stext;
+	SDL_Color	col;
+
+	if (!iw->v.last_to_write)
+		return;
+	rect.x = WINDOW_W - 400;
+	rect.y = 230;
+	col.a = 0;
+	col.r = 0;
+	col.g = 255;
+	col.b = 255;
+	rect.w = 0;
+	rect.h = 0;
+	iw->v.last_to_write->s[iw->v.last_to_write->s_len] = '\0';
+	stext = TTF_RenderText_Solid(iw->arial_font, iw->v.last_to_write->s, col);
+	SDL_BlitSurface(stext, NULL, iw->sur, &rect);
+	SDL_FreeSurface(stext);
+}
+
 void	update(t_sdl *iw)
 {
 	SDL_FillRect(iw->sur, &iw->winrect, 0x000000);
@@ -1487,6 +1509,7 @@ void	update(t_sdl *iw)
 	if (iw->v.game_mode)
 	{
 		make_health(&iw->hud, iw);
+		draw_checkpoint_text(iw);
 	}
 	if (iw->bag.bag != 1 && iw->map.back != 1)
 		draw_crosshair(iw);
@@ -1496,6 +1519,13 @@ void	update(t_sdl *iw)
 			draw_miss(iw);
 		else
 			iw->hud.miss_time = 1;
+	}
+	if (iw->hud.saved_time != 1)
+	{
+		if (clock() - iw->hud.saved_time < HUD_SAVED_TIME)
+			draw_save(iw);
+		else
+			iw->hud.saved_time = 1;
 	}
 	if (iw->bag.bag == 1 || iw->map.back == 1)
 		transparency(iw);
@@ -3132,6 +3162,17 @@ void	draw_miss(t_sdl *iw)
 	ft_scaled_blit(iw->hud.miss, iw->sur, &rect);
 }
 
+void	draw_save(t_sdl *iw)
+{
+	SDL_Rect	rect;
+
+	rect.w = WINDOW_W / 4;
+	rect.h = rect.w * iw->hud.saved->h / iw->hud.saved->w;
+	rect.x = WINDOW_W / 2 - rect.w / 2;
+	rect.y = 20 + WINDOW_H / 20 * (clock() - iw->hud.saved_time) / CLKS_P_S;
+	ft_scaled_blit(iw->hud.saved, iw->sur, &rect);
+}
+
 void	damaging_enemy(t_sdl *iw, int damage, int max_distance)
 {
 	if (iw->v.look_portal != 0 && iw->v.look_portal->glass != -1
@@ -3362,8 +3403,8 @@ void	check_checkpoints(t_sdl *iw)
 	tmp = *iw->sprite;
 	while (tmp)
 	{
-		if (tmp->type == 0 && tmp->t_numb == 2 &&
-			tmp->plen < CHECKPOINT_DIST)
+		if (tmp->type == 0 && tmp->t_numb == 1 &&
+			tmp->draweble && tmp->plen < CHECKPOINT_DIST)
 		{
 			if (tmp != iw->v.last_checkpoint)
 				set_checkpoint(iw, tmp);
@@ -3387,6 +3428,8 @@ void	loop(t_sdl *iw)
 	if (iw->guns.status == 2 && clock() - iw->guns.prev_update_time > CLKS_P_S / 8)
 		reload_gun(iw);
 	guns_movements(iw);
+	if (iw->v.game_mode)
+		check_checkpoints(iw);
 	//////////////////////////checkpoints
 	if (iw->v.jetpack != 1 && clock() - iw->v.jetpack > JETPACK_TIME)
 	{
@@ -5982,7 +6025,7 @@ void	read_textures(t_sdl *iw)
 	iw->hud.miss_sur = SDL_LoadBMP("interface_textures/HUD/miss.bmp");
 	iw->hud.dead_sur = SDL_LoadBMP("interface_textures/HUD/groot_lose.bmp");
 	iw->hud.win_sur = SDL_LoadBMP("interface_textures/HUD/groot_win.bmp");
-	iw->hud.miss_sur = SDL_LoadBMP("interface_textures/HUD/saved.bmp");
+	iw->hud.saved_sur = SDL_LoadBMP("interface_textures/HUD/saved.bmp");
 }
 
 void	read_sprites_textures(t_sdl *iw)
@@ -6226,6 +6269,7 @@ void	get_def(t_sdl *iw)
 	iw->v.have_clocks = 0;
 	iw->v.last_checkpoint = 0;
 	iw->hud.saved_time = 1;
+	iw->v.last_to_write = 0;
 	get_birth_def(iw);
 }
 
@@ -6797,7 +6841,7 @@ int		main(void)
 {
 	t_sdl	iw;
 	
-	iw.v.game_mode = 0;
+	iw.v.game_mode = 1;
 	get_def(&iw);
 	read_textures(&iw);
 	read_sprites_textures(&iw);
@@ -6807,7 +6851,7 @@ int		main(void)
 	get_kernels(&iw);
 	get_guns(&iw);
 	//enemy
-	// add_sprite(&iw, 4700, -900, 0, 9, 0, 0, 2.0f);
+	add_sprite(&iw, 4700, -900, 0, 9, 0, 0, 0.5f);
 	// (*iw.sprite)->type = 2;
 	// (*iw.sprite)->e.enemy_numb = 1;
 	// (*iw.sprite)->e.health = ENEMY_HEALTH1;
@@ -6815,13 +6859,13 @@ int		main(void)
 	// (*iw.sprite)->t = iw.t_enemies[9];
 	// (*iw.sprite)->t_kernel = &iw.k.m_t_enemies[9];
 
-	// add_sprite(&iw, 9151, 2272, 0, 20, 1, 0, 0.5f);
-	// (*iw.sprite)->type = 2;
-	// (*iw.sprite)->e.enemy_numb = 2;
-	// (*iw.sprite)->e.health = ENEMY_HEALTH2;
-	// (*iw.sprite)->e.status = 0;
-	// (*iw.sprite)->t = iw.t_enemies[20];
-	// (*iw.sprite)->t_kernel = &iw.k.m_t_enemies[20];
+	//add_sprite(&iw, 9151, 2272, 0, 20, 1, 0, 0.5f);
+	(*iw.sprite)->type = 2;
+	(*iw.sprite)->e.enemy_numb = 2;
+	(*iw.sprite)->e.health = ENEMY_HEALTH2;
+	(*iw.sprite)->e.status = 0;
+	(*iw.sprite)->t = iw.t_enemies[20];
+	(*iw.sprite)->t_kernel = &iw.k.m_t_enemies[20];
 	//pickup
 
 	// add_sprite(&iw, 7240, 2640, 200, 0, 1, 0, 0.5f);
@@ -6830,8 +6874,8 @@ int		main(void)
 	add_sprite(&iw, 8640, 2200, 200, 1, 1, 0, 0.1f);
 	iw.checkpoints = (t_keyb_inp *)malloc(sizeof(t_keyb_inp));
 	iw.checkpoints->next = 0;
-	ft_memcpy(iw.checkpoints->s, "Hello World!", 12);
-	iw.checkpoints->s_len = 12;
+	ft_memcpy(iw.checkpoints->s, "Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!", 32);
+	iw.checkpoints->s_len = 32;
 	iw.checkpoints->sprite = *iw.sprite;
 	// add_sprite(&iw, 7500, 2000, 200, 1, 1, 1, 0.5f);
 	// add_sprite(&iw, 7500, 3000, 200, 2, 1, 1, 0.5f);

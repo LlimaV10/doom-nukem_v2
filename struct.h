@@ -555,6 +555,16 @@ typedef struct		s_hud
 	SDL_Surface		*win_sur;
 	t_packaging_texture	*win;
 }					t_hud;
+
+typedef struct	s_keyb_inp
+{
+	char	s[INPUT_STRING_LEN + 1];
+	int		s_len;
+	t_sprite	*sprite;
+	//starting from 0
+	int			sprite_numb;
+	struct s_keyb_inp	*next;
+}				t_keyb_inp;
 /////////////////////////////////////////////////
 
 typedef struct	s_draw
@@ -818,15 +828,7 @@ typedef struct    s_menu
 	t_packaging_texture	*icons[6];
 }                t_menu;
 
-typedef struct	s_keyb_inp
-{
-	char	s[INPUT_STRING_LEN + 1];
-	int		s_len;
-	t_sprite	*sprite;
-	//starting from 0
-	int			sprite_numb;
-	struct s_keyb_inp	*next;
-}				t_keyb_inp;
+
 
 typedef struct	s_sdl
 {

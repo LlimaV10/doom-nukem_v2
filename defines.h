@@ -1,8 +1,8 @@
 #ifndef __DEFINES_H
 # define __DEFINES_H
 
-# define WINDOW_W 800
-# define WINDOW_H 400
+# define WINDOW_W 2000
+# define WINDOW_H 1100
 # define MAX_SOURCE_SIZE 0x100000
 # define TEXTURES_COUNT 25
 # define DECOR_TEXTURES_COUNT 2
@@ -55,7 +55,7 @@
 #endif
 
 # define HUD_MISS_TIME CLKS_P_S / 2
-# define HUD_SAVED_TIME CLKS_P_S / 2
+# define HUD_SAVED_TIME CLKS_P_S
 
 # define ENEMY_HEALTH0 10
 # define ENEMY_DAMAGE0 3

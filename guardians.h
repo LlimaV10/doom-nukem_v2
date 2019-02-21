@@ -76,5 +76,6 @@ void	ft_scaled_blit(t_packaging_texture *tex, SDL_Surface *winsur, SDL_Rect *rec
 void	draw_miss(t_sdl *iw);
 void	image_loop(t_sdl *iw, t_packaging_texture *tex);
 void	get_birth_def(t_sdl *iw);
+void	draw_save(t_sdl *iw);
 
 #endif
