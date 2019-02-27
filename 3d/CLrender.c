@@ -83,7 +83,10 @@ void	load_kernel(t_kernel *k, t_sdl *iw)
 
 	if (iw->v.game_mode == 0)
 	{
+		k->ret = 1;
 		fd = open("3d/kernel.cl", O_RDONLY);
+		if (fd < 0)
+			return;
 		k->source_str = (char *)malloc(MAX_SOURCE_SIZE);
 		k->source_size = read(fd, k->source_str, MAX_SOURCE_SIZE);
 		close(fd);
@@ -91,6 +94,11 @@ void	load_kernel(t_kernel *k, t_sdl *iw)
 	k->device_id = 0;
 	k->platforms = 0;
 	k->ret = clGetPlatformIDs(0, NULL, &k->ret_num_platforms);
+	if (k->ret_num_platforms <= 0)
+	{
+		k->ret = 1;
+		return;
+	}
 	k->platforms = (cl_platform_id*)malloc(k->ret_num_platforms * sizeof(cl_platform_id));
 	k->ret = clGetPlatformIDs(k->ret_num_platforms, k->platforms, NULL);
 	k->ret = clGetDeviceIDs(k->platforms[0], CL_DEVICE_TYPE_ALL, 1,

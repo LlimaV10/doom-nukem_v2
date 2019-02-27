@@ -97,5 +97,6 @@ void	undo_animations(t_sdl *iw);
 void	get_sounds(t_sdl *iw);
 void	get_sounds_game(t_sdl *iw);
 void	menu_loop(t_sdl *iw);
+int		check_all_validation(t_sdl *iw);
 
 #endif

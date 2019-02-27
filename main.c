@@ -845,7 +845,10 @@ void	get_font_file(t_doom *den)
 	int		fd;
 	SDL_RWops	*rw;
 
+	den->iw.arial_font = 0;
 	fd = open("fonts/ARIAL.TTF", READ_MAP);
+	if (fd < 0)
+		return;
 	tmp = malloc(70000);
 	den->iw.font_pack_size = read(fd, tmp, 70000);
 	close(fd);
@@ -857,9 +860,12 @@ void	get_font_file(t_doom *den)
 	den->font = den->iw.arial_font;
 }
 
-void	get_3d_def_new(t_doom *den)
+int		get_3d_def_new(t_doom *den)
 {
+	int		ret;
+
 	den->iw.v.game_mode = 0;
+	den->iw.v.kernel = 1;
 	den->iw.l.accel = 9.81f;
 	den->iw.l.skybox = 13;
 	den->iw.l.story = 9;
@@ -877,22 +883,36 @@ void	get_3d_def_new(t_doom *den)
 	read_textures(&den->iw);
 	read_sprites_textures(&den->iw);
 	read_weapons_textures(&den->iw);
+	get_sounds(&den->iw);
+	if ((ret = check_all_validation(&den->iw)) == 0)
+		return (0);
 	get_packaging_textures(&den->iw);
 	get_kernel_mem(&den->iw);
 	get_kernels(&den->iw);
 	get_guns(&den->iw);
-	get_sounds(&den->iw);
+	return (ret);
 }
 
 //NEW
 int		main_new(t_doom *den)
 {
+	int		ret;
+
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 
-	get_3d_def_new(den);
-
+	ret = get_3d_def_new(den);
+	if (ret == 0)
+	{
+		write(1, "Error, check your files which need to be exist\n", 47);
+		return (0);
+	}
+	else if (ret == -1)
+	{
+		write(1, "OpenCL initialization error\n", 28);
+		den->iw.v.kernel = 0;
+	}
 	den->color = 0xFFFFFF;
 	den->b_color = 0x505050;
 
@@ -945,9 +965,12 @@ int		check_load(t_doom *den, char *fname)
 	return (1);
 }
 
-void	get_3d_def_edit(t_doom *den)
+int		get_3d_def_edit(t_doom *den)
 {
+	int		ret;
+
 	den->iw.v.game_mode = 0;
+	den->iw.v.kernel = 1;
 	den->iw.v.look_wall = (t_wall **)malloc(sizeof(t_wall *));
 	den->iw.v.look_sector = (t_sector **)malloc(sizeof(t_sector *));
 	den->iw.v.look_picture = (t_picture **)malloc(sizeof(t_picture *));
@@ -959,27 +982,34 @@ void	get_3d_def_edit(t_doom *den)
 	read_textures(&den->iw);
 	read_sprites_textures(&den->iw);
 	read_weapons_textures(&den->iw);
+	get_sounds(&den->iw);
+	if ((ret = check_all_validation(&den->iw)) == 0)
+		return (0);
 	get_packaging_textures(&den->iw);
 	get_kernel_mem(&den->iw);
 	get_kernels(&den->iw);
 	get_guns(&den->iw);
-	get_sounds(&den->iw);
+	return (ret);
 }
 
-void	get_3d_def_game(t_doom *den)
+int		get_3d_def_game(t_doom *den)
 {
-	SDL_RWops	*rw;
-
 	den->iw.v.game_mode = 1;
+	den->iw.v.kernel = 1;
 	den->iw.v.look_wall = (t_wall **)malloc(sizeof(t_wall *));
 	den->iw.v.look_sector = (t_sector **)malloc(sizeof(t_sector *));
 	den->iw.v.look_picture = (t_picture **)malloc(sizeof(t_picture *));
 	den->iw.sprite = (t_sprite **)malloc(sizeof(t_sprite *));
 	den->iw.vw_save = (t_save_wall **)malloc(sizeof(t_save_wall *));
-	rw = SDL_RWFromConstMem(den->iw.font_pack, den->iw.font_pack_size);
-	den->iw.arial_font = TTF_OpenFontRW(rw, 0, 24);
-	den->font = den->iw.arial_font;
 	/*get_font_file(den);*/
+	den->iw.arial_font = TTF_OpenFontRW(SDL_RWFromConstMem(den->iw.font_pack,
+		den->iw.font_pack_size), 0, 24);
+	if (den->iw.arial_font == 0)
+	{
+		write(1, "Error loading file\n", 20);
+		return (0);
+	}
+	den->font = den->iw.arial_font;
 	//den->iw.arial_font = TTF_OpenFont("fonts/ARIAL.TTF", 24);
 	load_kernel(&den->iw.k, &den->iw);
 	//read_textures(&den->iw);
@@ -991,16 +1021,29 @@ void	get_3d_def_game(t_doom *den)
 	get_guns(&den->iw);
 	get_sounds_game(&den->iw);
 	//get_sounds(&den->iw);
+	return (1);
 }
 
 int		main_edit(t_doom *den)
 {
+	int		ret;
+
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
 
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 
-	get_3d_def_edit(den);
+	ret = get_3d_def_edit(den);
+	if (ret == 0)
+	{
+		write(1, "Error, check your files which need to be exist\n", 47);
+		return (0);
+	}
+	else if (ret == -1)
+	{
+		write(1, "OpenCL initialization error\n", 28);
+		den->iw.v.kernel = 0;
+	}
 
 	den->color = 0xFFFFFF;
 	den->b_color = 0x505050;
@@ -1051,7 +1094,8 @@ int		main_game(t_doom *den)
 	TTF_Init();
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 
-	get_3d_def_game(den);
+	if (!get_3d_def_game(den))
+		return (0);
 	main3d_game(den);
 	/*den->color = 0xFFFFFF;
 	den->b_color = 0x505050;

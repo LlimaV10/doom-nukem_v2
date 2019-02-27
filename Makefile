@@ -15,6 +15,7 @@ NAME = doom-nukem
 SRC =	3d/main3d.c \
 				3d/CLrender.c \
 				3d/minimap.c \
+				3d/input_validation.c \
 				main.c \
 				save_list.c \
 				display.c \

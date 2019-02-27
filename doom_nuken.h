@@ -316,4 +316,5 @@ void	save_map_file(t_doom *den);
 int		load_map(t_doom *den);
 void	map_redactor_mane2(t_doom *den);
 int		load4_game(t_doom *den);
+
 #endif

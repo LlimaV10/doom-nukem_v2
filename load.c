@@ -526,7 +526,7 @@ int		load_map_env(t_doom *den)
 
 int		load4_game(t_doom *den)
 {
-	int		i;
+	int			i;
 
 	if (!load_map_textures(den))
 		return (0);
