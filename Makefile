@@ -12,33 +12,51 @@
 
 NAME = doom-nukem
 
-SRC =	main.c \
-		CLrender.c \
-		map.c \
-		minimap.c
+SRC =	3d/main3d.c \
+				3d/CLrender.c \
+				3d/minimap.c \
+				main.c \
+				save_list.c \
+				display.c \
+				draw_pixels.c \
+				draw_line.c \
+				map_redactor.c \
+				save_new_list.c \
+				write_list.c \
+				find_walls.c \
+				sector_in_sector.c \
+				delete.c \
+				sort_sector.c \
+				sprite.c \
+				delete_memory.c \
+				portal.c \
+				player.c \
+				sector.c \
+				check_option.c \
+				walls.c \
+				save.c \
+				load.c
 
 OBJ = $(SRC:.c=.o)
 
-INC =	-I./SDL2/SDL2.framework/Headers\
-		-I./SDL2/SDL2_ttf.framework/Headers\
+#INC =	-I./SDL2/SDL2.framework/Headers\
+#		-I./SDL2/SDL2_ttf.framework/Headers\
 
 ERRFL = -Wall -Wextra -g # -Werror
 
-FL = -F SDL2/ -framework SDL2 -framework SDL2_ttf -framework OpenCL
-
-PRINT = yes
+FL = `sdl2-config --cflags --libs` -lSDL2_ttf -lSDL2_mixer -lOpenCL -lm #-F SDL2/ -framework SDL2 -framework SDL2_ttf -framework OpenCL
 
 all: $(NAME)
 
 $(OBJ): %.o: %.c
 	@echo "\033[93mCompiling \033[0m$@"
-	@cc $(ERRFL) -c -o $@ $< $(INC)
+	@cc $(ERRFL) -c -o $@ $<
 
 $(NAME): $(OBJ)
 	@echo "\033[93mCompiling libft\033[0m"
 	@make -C ./libft
 	@echo "\033[93mCompiling $(NAME)\033[0m"
-	@gcc $(ERRFL) $(FL) -o $@ $(OBJ) -L libft/ ./libft/libft.a 
+	@gcc $(ERRFL) -o $@ $(OBJ) -L libft/ ./libft/libft.a $(FL)
 	@echo "\033[92mDONE\033[0m"
 	
 

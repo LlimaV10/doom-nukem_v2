@@ -1,0 +1,87 @@
+#******************************************************************************#
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: ddehtyar <marvin@42.fr>                    +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2018/06/23 15:21:44 by ddehtyar          #+#    #+#              #
+#    Updated: 2019/02/22 15:55:45 by dbolilyi         ###   ########.fr        #
+#                                                                              #
+#******************************************************************************#
+
+NAME	:=		doom-nukem
+
+FLAGS	:=		-Wall -Wextra -g #-Werror 
+
+
+FRM = -F./frameworks \
+		-rpath ./frameworks \
+		-framework SDL2 -framework SDL2_ttf -framework SDL2_mixer -framework OpenCL\
+
+INC = -I./frameworks/SDL2.framework/Versions/A/Headers \
+		-I./frameworks/SDL2_ttf.framework/Versions/A/Headers \
+		-I./frameworks/SDL2_mixer.framework/Versions/A/Headers \
+
+						
+	
+SRC		:=		3d/main3d.c \
+				3d/CLrender.c \
+				3d/minimap.c \
+				main.c \
+				save_list.c \
+				display.c \
+				draw_pixels.c \
+				draw_line.c \
+				map_redactor.c \
+				save_new_list.c \
+				write_list.c \
+				find_walls.c \
+				sector_in_sector.c \
+				delete.c \
+				sort_sector.c \
+				sprite.c \
+				delete_memory.c \
+				portal.c \
+				player.c \
+				sector.c \
+				check_option.c \
+				walls.c \
+				save.c \
+				load.c
+
+				# skale.c
+			
+
+HEAD	:=		doom_nuken.h
+
+OBJ		:=		$(SRC:.c=.o)
+
+LIB		:=		./libft/libft.a
+
+all:		$(NAME)
+
+$(NAME):	$(OBJ)
+			@make -C libft
+			gcc $(FLAGS) $(OBJ) -o $(NAME) $(FRM) $(INC) $(LIB)
+
+			@echo "\033[95mall is ready, baby\033[0m"
+
+			@#@say "all is ready baby"#
+
+$(OBJ):		%.o: %.c
+			@gcc $(FLAGS) $(INC) -c $< -o $@ -I $(HEAD)
+
+clean:
+			@make -C libft clean
+			@/bin/rm -f $(OBJ)
+			@echo "\033[91mObject files have been deleted\033[0m"
+
+fclean:		clean
+			@make -C libft fclean
+			@/bin/rm -f $(NAME)
+			@echo "\033[91mExecutables have been deleted\033[0m"
+
+re:			fclean all
+
+.PHONY:all clean fclean re
