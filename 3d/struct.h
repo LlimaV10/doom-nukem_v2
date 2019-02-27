@@ -732,6 +732,8 @@ typedef struct	s_variables
 
 	int		next_music;
 	int		sprint;
+	int		crouch;
+	int		crouch_pressed;
 }				t_variables;
 
 typedef struct	s_level

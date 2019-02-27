@@ -81,5 +81,5 @@
 # define ENV_COUNT 22
 
 # define MAX_MUSIC_SIZE 10000000
-
+# define CROUCH_SIZE 200
 #endif
