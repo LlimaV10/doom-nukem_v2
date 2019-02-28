@@ -57,14 +57,14 @@ void	map_redactor_mane2(t_doom *den)
 	den->secbak = -1; // den->sec - 1
 	den->walls = -1;
 	den->sprites = 0;
-	den->player.x = -10000;
-	den->player.y = -10000;
+	den->player.x = LIM;
+	den->player.y = LIM;
 	den->player.introt = 1;
 	den->finish = -1;
 	den->sprite = 0;
 	den->tmp = 0;
 	den->sectors = 0;
-	den->secbaktmp = 0;
+	den->secbaktmp = 0; // �� ������
 }
 
 void	clean_find_vec(t_doom *den)

@@ -28,7 +28,7 @@
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "/Users/dbolilyi/doom-nukem_v2/doom-nukem",
-			"args": [],
+			"args": ["new", "maps/map1"],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",
 			"environment": [],
