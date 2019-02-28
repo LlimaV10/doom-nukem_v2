@@ -1,4 +1,41 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   input_validation.c                                 :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/02/28 17:04:41 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/02/28 17:05:07 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
+
+int		check_textures2(t_sdl *iw)
+{
+	int		i;
+
+	if (iw->hud.enot_sur == 0)
+		return (0);
+	if (iw->hud.miss_sur == 0)
+		return (0);
+	if (iw->hud.dead_sur == 0)
+		return (0);
+	if (iw->hud.win_sur == 0)
+		return (0);
+	i = -1;
+	while (++i < 3)
+		if (iw->bag.button_sur[i] == 0)
+			return (0);
+	if (iw->map.player_sur == 0)
+		return (0);
+	i = -1;
+	while (++i < 6)
+		if (iw->menu.icons_sur[i] == 0)
+			return (0);
+	return (1);
+}
 
 int		check_textures(t_sdl *iw)
 {
@@ -24,25 +61,7 @@ int		check_textures(t_sdl *iw)
 	while (++i < WEAPONS_TEXTURES_COUNT)
 		if (iw->t_weap_sur[i] == 0)
 			return (0);
-	if (iw->hud.enot_sur == 0)
-		return (0);
-	if (iw->hud.miss_sur == 0)
-		return (0);
-	if (iw->hud.dead_sur == 0)
-		return (0);
-	if (iw->hud.win_sur == 0)
-		return (0);
-	i = -1;
-	while (++i < 3)
-		if (iw->bag.button_sur[i] == 0)
-			return (0);
-	if (iw->map.player_sur == 0)
-		return (0);
-	i = -1;
-	while (++i < 6)
-		if (iw->menu.icons_sur[i] == 0)
-			return (0);
-	return (1);
+	return (check_textures2(iw));
 }
 
 int		check_sound(t_sdl *iw)
@@ -70,6 +89,5 @@ int		check_all_validation(t_sdl *iw)
 		return (-1);
 	if (iw->arial_font == 0)
 		return (0);
-
 	return (1);
 }

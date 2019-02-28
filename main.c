@@ -413,7 +413,6 @@ void	ft_sdl_init (t_doom *den)
 
 	clear_texture(den, &vec);
 	map_network(den);
-	blonk_on_now(den);
 	info_display(den);
 	while (!quit)
 	{	

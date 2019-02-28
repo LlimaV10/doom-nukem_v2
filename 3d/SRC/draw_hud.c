@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   draw_hud.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/02/28 16:24:31 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/02/28 16:29:48 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	draw_crosshair(t_sdl *iw)
@@ -75,13 +87,40 @@ void	draw_text_blue(t_sdl *iw, const char *s, int x, int y)
 	SDL_FreeSurface(stext);
 }
 
+void	draw_some_info2(t_sdl *iw)
+{
+	char		*s;
+
+	if (iw->v.f_button_mode == 1)
+	{
+		draw_text(iw, "Select Sectors to control light by pressing F", 50, 150);
+		draw_text(iw, "Press G to exit this mode", 50, 175);
+	}
+	else if (iw->v.f_button_mode == 2)
+	{
+		draw_text(iw, "Select Sector to be animated by pressing F", 50, 150);
+		draw_text(iw, "Press G to exit this mode", 50, 175);
+	}
+	else if (iw->v.f_button_mode == 3)
+	{
+		draw_text(iw, "Select walls to be animated by pressing F", 50, 150);
+		draw_text(iw, "Press G to exit this mode", 50, 175);
+		if (iw->v.wall_anim != 0)
+		{
+			draw_text(iw, "Selected walls: ", 50, 200);
+			draw_text(iw, (s = ft_itoa(iw->v.wall_anim->count_walls)),
+					250, 200);
+			free(s);
+		}
+	}
+}
+
 void	draw_some_info(t_sdl *iw)
 {
 	t_draw_info	d;
-	char		*s;
 
 	if (iw->v.game_mode)
-		return;
+		return ;
 	d.col.r = 0;
 	d.col.g = 255;
 	d.col.b = 0;
@@ -101,36 +140,7 @@ void	draw_some_info(t_sdl *iw)
 	draw_text_number(iw, &d, "Lunar gravity: ", (int)(iw->l.accel));
 	d.rect.x = 165;
 	draw_text_number(iw, &d, ".", (int)(iw->l.accel * 100.0f) % 100);
-	if (iw->v.f_button_mode == 1)
-	{
-		draw_text(iw, "Select Sectors to control light by pressing F", 50, 150);
-		draw_text(iw, "Press G to exit this mode", 50, 175);
-	}
-	else if (iw->v.f_button_mode == 2)
-	{
-		draw_text(iw, "Select Sector to be animated by pressing F", 50, 150);
-		draw_text(iw, "Press G to exit this mode", 50, 175);
-	}
-	else if (iw->v.f_button_mode == 3)
-	{
-		draw_text(iw, "Select walls to be animated by pressing F", 50, 150);
-		draw_text(iw, "Press G to exit this mode", 50, 175);
-		if (iw->v.wall_anim != 0)
-		{
-			draw_text(iw, "Selected walls: ", 50, 200);
-			draw_text(iw, (s = ft_itoa(iw->v.wall_anim->count_walls)), 250, 200);
-			free(s);
-		}
-	}
-	// if (iw->v.edit_mode == 0)
-	// 	draw_text(iw, "Wall texture editing mode", 0, 50);
-	// else if (iw->v.edit_mode == 1)
-	// 	draw_text(iw, "Pictures editing mode", 0, 50);
-
-	/*if (*(iw->v.look_picture) == 0)
-		draw_text(iw, "Look picture is NULL", 0, 75);
-	else
-		draw_text(iw, "Look picture not NULL", 0, 75);*/
+	draw_some_info2(iw);
 }
 
 void	draw_menu_sphere(t_sdl *iw, int a, const char *t)
@@ -184,7 +194,7 @@ void	draw_up_down_menu_arrows(t_sdl *iw, int x)
 void	draw_menu(t_sdl *iw)
 {
 	if (iw->v.game_mode)
-		return;
+		return ;
 	draw_menu_sphere(iw, 100, "X");
 	draw_menu_sphere(iw, 170, "Y");
 	draw_up_down_menu_arrows(iw, 50);
@@ -201,11 +211,11 @@ void	draw_menu(t_sdl *iw)
 
 void	draw_tex_to_select(t_sdl *iw)
 {
-	int		i;
+	int			i;
 	SDL_Rect	rect;
 
 	if (iw->v.game_mode)
-		return;
+		return ;
 	rect.x = 0;
 	rect.y = WINDOW_H;
 	rect.w = 100;
@@ -231,11 +241,11 @@ void	clear_sprites_tex_to_select(t_sdl *iw)
 
 void	draw_decor_tex_to_select(t_sdl *iw)
 {
-	int		i;
+	int			i;
 	SDL_Rect	rect;
 
 	if (iw->v.game_mode)
-		return;
+		return ;
 	clear_sprites_tex_to_select(iw);
 	iw->v.sprites_select_mode = 0;
 	rect.x = 0;
@@ -252,11 +262,11 @@ void	draw_decor_tex_to_select(t_sdl *iw)
 
 void	draw_pickup_tex_to_select(t_sdl *iw)
 {
-	int		i;
+	int			i;
 	SDL_Rect	rect;
 
 	if (iw->v.game_mode)
-		return;
+		return ;
 	clear_sprites_tex_to_select(iw);
 	iw->v.sprites_select_mode = 1;
 	rect.x = 0;
@@ -276,7 +286,7 @@ void	draw_enemies_tex_to_select(t_sdl *iw)
 	SDL_Rect	rect;
 
 	if (iw->v.game_mode)
-		return;
+		return ;
 	clear_sprites_tex_to_select(iw);
 	iw->v.sprites_select_mode = 2;
 	rect.x = 0;
@@ -295,7 +305,7 @@ void	draw_selected_tex(t_sdl *iw)
 	SDL_Rect	rect;
 
 	if (iw->v.game_mode)
-		return;
+		return ;
 	rect.x = WINDOW_W - 110;
 	rect.y = 10;
 	rect.w = 100;
@@ -308,7 +318,7 @@ void	draw_selected_sprite(t_sdl *iw)
 	SDL_Rect	rect;
 
 	if (iw->v.game_mode)
-		return;
+		return ;
 	rect.x = WINDOW_W - 110;
 	rect.y = 130;
 	rect.w = 100;
@@ -328,31 +338,58 @@ void	draw_selected_sprite(t_sdl *iw)
 	}
 }
 
-void	draw_submenu(t_sdl *iw)
+void	draw_submenu4(t_sdl *iw)
 {
-	SDL_Rect	rect;
-	char		*s;
+	char	*s;
 
-	rect.x = WINDOW_W - 500;
-	rect.y = WINDOW_H + 100;
-	rect.w = 500;
-	rect.h = 100;
-	SDL_FillRect(iw->sur, &rect, 0x000000);
-	if (iw->v.submenu_mode == 1)
+	if (iw->v.submenu_mode == 8)
 	{
-		draw_text(iw, "Choose type of sector animation:", WINDOW_W - 500, WINDOW_H + 110);
-		draw_text(iw, "F  C  FC    Exit", WINDOW_W - 450, WINDOW_H + 135);
-	}
-	else if (iw->v.submenu_mode == 2)
-	{
-		draw_text(iw, "Set DZ of sector animation:", WINDOW_W - 500, WINDOW_H + 110);
+		draw_text(iw, "Set DY of walls animation:",
+				WINDOW_W - 500, WINDOW_H + 110);
 		draw_text(iw, "+100  -100  OK  Exit", WINDOW_W - 450, WINDOW_H + 135);
 	}
-	else if (iw->v.submenu_mode == 3)
+	else if (iw->v.submenu_mode == 9)
 	{
-		draw_text(iw, "Set speed of sector animation:", WINDOW_W - 500, WINDOW_H + 110);
+		draw_text(iw, "Set speed of walls animation:",
+				WINDOW_W - 500, WINDOW_H + 110);
 		draw_text(iw, "Speed:", WINDOW_W - 450, WINDOW_H + 135);
-		draw_text(iw, (s = ft_itoa(iw->v.sector_anim->speed)), WINDOW_W - 370, WINDOW_H + 135);
+		draw_text(iw, (s = ft_itoa(iw->v.wall_anim->speed)),
+				WINDOW_W - 370, WINDOW_H + 135);
+		free(s);
+		draw_text(iw, "+  -  OK  Exit", WINDOW_W - 340, WINDOW_H + 135);
+	}
+}
+
+void	draw_submenu3(t_sdl *iw)
+{
+	if (iw->v.submenu_mode == 5)
+	{
+		draw_text(iw, "Select walls moving type:",
+				WINDOW_W - 500, WINDOW_H + 110);
+		draw_text(iw, "Same  Inv_X  Inv_Y   Exit",
+				WINDOW_W - 450, WINDOW_H + 135);
+	}
+	else if (iw->v.submenu_mode == 7)
+	{
+		draw_text(iw, "Set DX of walls animation:",
+				WINDOW_W - 500, WINDOW_H + 110);
+		draw_text(iw, "+100  -100  OK  Exit", WINDOW_W - 450, WINDOW_H + 135);
+	}
+	else
+		draw_submenu4(iw);
+}
+
+void	draw_submenu2(t_sdl *iw)
+{
+	char		*s;
+
+	if (iw->v.submenu_mode == 3)
+	{
+		draw_text(iw, "Set speed of sector animation:",
+				WINDOW_W - 500, WINDOW_H + 110);
+		draw_text(iw, "Speed:", WINDOW_W - 450, WINDOW_H + 135);
+		draw_text(iw, (s = ft_itoa(iw->v.sector_anim->speed)),
+				WINDOW_W - 370, WINDOW_H + 135);
 		free(s);
 		draw_text(iw, "+  -  OK  Exit", WINDOW_W - 340, WINDOW_H + 135);
 	}
@@ -361,32 +398,37 @@ void	draw_submenu(t_sdl *iw)
 		draw_text(iw, "Choose animation:", WINDOW_W - 500, WINDOW_H + 110);
 		draw_text(iw, "Sector  Walls   Exit", WINDOW_W - 450, WINDOW_H + 135);
 	}
-	else if (iw->v.submenu_mode == 5)
-	{
-		draw_text(iw, "Select walls moving type:", WINDOW_W - 500, WINDOW_H + 110);
-		draw_text(iw, "Same  Inv_X  Inv_Y   Exit", WINDOW_W - 450, WINDOW_H + 135);
-	}
 	else if (iw->v.submenu_mode == 6)
 	{
-		draw_text(iw, "Select walls moving priority:", WINDOW_W - 500, WINDOW_H + 110);
+		draw_text(iw, "Select walls moving priority:",
+				WINDOW_W - 500, WINDOW_H + 110);
 		draw_text(iw, "DXDY  DYDX   Exit", WINDOW_W - 450, WINDOW_H + 135);
 	}
-	else if (iw->v.submenu_mode == 7)
+	else
+		draw_submenu3(iw);
+}
+
+void	draw_submenu(t_sdl *iw)
+{
+	SDL_Rect	rect;
+
+	rect.x = WINDOW_W - 500;
+	rect.y = WINDOW_H + 100;
+	rect.w = 500;
+	rect.h = 100;
+	SDL_FillRect(iw->sur, &rect, 0x000000);
+	if (iw->v.submenu_mode == 1)
 	{
-		draw_text(iw, "Set DX of walls animation:", WINDOW_W - 500, WINDOW_H + 110);
+		draw_text(iw, "Choose type of sector animation:",
+				WINDOW_W - 500, WINDOW_H + 110);
+		draw_text(iw, "F  C  FC    Exit", WINDOW_W - 450, WINDOW_H + 135);
+	}
+	else if (iw->v.submenu_mode == 2)
+	{
+		draw_text(iw, "Set DZ of sector animation:",
+				WINDOW_W - 500, WINDOW_H + 110);
 		draw_text(iw, "+100  -100  OK  Exit", WINDOW_W - 450, WINDOW_H + 135);
 	}
-	else if (iw->v.submenu_mode == 8)
-	{
-		draw_text(iw, "Set DY of walls animation:", WINDOW_W - 500, WINDOW_H + 110);
-		draw_text(iw, "+100  -100  OK  Exit", WINDOW_W - 450, WINDOW_H + 135);
-	}
-	else if (iw->v.submenu_mode == 9)
-	{
-		draw_text(iw, "Set speed of walls animation:", WINDOW_W - 500, WINDOW_H + 110);
-		draw_text(iw, "Speed:", WINDOW_W - 450, WINDOW_H + 135);
-		draw_text(iw, (s = ft_itoa(iw->v.wall_anim->speed)), WINDOW_W - 370, WINDOW_H + 135);
-		free(s);
-		draw_text(iw, "+  -  OK  Exit", WINDOW_W - 340, WINDOW_H + 135);
-	}
+	else
+		draw_submenu2(iw);
 }

@@ -81,7 +81,7 @@ void	draw_selected_sprite(t_sdl *iw);
 void	draw_submenu(t_sdl *iw);
 void	change_sector_animation_status(t_sdl *iw, t_picture *p);
 void	change_wall_animation_status(t_sdl *iw, t_picture *p);
-void	drawCircle(t_hud *den, int xc, int yc, int x, int y);
+void	drawcircle(t_hud *den, t_draw_circle *c, int x, int y);
 void	circle(t_hud *den, int xc, int yc);
 void	ft_line2(t_sdl *iw, int x, int y, int color);
 void	make_health(t_hud *den, t_sdl *iw);

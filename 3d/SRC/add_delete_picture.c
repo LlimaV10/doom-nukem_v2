@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   add_delete_picture.c                               :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/02/28 14:56:20 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/02/28 14:57:48 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	add_picture(t_sdl *iw, t_wall *wall)
@@ -5,7 +17,7 @@ void	add_picture(t_sdl *iw, t_wall *wall)
 	t_picture	*tmp;
 
 	if (iw->v.submenu_mode != 0 || iw->v.f_button_mode != 0)
-		return;
+		return ;
 	tmp = (t_picture *)malloc(sizeof(t_picture));
 	tmp->left_plus = 500;
 	tmp->zu = get_ceil_z(iw, wall->x, wall->y) - 100;
@@ -27,43 +39,45 @@ void	add_picture(t_sdl *iw, t_wall *wall)
 	calculate_picture(iw, wall, tmp);
 }
 
+void	delete_wall_animation1(t_sdl *iw, t_wall_animation *tmp2)
+{
+	do_wall_animation_step_dx(iw, tmp2, -tmp2->curr_dx);
+	do_wall_animation_step_dy(iw, tmp2, -tmp2->curr_dy);
+	iw->wall_animations = iw->wall_animations->next;
+	free(tmp2);
+}
+
 void	delete_wall_animation(t_sdl *iw, t_picture *pic)
 {
 	t_wall_animation	*tmp;
 	t_wall_animation	*tmp2;
 
 	if (iw->wall_animations == 0)
-		return;
+		return ;
 	if (iw->wall_animations->trigger == pic)
 	{
-		tmp2 = iw->wall_animations;
-		do_wall_animation_step_dx(iw, tmp2, -tmp2->curr_dx);
-		do_wall_animation_step_dy(iw, tmp2, -tmp2->curr_dy);
-		iw->wall_animations = iw->wall_animations->next;
-		free(tmp2);
+		delete_wall_animation1(iw, iw->wall_animations);
+		return ;
 	}
-	else
+	tmp = iw->wall_animations;
+	while (tmp->next)
 	{
-		tmp = iw->wall_animations;
-		while (tmp->next)
+		if (tmp->next->trigger == pic)
 		{
-			if (tmp->next->trigger == pic)
-			{
-				tmp2 = tmp->next;
-				do_wall_animation_step_dx(iw, tmp2, -tmp2->curr_dx);
-				do_wall_animation_step_dy(iw, tmp2, -tmp2->curr_dy);
-				tmp->next = tmp->next->next;
-				free(tmp2);
-				return;
-			}
-			tmp = tmp->next;
+			tmp2 = tmp->next;
+			do_wall_animation_step_dx(iw, tmp2, -tmp2->curr_dx);
+			do_wall_animation_step_dy(iw, tmp2, -tmp2->curr_dy);
+			tmp->next = tmp->next->next;
+			free(tmp2);
+			return ;
 		}
+		tmp = tmp->next;
 	}
 }
 
 void	delete_light_and_animations(t_sdl *iw, t_picture *pic)
 {
-	int		sec;
+	int					sec;
 	t_sector_animation	a;
 	t_sector_animation	*tmp;
 	t_sector_animation	*tmp2;
@@ -95,7 +109,7 @@ void	delete_picture(t_wall *wall, t_picture *pic, t_sdl *iw)
 	t_picture	*tmp;
 
 	if (iw->v.submenu_mode != 0 || iw->v.f_button_mode != 0)
-		return;
+		return ;
 	delete_light_and_animations(iw, pic);
 	if (pic == wall->p)
 	{
@@ -108,7 +122,7 @@ void	delete_picture(t_wall *wall, t_picture *pic, t_sdl *iw)
 		while (tmp->next != 0)
 		{
 			if (tmp->next == pic)
-				break;
+				break ;
 			tmp = tmp->next;
 		}
 		if (tmp->next != 0)

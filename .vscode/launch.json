@@ -27,7 +27,7 @@
 			"name": "(lldb) Launch",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "/Users/dbolilyi/doom-nukem_v2/doom-nukem",
+			"program": "${workspaceFolder}/doom-nukem",
 			"args": ["new", "maps/map1"],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",

@@ -1,11 +1,23 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   minimap.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/02/28 17:58:34 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/02/28 18:07:42 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
-void	transparency(t_sdl	*iw)
+void	transparency(t_sdl *iw)
 {
-	int i;
-	int j;
-	Uint32 pix;
-	int color;
+	int		i;
+	int		j;
+	Uint32	pix;
+	int		color;
 
 	i = WINDOW_W / 5 - 10;
 	while (i++ <= WINDOW_W - (WINDOW_W / 5) + 9)
@@ -13,15 +25,19 @@ void	transparency(t_sdl	*iw)
 		j = WINDOW_H / 5 - 10;
 		while (j++ <= WINDOW_H - (WINDOW_H / 5) + 9)
 		{
-			if ((i >= WINDOW_W / 5 - 10 && i <= WINDOW_W / 5) || (j >= WINDOW_H / 5 - 10 && j <= WINDOW_H / 5) || 
-				(i <= WINDOW_W - (WINDOW_W / 5) + 10 && i >=  WINDOW_W - (WINDOW_W / 5)) || 
-				(j <= WINDOW_H - (WINDOW_H / 5) + 10 && j >=  WINDOW_H - (WINDOW_H / 5)))
+			if ((i >= WINDOW_W / 5 - 10 && i <= WINDOW_W / 5)
+					|| (j >= WINDOW_H / 5 - 10 && j <= WINDOW_H / 5) ||
+					(i <= WINDOW_W - (WINDOW_W / 5) + 10 &&
+					i >= WINDOW_W - (WINDOW_W / 5)) ||
+					(j <= WINDOW_H - (WINDOW_H / 5) + 10 &&
+					j >= WINDOW_H - (WINDOW_H / 5)))
 				set_pixel2(iw->sur, i, j, 0x999999);
 			else
 			{
 				pix = get_pixel_surface(iw->sur, i, j);
 				color = (((int)((float)(pix >> 16) * 0.3)) << 16) +
-						(((int)((float)((pix >> 8) - (pix >> 16 << 8)) * 0.3)) << 8) +
+						(((int)((float)((pix >> 8) - (pix >> 16 << 8))
+						* 0.3)) << 8) +
 						(int)((float)(pix - (pix >> 8 << 8)) * 0.3);
 				set_pixel2(iw->sur, i, j, color);
 			}
@@ -89,7 +105,7 @@ void	bresen(t_sdl *iw, t_draw_line line, int color)
 	}
 }
 
-void    draw_minimap(t_sdl *iw)
+void	draw_minimap(t_sdl *iw)
 {
 	int			sec;
 	int			w;
@@ -106,9 +122,11 @@ void    draw_minimap(t_sdl *iw)
 			if (iw->walls[w].nextsector == -1)
 			{
 				line.x0 = -iw->walls[w].x / k + iw->p.x / k + 7900 / k;
-				line.x0 = WINDOW_W / 2 + ((line.x0 > WINDOW_W / 2) ? -abs(line.x0 - WINDOW_W / 2) : abs(line.x0 - WINDOW_W / 2));
+				line.x0 = WINDOW_W / 2 + ((line.x0 > WINDOW_W / 2) ? abs(line.x0
+							- WINDOW_W / 2) : abs(line.x0 - WINDOW_W / 2));
 				line.x1 = -iw->walls[w].next->x / k + iw->p.x / k + 7900 / k;
-				line.x1 = WINDOW_W / 2 + ((line.x1 > WINDOW_W / 2) ? -abs(line.x1 - WINDOW_W / 2) : abs(line.x1 - WINDOW_W / 2));
+				line.x1 = WINDOW_W / 2 + ((line.x1 > WINDOW_W / 2) ? abs(line.x1
+							- WINDOW_W / 2) : abs(line.x1 - WINDOW_W / 2));
 				line.y0 = -iw->walls[w].y / k + iw->p.y / k + 4750 / k;
 				line.y1 = -iw->walls[w].next->y / k + iw->p.y / k + 4750 / k;
 				bresen(iw, line, 0xFF0000);
@@ -117,4 +135,3 @@ void    draw_minimap(t_sdl *iw)
 	}
 	ft_scaled_blit(iw->map.player, iw->sur, &iw->map.pl_rect);
 }
-

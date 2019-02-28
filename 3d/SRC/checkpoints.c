@@ -1,6 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   checkpoints.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/02/28 15:37:25 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/02/28 15:41:39 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
-void	draw_input_on_screen(t_sdl *iw, t_keyb_inp *ki)
+void		draw_input_on_screen(t_sdl *iw, t_keyb_inp *ki)
 {
 	int		i;
 	int		to_i;
@@ -22,92 +34,83 @@ void	draw_input_on_screen(t_sdl *iw, t_keyb_inp *ki)
 	ki->s[ki->s_len] = '\0';
 	draw_text_blue(iw, ki->s, WINDOW_W / 2 - INPUT_LINE_LEN + 12,
 		WINDOW_H / 2 - 14);
-	//draw_text_blue(iw, "qwertyuiopasdfghjklzxcvbnmqwerty", WINDOW_W / 2 - INPUT_LINE_LEN + 12,
-	//	WINDOW_H / 2 - 14);
-	//printf("strlen %d\n", ft_strlen("qwertyuiopasdfghjklzxcvbnmqwerty"));
 	SDL_UpdateWindowSurface(iw->win);
 }
 
-t_keyb_inp  *input_loop(t_sdl *iw)
+void		input_loop_keydown(t_sdl *iw, t_input_loop *d, SDL_Event *e)
 {
-	int  quit;
-	SDL_Event   e;
-	t_keyb_inp  *ki;
-	char		*alphabet;
-	int		shift;
+	if (e->key.keysym.scancode == 41)
+		exit_x(iw);
+	else if (e->key.keysym.scancode >= 4
+		&& e->key.keysym.scancode <= 29
+		&& d->ki->s_len < INPUT_STRING_LEN)
+	{
+		if (d->shift == 0)
+			d->ki->s[d->ki->s_len++] =
+				d->alphabet[e->key.keysym.scancode - 4];
+		else
+			d->ki->s[d->ki->s_len++] = ft_toupper(
+					d->alphabet[e->key.keysym.scancode - 4]);
+		draw_input_on_screen(iw, d->ki);
+	}
+	else if (e->key.keysym.scancode == 44)
+	{
+		d->ki->s[d->ki->s_len++] = ' ';
+		draw_input_on_screen(iw, d->ki);
+	}
+	else if (e->key.keysym.scancode == 42)
+	{
+		d->ki->s_len -= ((d->ki->s_len > 0) ? 1 : 0);
+		draw_input_on_screen(iw, d->ki);
+	}
+}
 
-	shift = 0;
-	alphabet = ft_strdup("abcdefghijklmnopqrstuvwxyz");
-	ki = (t_keyb_inp *)malloc(sizeof(t_keyb_inp));
-	ki->s_len = 0;
-	draw_input_on_screen(iw, ki);
-	quit = 0;
-	while (!quit)
+t_keyb_inp	*input_loop(t_sdl *iw)
+{
+	t_input_loop	d;
+	SDL_Event		e;
+
+	d.shift = 0;
+	d.alphabet = ft_strdup("abcdefghijklmnopqrstuvwxyz");
+	d.ki = (t_keyb_inp *)malloc(sizeof(t_keyb_inp));
+	d.ki->s_len = 0;
+	draw_input_on_screen(iw, d.ki);
+	d.quit = 0;
+	while (!d.quit)
 		while (SDL_PollEvent(&e) != 0)
 			if (e.type == SDL_KEYDOWN)
 			{
-				if (e.key.keysym.scancode == 41)
-					exit_x(iw);
-				else if (e.key.keysym.scancode >= 4 && e.key.keysym.scancode <= 29
-					&& ki->s_len < INPUT_STRING_LEN)
-				{
-					if (shift == 0)
-						ki->s[ki->s_len++] = alphabet[e.key.keysym.scancode - 4];
-					else
-						ki->s[ki->s_len++] = ft_toupper(alphabet[e.key.keysym.scancode - 4]);
-					draw_input_on_screen(iw, ki);
-				}
-				else if (e.key.keysym.scancode == 44)
-				{
-					ki->s[ki->s_len++] = ' ';
-					draw_input_on_screen(iw, ki);
-				}
-				else if (e.key.keysym.scancode == 42)
-				{
-					ki->s_len -= ((ki->s_len > 0) ? 1 : 0);
-					draw_input_on_screen(iw, ki);
-				}
-				else if (e.key.keysym.scancode == 225)
-					shift = 1;
+				if (e.key.keysym.scancode == 225)
+					d.shift = 1;
 				else if (e.key.keysym.scancode == 40)
-					quit = 1;
+					d.quit = 1;
+				else
+					input_loop_keydown(iw, &d, &e);
 			}
 			else if (e.type == SDL_KEYUP && e.key.keysym.scancode == 225)
-				shift = 0;
-	free (alphabet);
-	return (ki);
+				d.shift = 0;
+	free(d.alphabet);
+	return (d.ki);
 }
 
-void	add_checkpoint(t_sdl *iw, t_sprite *s)
+void		add_checkpoint(t_sdl *iw, t_sprite *s)
 {
-	t_keyb_inp 	*ki;
-	//int			i;
-	//t_sprite	*tmp;
+	t_keyb_inp	*ki;
 
 	ki = input_loop(iw);
 	ki->sprite = s;
-	//i = 0;
-	// tmp = *iw->sprite;
-	// while (tmp)
-	// {
-	// 	if (tmp == s)
-	// 		break;
-	// 	i++;
-	// 	tmp = tmp->next;
-	// }
-	// ki->sprite_numb = i;
 	ki->next = iw->checkpoints;
 	iw->checkpoints = ki;
 }
 
-void	draw_checkpoint_text(t_sdl *iw)
+void		draw_checkpoint_text(t_sdl *iw)
 {
 	SDL_Rect	rect;
 	SDL_Surface	*stext;
 	SDL_Color	col;
 
 	if (!iw->v.last_to_write)
-		return;
+		return ;
 	rect.x = WINDOW_W - 400;
 	rect.y = 230;
 	col.a = 0;

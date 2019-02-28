@@ -937,4 +937,27 @@ typedef struct	s_brez
 	int            color;
 }				t_brez;
 
+typedef struct	s_input_loop
+{
+	int			quit;
+	t_keyb_inp	*ki;
+	char		*alphabet;
+	int			shift;
+}				t_input_loop;
+
+typedef struct	s_draw_circle
+{
+	int		xc;
+	int		yc;
+}				t_draw_circle;
+
+typedef struct	s_in_sec
+{
+	long int			x1;
+	long int			y1;
+	long int			x2;
+	long int			y2;
+	unsigned long int	wallCrossed;
+}				t_in_sec;
+
 #endif

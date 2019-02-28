@@ -1,53 +1,61 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   inside_sector.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/02/28 17:07:12 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/02/28 17:07:35 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 int		in_sec_xy(t_sdl *iw, int sector, int x, int y)
 {
-	long int i, x1, y1, x2, y2;
-	unsigned long int wallCrossed;
+	t_in_sec	d;
+	int			i;
 
-	wallCrossed = 0;
+	d.wallCrossed = 0;
 	i = iw->sectors[sector].sw - 1;
 	while (++i < iw->sectors[sector].sw + iw->sectors[sector].nw)
 	{
-		y1 = iw->walls[i].y - y;
-		y2 = iw->walls[i].next->y - y;
-		if ((y1 ^ y2) < 0)
+		d.y1 = iw->walls[i].y - y;
+		d.y2 = iw->walls[i].next->y - y;
+		if ((d.y1 ^ d.y2) < 0)
 		{
-			x1 = iw->walls[i].x - x;
-			x2 = iw->walls[i].next->x - x;
-			if ((x1 ^ x2) >= 0)
-				wallCrossed ^= x1;
+			d.x1 = iw->walls[i].x - x;
+			d.x2 = iw->walls[i].next->x - x;
+			if ((d.x1 ^ d.x2) >= 0)
+				d.wallCrossed ^= d.x1;
 			else
-				wallCrossed ^= (x1 * y2 - x2 * y1) ^ y2;
+				d.wallCrossed ^= (d.x1 * d.y2 - d.x2 * d.y1) ^ d.y2;
 		}
 	}
-	return (wallCrossed >> 31);
+	return (d.wallCrossed >> 31);
 }
 
 int		in_sec(int sector, t_sdl *iw)
 {
-	long int i, x1, y1, x2, y2;
-	unsigned long int wallCrossed;
+	t_in_sec	d;
+	int			i;
 
-	//Quick check if the sector ID is valid.
-
-	wallCrossed = 0;
+	d.wallCrossed = 0;
 	i = iw->sectors[sector].sw - 1;
 	while (++i < iw->sectors[sector].sw + iw->sectors[sector].nw)
 	{
-		y1 = iw->walls[i].y - iw->p.y;
-		y2 = iw->walls[i].next->y - iw->p.y;
-		// y2 = iw->walls[iw->walls[i].nextwall].y - iw->p.y;
-		if ((y1 ^ y2) < 0)
+		d.y1 = iw->walls[i].y - iw->p.y;
+		d.y2 = iw->walls[i].next->y - iw->p.y;
+		if ((d.y1 ^ d.y2) < 0)
 		{
-			x1 = iw->walls[i].x - iw->p.x;
-			x2 = iw->walls[i].next->x - iw->p.x;
-			//x2 = iw->walls[iw->walls[i].nextwall].x - iw->p.x;
-			if ((x1 ^ x2) >= 0)
-				wallCrossed ^= x1;
+			d.x1 = iw->walls[i].x - iw->p.x;
+			d.x2 = iw->walls[i].next->x - iw->p.x;
+			if ((d.x1 ^ d.x2) >= 0)
+				d.wallCrossed ^= d.x1;
 			else
-				wallCrossed ^= (x1 * y2 - x2 * y1) ^ y2;
+				d.wallCrossed ^= (d.x1 * d.y2 - d.x2 * d.y1) ^ d.y2;
 		}
 	}
-	return (wallCrossed >> 31);
+	return (d.wallCrossed >> 31);
 }
