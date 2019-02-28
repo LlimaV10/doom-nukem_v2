@@ -14,8 +14,25 @@ NAME = doom-nukem
 
 SRC =	3d/main3d.c \
 				3d/CLrender.c \
-				3d/minimap.c \
-				3d/input_validation.c \
+				3d/SRC/minimap.c \
+				3d/SRC/input_validation.c \
+				3d/SRC/inside_sector.c \
+				3d/SRC/set_get_pixels.c \
+				3d/SRC/add_delete_picture.c \
+				3d/SRC/draw_hud.c \
+				3d/SRC/get_by_pointer.c \
+				3d/SRC/sector_animations.c \
+				3d/SRC/wall_animations.c \
+				3d/SRC/hud_game.c \
+				3d/SRC/backpack.c \
+				3d/SRC/checkpoints.c \
+				3d/SRC/using_cards.c \
+				3d/SRC/button_f_up.c \
+				3d/SRC/key_up_hook.c \
+				3d/SRC/key_down_hook.c \
+				3d/SRC/mouse_move_right_wheel.c \
+				3d/SRC/mouse_left_up.c \
+				3d/SRC/player_moving.c \
 				main.c \
 				save_list.c \
 				display.c \

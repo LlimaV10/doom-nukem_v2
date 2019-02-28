@@ -1,4 +1,4 @@
-#include "guardians.h"
+#include "../guardians.h"
 
 int		check_textures(t_sdl *iw)
 {

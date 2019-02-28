@@ -1,4 +1,33 @@
-#include "guardians.h"
+#include "../guardians.h"
+
+void	transparency(t_sdl	*iw)
+{
+	int i;
+	int j;
+	Uint32 pix;
+	int color;
+
+	i = WINDOW_W / 5 - 10;
+	while (i++ <= WINDOW_W - (WINDOW_W / 5) + 9)
+	{
+		j = WINDOW_H / 5 - 10;
+		while (j++ <= WINDOW_H - (WINDOW_H / 5) + 9)
+		{
+			if ((i >= WINDOW_W / 5 - 10 && i <= WINDOW_W / 5) || (j >= WINDOW_H / 5 - 10 && j <= WINDOW_H / 5) || 
+				(i <= WINDOW_W - (WINDOW_W / 5) + 10 && i >=  WINDOW_W - (WINDOW_W / 5)) || 
+				(j <= WINDOW_H - (WINDOW_H / 5) + 10 && j >=  WINDOW_H - (WINDOW_H / 5)))
+				set_pixel2(iw->sur, i, j, 0x999999);
+			else
+			{
+				pix = get_pixel_surface(iw->sur, i, j);
+				color = (((int)((float)(pix >> 16) * 0.3)) << 16) +
+						(((int)((float)((pix >> 8) - (pix >> 16 << 8)) * 0.3)) << 8) +
+						(int)((float)(pix - (pix >> 8 << 8)) * 0.3);
+				set_pixel2(iw->sur, i, j, color);
+			}
+		}
+	}
+}
 
 void	print_brez_m(t_brez *b, int d, int d1, int d2)
 {
