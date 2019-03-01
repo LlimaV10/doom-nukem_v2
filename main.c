@@ -1110,6 +1110,7 @@ int		main_game(t_doom *den)
 	den->b_color = 0x505050;
 
 	ft_sdl_init(den);*/
+	system("leaks doom-nukem");
 	return (0);
 }
 
