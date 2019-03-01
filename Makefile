@@ -63,7 +63,7 @@ SRC =	3d/main3d.c \
 		3d/SRC2/guns_mechanic.c \
 		3d/SRC2/loop.c \
 		3d/SRC2/main_loops.c \
-		3d/SRC2/read_from_files.c
+		3d/SRC2/read_from_files.c	
 
 OBJ = $(SRC:.c=.o)
 

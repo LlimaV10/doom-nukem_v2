@@ -19,7 +19,7 @@ void	menu_loop(t_sdl *iw)
 				}
 				else if (e.key.keysym.scancode == 82)
 				{
-					iw->menu.count -= ((iw->menu.count > 1) ? 1 : -2);
+					iw->me nu.count -= ((iw->menu.count > 1) ? 1 : -2);
 					game_start_menu(iw);
 				}
 				else if (e.key.keysym.scancode == 40)
