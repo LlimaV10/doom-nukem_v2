@@ -3999,6 +3999,9 @@ void	get_def_new(t_sdl *iw)
 	while (++i < ENV_COUNT)
 		Mix_Volume(i, 60);
 	Mix_Volume(4, 15);
+	Mix_Volume(0, 120);
+	Mix_VolumeChunk(iw->sounds.env[0], 64);
+	Mix_VolumeChunk(iw->sounds.env[1], 64);
 	get_birth_def(iw);
 }
 

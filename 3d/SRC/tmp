@@ -1,0 +1,26 @@
+void	mouse_buttonleft_up1_1(int x, int y, t_sdl *iw)
+{
+	if (y < WINDOW_H + 150)
+	{
+		if (iw->v.changing_fc)
+			(*(iw->v.look_sector))->cl.z += 100;
+		else if ((*(iw->v.look_sector))->cl.z -
+				(*(iw->v.look_sector))->fr.z > 200)
+			(*(iw->v.look_sector))->fr.z += 100;
+	}
+	else if (!iw->v.changing_fc)
+		(*(iw->v.look_sector))->fr.z -= 100;
+	else if ((*(iw->v.look_sector))->cl.z
+			- (*(iw->v.look_sector))->fr.z > 200)
+		(*(iw->v.look_sector))->cl.z -= 100;
+	if (iw->v.changing_fc && (*(iw->v.look_sector))->cl.n != 0)
+		(*(iw->v.look_sector))->cl.n->d = (*(iw->v.look_sector))->
+			cl.n->a * (*(iw->v.look_sector))->cl.x -
+		(*(iw->v.look_sector))->cl.n->b * (*(iw->v.look_sector))->cl.y -
+		(*(iw->v.look_sector))->cl.n->c * (*(iw->v.look_sector))->cl.z;
+	else if (!iw->v.changing_fc && (*(iw->v.look_sector))->fr.n != 0)
+		(*(iw->v.look_sector))->fr.n->d = (*(iw->v.look_sector))->
+			fr.n->a * (*(iw->v.look_sector))->fr.x -
+		(*(iw->v.look_sector))->fr.n->b * (*(iw->v.look_sector))->fr.y -
+		(*(iw->v.look_sector))->fr.n->c * (*(iw->v.look_sector))->fr.z;
+}

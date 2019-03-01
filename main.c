@@ -798,6 +798,16 @@ void	unget_map(t_sdl *iw, t_doom *den, t_wals *tmp)
 	}
 }
 
+void	Halt_all(t_doom *den)
+{
+	int		i;
+
+	Mix_HaltMusic();
+	i = -1;
+	while (++i < 8)
+		Mix_HaltChannel(i);
+}
+
 void	main3d_edit(t_doom *den)//, t_wals *w)
 {
 	give_date(den, &den->iw);
@@ -835,7 +845,7 @@ void	main3d_edit(t_doom *den)//, t_wals *w)
 	free(den->iw.walls);
 	free(den->iw.sectors);
 	free_sector_ways(&den->iw);
-	Mix_HaltMusic();
+	Halt_all(den);
 }
 
 void	get_font_file(t_doom *den)

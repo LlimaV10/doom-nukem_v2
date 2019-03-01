@@ -1,12 +1,38 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   mouse_move_right_wheel.c                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/01 15:02:07 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/01 15:08:20 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
+
+void	mouse_move1(int xrel, int yrel, t_sdl *iw, int len)
+{
+	iw->v.picture_changing->left_plus += xrel;
+	if (iw->v.picture_changing->left_plus < 0)
+		iw->v.picture_changing->left_plus = 0;
+	else if (iw->v.picture_changing->left_plus + iw->v.picture_changing->tw
+			> (len = (int)sqrtf(powf(iw->v.wall_picture_changing->next->x
+						- iw->v.wall_picture_changing->x, 2.0f)
+			+ powf(iw->v.wall_picture_changing->next->y
+				- iw->v.wall_picture_changing->y, 2.0f))))
+		iw->v.picture_changing->left_plus =
+			len - iw->v.picture_changing->tw;
+	iw->v.picture_changing->zu -= yrel;
+	calculate_picture(iw, iw->v.wall_picture_changing,
+			iw->v.picture_changing);
+}
 
 void	mouse_move(int xrel, int yrel, t_sdl *iw)
 {
-	int		len;
-
 	if (iw->v.mouse_mode == 0)
-		return;
-	//printf("xrel %d yrel %d\n", xrel, yrel);
+		return ;
 	if (iw->v.picture_changing == 0)
 	{
 		iw->p.rot += MOUSE_SENSIVITY * (float)xrel;
@@ -20,37 +46,48 @@ void	mouse_move(int xrel, int yrel, t_sdl *iw)
 			iw->p.rotup = 2 * WINDOW_H;
 		else if (iw->p.rotup < -2 * WINDOW_H)
 			iw->p.rotup = -2 * WINDOW_H;
-
 	}
 	else
-	{
-		iw->v.picture_changing->left_plus += xrel;
-		if (iw->v.picture_changing->left_plus < 0)
-			iw->v.picture_changing->left_plus = 0;
-		else if (iw->v.picture_changing->left_plus + iw->v.picture_changing->tw >
-			(len = (int)sqrtf(powf(iw->v.wall_picture_changing->next->x - iw->v.wall_picture_changing->x, 2.0f)
-				+ powf(iw->v.wall_picture_changing->next->y - iw->v.wall_picture_changing->y, 2.0f))))
-			iw->v.picture_changing->left_plus = len - iw->v.picture_changing->tw;
-		iw->v.picture_changing->zu -= yrel;
-		calculate_picture(iw, iw->v.wall_picture_changing, iw->v.picture_changing);
-	}
+		mouse_move1(xrel, yrel, iw, 0);
 }
 
 void	mouse_buttonright_up(int x, int y, t_sdl *iw)
 {
 	if (iw->v.game_mode)
 	{
-
 	}
 	else if (iw->v.mouse_mode == 1 && iw->v.look_portal != 0)
 		iw->v.look_portal->glass = iw->v.tex_to_fill;
-	else if (iw->v.mouse_mode == 1 && *(iw->v.look_picture) != 0 && *(iw->v.look_wall) != 0)
+	else if (iw->v.mouse_mode == 1 &&
+			*(iw->v.look_picture) != 0 && *(iw->v.look_wall) != 0)
 		delete_picture(*(iw->v.look_wall), *(iw->v.look_picture), iw);
+}
+
+void	mouse_wheel1(SDL_Event *e, t_sdl *iw)
+{
+	if (iw->v.mouse_mode == 1 && iw->v.picture_changing != 0)
+	{
+		if (e->wheel.y < 0 && iw->v.picture_changing->tw - 30 > 50)
+			iw->v.picture_changing->tw -= 30;
+		else if (e->wheel.y > 0)
+			iw->v.picture_changing->tw += 30;
+		calculate_picture(iw,
+			iw->v.wall_picture_changing, iw->v.picture_changing);
+	}
+	else if (iw->v.mouse_mode == 1 && iw->v.sprite_editing
+			&& !iw->v.game_mode && iw->v.look_sprite != 0)
+	{
+		if (e->wheel.y < 0)
+			iw->v.look_sprite->scale *= 1.1f;
+		else if (iw->v.look_sprite->scale > 0.2f)
+			iw->v.look_sprite->scale /= 1.1f;
+	}
 }
 
 void	mouse_wheel(SDL_Event *e, t_sdl *iw)
 {
-	if (iw->v.mouse_y > WINDOW_H && iw->v.mouse_y < WINDOW_H + 100 && iw->v.mouse_mode == 0)
+	if (iw->v.mouse_y > WINDOW_H && iw->v.mouse_y
+			< WINDOW_H + 100 && iw->v.mouse_mode == 0)
 	{
 		iw->v.scroll_first_tex -= e->wheel.y;
 		if (iw->v.scroll_first_tex < 0)
@@ -70,19 +107,6 @@ void	mouse_wheel(SDL_Event *e, t_sdl *iw)
 			iw->v.scroll_pickup_sprites = PICK_UP_TEXTURES_COUNT - 1;
 		draw_pickup_tex_to_select(iw);
 	}
-	else if (iw->v.mouse_mode == 1 && iw->v.picture_changing != 0)
-	{
-		if (e->wheel.y < 0 && iw->v.picture_changing->tw - 30 > 50)
-			iw->v.picture_changing->tw -= 30;
-		else if (e->wheel.y > 0)
-			iw->v.picture_changing->tw += 30;
-		calculate_picture(iw, iw->v.wall_picture_changing, iw->v.picture_changing);
-	}
-	else if (iw->v.mouse_mode == 1 && iw->v.sprite_editing && !iw->v.game_mode && iw->v.look_sprite != 0)
-	{
-		if (e->wheel.y < 0)
-			iw->v.look_sprite->scale *= 1.1f;
-		else if (iw->v.look_sprite->scale > 0.2f)
-			iw->v.look_sprite->scale /= 1.1f;
-	}
+	else
+		mouse_wheel1(e, iw);
 }
