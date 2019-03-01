@@ -116,4 +116,5 @@ void	delete_sector(t_doom *den)
 	den->walls = den->walls - den->i;
 	den->sec -= 1;
 	den->secbak -= 1;
+	den->incede = 0;
 }

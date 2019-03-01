@@ -332,7 +332,7 @@ void	movie_button(t_doom *den, t_col *vec)
 
 void	pres_button(int x, int y, t_doom *den, t_col *vec)
 {
-	if (den->sec > 0)
+	if (den->sec > 0 && den->blouk == 1)
 	{
 		if (x >= 1760 && x < 1807 && y >= 500 && y < 567)
 			den->button_change = 1; // delete
@@ -798,7 +798,7 @@ void	unget_map(t_sdl *iw, t_doom *den, t_wals *tmp)
 	}
 }
 
-void	Halt_all(t_doom *den)
+void	Halt_all()
 {
 	int		i;
 
@@ -845,7 +845,7 @@ void	main3d_edit(t_doom *den)//, t_wals *w)
 	free(den->iw.walls);
 	free(den->iw.sectors);
 	free_sector_ways(&den->iw);
-	Halt_all(den);
+	Halt_all();
 }
 
 void	get_font_file(t_doom *den)

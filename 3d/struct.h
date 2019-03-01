@@ -920,6 +920,8 @@ typedef struct	s_sdl
 	t_map		map;
 	t_menu		menu;
 	t_sound		sounds;
+
+	int			i;
 }				t_sdl;
 
 typedef struct	s_brez
@@ -959,5 +961,15 @@ typedef struct	s_in_sec
 	long int			y2;
 	unsigned long int	wallCrossed;
 }				t_in_sec;
+
+typedef struct	s_move
+{
+	float		ang;
+	int			dx;
+	int			dy;
+	float		speed;
+	t_wall		*sw;
+	int			tmp;
+}				t_move;
 
 #endif

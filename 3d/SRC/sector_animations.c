@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   sector_animations.c                                :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/01 17:29:52 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/01 17:30:53 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	add_sector_animation(t_sdl *iw)
@@ -14,11 +26,10 @@ void	add_sector_animation(t_sdl *iw)
 	iw->v.sector_anim = tmp;
 }
 
-void	do_sector_animation_step(t_sdl *iw, t_sector_animation *a, int dz)
+void	do_sector_animation_step1(t_sdl *iw, t_sector_animation *a, int dz)
 {
 	int			w;
 	t_picture	*p;
-	int			i;
 
 	if (a->type == 0)
 	{
@@ -40,13 +51,22 @@ void	do_sector_animation_step(t_sdl *iw, t_sector_animation *a, int dz)
 		iw->sectors[a->sector].fr.z += dz;
 	else if (a->type == 2)
 		iw->sectors[a->sector].cl.z += dz;
+}
+
+void	do_sector_animation_step(t_sdl *iw, t_sector_animation *a, int dz)
+{
+	int			i;
+
+	do_sector_animation_step1(iw, a, dz);
 	i = a->sector;
 	if (iw->sectors[i].fr.n != 0)
 		iw->sectors[i].fr.n->d = -iw->sectors[i].fr.n->a * iw->sectors[i].fr.x -
-		iw->sectors[i].fr.n->b * iw->sectors[i].fr.y - iw->sectors[i].fr.n->c * iw->sectors[i].fr.z;
+		iw->sectors[i].fr.n->b * iw->sectors[i].fr.y -
+		iw->sectors[i].fr.n->c * iw->sectors[i].fr.z;
 	if (iw->sectors[i].cl.n != 0)
 		iw->sectors[i].cl.n->d = -iw->sectors[i].cl.n->a * iw->sectors[i].cl.x -
-		iw->sectors[i].cl.n->b * iw->sectors[i].cl.y - iw->sectors[i].cl.n->c * iw->sectors[i].cl.z;
+		iw->sectors[i].cl.n->b * iw->sectors[i].cl.y -
+		iw->sectors[i].cl.n->c * iw->sectors[i].cl.z;
 }
 
 void	exit_editing_sector_animation(t_sdl *iw)
@@ -69,7 +89,7 @@ void	change_sector_animation_status(t_sdl *iw, t_picture *p)
 		if (tmp->trigger == p)
 		{
 			tmp->status = ((tmp->status == 0) ? 1 : 0);
-			return;
+			return ;
 		}
 		tmp = tmp->next;
 	}

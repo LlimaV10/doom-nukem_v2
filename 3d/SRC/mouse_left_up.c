@@ -12,7 +12,7 @@
 
 #include "../guardians.h"
 
-void	mouse_buttonleft_up1_12_1(int x, int y, t_sdl *iw)
+void	mouse_buttonleft_up1_12_1(int x, t_sdl *iw)
 {
 	if (x < WINDOW_W - 245)
 	{
@@ -31,7 +31,7 @@ void	mouse_buttonleft_up1_12_1(int x, int y, t_sdl *iw)
 		exit_editing_wall_animation(iw);
 }
 
-void	mouse_buttonleft_up1_12(int x, int y, t_sdl *iw)
+void	mouse_buttonleft_up1_12(int x, t_sdl *iw)
 {
 	if (x < WINDOW_W - 320)
 	{
@@ -46,10 +46,10 @@ void	mouse_buttonleft_up1_12(int x, int y, t_sdl *iw)
 		draw_submenu(iw);
 	}
 	else
-		mouse_buttonleft_up1_12_1(x, y, iw);
+		mouse_buttonleft_up1_12_1(x, iw);
 }
 
-void	mouse_buttonleft_up1_11(int x, int y, t_sdl *iw)
+void	mouse_buttonleft_up1_11(int x, t_sdl *iw)
 {
 	if (iw->v.submenu_mode == 8 && x > WINDOW_W - 450)
 	{
@@ -72,10 +72,10 @@ void	mouse_buttonleft_up1_11(int x, int y, t_sdl *iw)
 			exit_editing_wall_animation(iw);
 	}
 	else if (iw->v.submenu_mode == 9 && x > WINDOW_W - 340)
-		mouse_buttonleft_up1_12(x, y, iw);
+		mouse_buttonleft_up1_12(x, iw);
 }
 
-void	mouse_buttonleft_up1_10(int x, int y, t_sdl *iw)
+void	mouse_buttonleft_up1_10(int x, t_sdl *iw)
 {
 	if (iw->v.submenu_mode == 7 && x > WINDOW_W - 450)
 	{
@@ -98,10 +98,10 @@ void	mouse_buttonleft_up1_10(int x, int y, t_sdl *iw)
 			exit_editing_wall_animation(iw);
 	}
 	else
-		mouse_buttonleft_up1_11(x, y, iw);
+		mouse_buttonleft_up1_11(x, iw);
 }
 
-void	mouse_buttonleft_up1_9(int x, int y, t_sdl *iw)
+void	mouse_buttonleft_up1_9(int x, t_sdl *iw)
 {
 	if (iw->v.submenu_mode == 6 && x > WINDOW_W - 450)
 	{
@@ -121,10 +121,10 @@ void	mouse_buttonleft_up1_9(int x, int y, t_sdl *iw)
 			exit_editing_wall_animation(iw);
 	}
 	else
-		mouse_buttonleft_up1_10(x, y, iw);
+		mouse_buttonleft_up1_10(x, iw);
 }
 
-void	mouse_buttonleft_up1_8(int x, int y, t_sdl *iw)
+void	mouse_buttonleft_up1_8(int x, t_sdl *iw)
 {
 	if (iw->v.submenu_mode == 5 && x > WINDOW_W - 450)
 	{
@@ -150,10 +150,10 @@ void	mouse_buttonleft_up1_8(int x, int y, t_sdl *iw)
 			exit_editing_wall_animation(iw);
 	}
 	else
-		mouse_buttonleft_up1_9(x, y, iw);
+		mouse_buttonleft_up1_9(x, iw);
 }
 
-void	mouse_buttonleft_up1_7(int x, int y, t_sdl *iw)
+void	mouse_buttonleft_up1_7(int x, t_sdl *iw)
 {
 	if (iw->v.submenu_mode == 4 && x > WINDOW_W - 450)
 	{
@@ -177,10 +177,10 @@ void	mouse_buttonleft_up1_7(int x, int y, t_sdl *iw)
 		}
 	}
 	else
-		mouse_buttonleft_up1_8(x, y, iw);
+		mouse_buttonleft_up1_8(x, iw);
 }
 
-void	mouse_buttonleft_up1_6_1(int x, int y, t_sdl *iw)
+void	mouse_buttonleft_up1_6_1(int x, t_sdl *iw)
 {
 	if (x < WINDOW_W - 245)
 	{
@@ -197,7 +197,7 @@ void	mouse_buttonleft_up1_6_1(int x, int y, t_sdl *iw)
 		exit_editing_sector_animation(iw);
 }
 
-void	mouse_buttonleft_up1_6(int x, int y, t_sdl *iw)
+void	mouse_buttonleft_up1_6(int x, t_sdl *iw)
 {
 	if (iw->v.submenu_mode == 3 && x > WINDOW_W - 340)
 	{
@@ -214,13 +214,13 @@ void	mouse_buttonleft_up1_6(int x, int y, t_sdl *iw)
 			draw_submenu(iw);
 		}
 		else
-			mouse_buttonleft_up1_6_1(x, y, iw);
+			mouse_buttonleft_up1_6_1(x, iw);
 	}
 	else
-		mouse_buttonleft_up1_7(x, y, iw);
+		mouse_buttonleft_up1_7(x, iw);
 }
 
-void	mouse_buttonleft_up1_5(int x, int y, t_sdl *iw)
+void	mouse_buttonleft_up1_5(int x, t_sdl *iw)
 {
 	if (iw->v.submenu_mode == 2 && x > WINDOW_W - 450)
 	{
@@ -243,10 +243,10 @@ void	mouse_buttonleft_up1_5(int x, int y, t_sdl *iw)
 			exit_editing_sector_animation(iw);
 	}
 	else
-		mouse_buttonleft_up1_6(x, y, iw);
+		mouse_buttonleft_up1_6(x, iw);
 }
 
-void	mouse_buttonleft_up1_4(int x, int y, t_sdl *iw)
+void	mouse_buttonleft_up1_4(int x, t_sdl *iw)
 {
 	if (iw->v.submenu_mode == 1 && x > WINDOW_W - 450)
 	{
@@ -272,7 +272,7 @@ void	mouse_buttonleft_up1_4(int x, int y, t_sdl *iw)
 			exit_editing_sector_animation(iw);
 	}
 	else
-		mouse_buttonleft_up1_5(x, y, iw);
+		mouse_buttonleft_up1_5(x, iw);
 }
 
 void	mouse_buttonleft_up1_3(int x, int y, t_sdl *iw)
@@ -300,7 +300,7 @@ void	mouse_buttonleft_up1_3(int x, int y, t_sdl *iw)
 			draw_enemies_tex_to_select(iw);
 	}
 	else
-		mouse_buttonleft_up1_4(x, y, iw);
+		mouse_buttonleft_up1_4(x, iw);
 }
 
 void	mouse_buttonleft_up1_2(int x, int y, t_sdl *iw)
@@ -326,7 +326,7 @@ void	mouse_buttonleft_up1_2(int x, int y, t_sdl *iw)
 		mouse_buttonleft_up1_3(x, y, iw);
 }
 
-void	mouse_buttonleft_up1_1(int x, int y, t_sdl *iw)
+void	mouse_buttonleft_up1_1(int y, t_sdl *iw)
 {
 	if (y < WINDOW_H + 150)
 	{
@@ -365,7 +365,7 @@ void	mouse_buttonleft_up1(int x, int y, t_sdl *iw)
 			draw_text(iw, "F", 15, WINDOW_H + 135);
 	}
 	else if (x < 70)
-		mouse_buttonleft_up1_1(x, y, iw);
+		mouse_buttonleft_up1_1(y, iw);
 	else if (x < 140)
 	{
 		if (y < WINDOW_H + 150)
@@ -380,7 +380,7 @@ void	mouse_buttonleft_up1(int x, int y, t_sdl *iw)
 		mouse_buttonleft_up1_2(x, y, iw);
 }
 
-void	mouse_buttonleft_up2(int x, int y, t_sdl *iw, int i)
+void	mouse_buttonleft_up2(int x, t_sdl *iw, int i)
 {
 	if (iw->v.sprites_select_mode == 0)
 	{
@@ -409,7 +409,7 @@ void	mouse_buttonleft_up2(int x, int y, t_sdl *iw, int i)
 	}
 }
 
-void	mouse_buttonleft_up3_1(int x, int y, t_sdl *iw)
+void	mouse_buttonleft_up3_1(t_sdl *iw)
 {
 	iw->v.look_sprite->type = 2;
 	iw->v.look_sprite->e.enemy_numb = iw->v.selected_sprite;
@@ -437,7 +437,7 @@ void	mouse_buttonleft_up3_1(int x, int y, t_sdl *iw)
 	}
 }
 
-void	mouse_buttonleft_up3(int x, int y, t_sdl *iw)
+void	mouse_buttonleft_up3(t_sdl *iw)
 {
 	if (iw->v.selected_sprite_type == 0)
 	{
@@ -458,10 +458,10 @@ void	mouse_buttonleft_up3(int x, int y, t_sdl *iw)
 			&iw->k.m_t_pickup[iw->v.selected_sprite];
 	}
 	else if (iw->v.selected_sprite_type == 2)
-		mouse_buttonleft_up3_1(x, y, iw);
+		mouse_buttonleft_up3_1(iw);
 }
 
-void	mouse_buttonleft_up4(int x, int y, t_sdl *iw)
+void	mouse_buttonleft_up4(t_sdl *iw)
 {
 	if (iw->v.mouse_mode == 1 && *(iw->v.look_picture) != 0
 		&& *(iw->v.look_wall) != 0 && !iw->v.game_mode)
@@ -494,10 +494,10 @@ void	mouse_buttonleft_up(int x, int y, t_sdl *iw)
 		&& iw->v.mouse_mode == 0 && *(iw->v.look_wall) != 0)
 		mouse_buttonleft_up1(x, y, iw);
 	else if (y > WINDOW_H + 200 && y < WINDOW_H + 300 && iw->v.mouse_mode == 0)
-		mouse_buttonleft_up2(x, y, iw, 0);
+		mouse_buttonleft_up2(x, iw, 0);
 	else if (iw->v.sprite_editing &&
 			iw->v.mouse_mode == 1 && iw->v.look_sprite != 0)
-		mouse_buttonleft_up3(x, y, iw);
+		mouse_buttonleft_up3(iw);
 	else
-		mouse_buttonleft_up4(x, y, iw);
+		mouse_buttonleft_up4(iw);
 }

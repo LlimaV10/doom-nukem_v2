@@ -1,10 +1,24 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   set_get_pixels.c                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/01 17:46:23 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/01 17:47:58 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	set_pixel2(SDL_Surface *surface, int x, int y, Uint32 pixel)
 {
+	Uint8	*target_pixel;
+
 	if (x >= 0 && x < surface->w && y >= 0 && y < surface->h)
 	{
-		Uint8 *target_pixel = (Uint8 *)surface->pixels + y * surface->pitch + x * 4;
+		target_pixel = (Uint8 *)surface->pixels + y * surface->pitch + x * 4;
 		*(Uint32 *)target_pixel = pixel;
 	}
 }
@@ -21,7 +35,7 @@ int		get_light_color(int color, t_picture *light)
 
 Uint32	get_pixel(t_packaging_texture *sur, const int x, const int y)
 {
-	uint8_t *v;
+	uint8_t	*v;
 	int		bpp;
 
 	if (x < 0 || x >= sur->w || y < 0 || y >= sur->h)
@@ -33,7 +47,7 @@ Uint32	get_pixel(t_packaging_texture *sur, const int x, const int y)
 
 Uint32	get_pixel_surface(SDL_Surface *sur, const int x, const int y)
 {
-	uint8_t *v;
+	uint8_t	*v;
 	int		bpp;
 
 	if (x < 0 || x >= sur->w || y < 0 || y >= sur->h)

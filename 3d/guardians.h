@@ -118,7 +118,7 @@ void	mouse_wheel(SDL_Event *e, t_sdl *iw);
 t_wall	*is_wall_portal(t_sdl *iw, int dx, int dy);
 void	move_collisions(t_sdl *iw, int dx, int dy, int tmp);
 int		check_moving_in_portal_z(t_sdl *iw, int dx, int dy, t_wall *sw);
-void	move_in_portal(t_sdl *iw, int dx, int dy, t_wall *sw, int tmp);
+void	move_in_portal(t_sdl *iw, t_move *d);
 void	move(t_sdl *iw, int pl, clock_t *time);
 void	get_wall_line2(t_wall *wall);
 void	do_sector_animations(t_sdl *iw);
