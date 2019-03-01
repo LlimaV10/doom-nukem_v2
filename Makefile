@@ -53,7 +53,17 @@ SRC =	3d/main3d.c \
 		check_option.c \
 		walls.c \
 		save.c \
-		load.c
+		load.c \
+		3d/SRC2/check_collisions.c \
+		3d/SRC2/do_animations.c \
+		3d/SRC2/enemies_main_functions.c \
+		3d/SRC2/enemy_intelligence0.c \
+		3d/SRC2/enemy_intelligence1.c \
+		3d/SRC2/enemy_intelligence2.c \
+		3d/SRC2/guns_mechanic.c \
+		3d/SRC2/loop.c \
+		3d/SRC2/main_loops.c \
+		3d/SRC2/read_from_files.c
 
 OBJ = $(SRC:.c=.o)
 
