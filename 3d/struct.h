@@ -972,4 +972,13 @@ typedef struct	s_move
 	int			tmp;
 }				t_move;
 
+typedef struct	s_check_collisions
+{
+	int		wall;
+	int		len;
+	float	nx;
+	float	ny;
+	float	tmp;
+}				t_check_collisions;
+
 #endif

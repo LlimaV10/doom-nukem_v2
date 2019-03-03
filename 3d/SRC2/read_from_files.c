@@ -1,5 +1,55 @@
 #include "../guardians.h"
 
+void	read_textures3(t_sdl *iw)
+{
+	iw->t_sur[24] = SDL_LoadBMP("textures/24.bmp");
+	iw->tsz[24] = 1.0f;
+	iw->bag.button_sur[0] = SDL_LoadBMP("interface_textures/backpack/frame.bmp");
+	iw->bag.button_sur[1] = SDL_LoadBMP("interface_textures/backpack/del.bmp");
+	iw->bag.button_sur[2] = SDL_LoadBMP("interface_textures/backpack/ok.bmp");
+	iw->menu.icons_sur[0] = SDL_LoadBMP("interface_textures/menu/0.bmp");
+	iw->menu.icons_sur[1] = SDL_LoadBMP("interface_textures/menu/1.bmp");
+	iw->menu.icons_sur[2] = SDL_LoadBMP("interface_textures/menu/2.bmp");
+	iw->menu.icons_sur[3] = SDL_LoadBMP("interface_textures/menu/3.bmp");
+	iw->menu.icons_sur[4] = SDL_LoadBMP("interface_textures/menu/4.bmp");
+	iw->menu.icons_sur[5] = SDL_LoadBMP("interface_textures/menu/5.bmp");
+	iw->map.player_sur = SDL_LoadBMP("interface_textures/map/player.bmp");
+	iw->hud.enot_sur = SDL_LoadBMP("interface_textures/HUD/enot.bmp");
+	iw->hud.miss_sur = SDL_LoadBMP("interface_textures/HUD/miss.bmp");
+	iw->hud.dead_sur = SDL_LoadBMP("interface_textures/HUD/groot_lose.bmp");
+	iw->hud.win_sur = SDL_LoadBMP("interface_textures/HUD/groot_win.bmp");
+	iw->hud.saved_sur = SDL_LoadBMP("interface_textures/HUD/saved.bmp");
+}
+
+void	read_textures2(t_sdl *iw)
+{
+	iw->t_sur[12] = SDL_LoadBMP("textures/12.bmp");
+	iw->tsz[12] = 1.0f;
+	iw->t_sur[13] = SDL_LoadBMP("textures/13.bmp");
+	iw->tsz[13] = 1.0f;
+	iw->t_sur[14] = SDL_LoadBMP("textures/14.bmp");
+	iw->tsz[14] = 1.0f;
+	iw->t_sur[15] = SDL_LoadBMP("textures/15.bmp");
+	iw->tsz[15] = 1.0f;
+	iw->t_sur[16] = SDL_LoadBMP("textures/16.bmp");
+	iw->tsz[16] = 1.0f;
+	iw->t_sur[17] = SDL_LoadBMP("textures/17.bmp");
+	iw->tsz[17] = 1.0f;
+	iw->t_sur[18] = SDL_LoadBMP("textures/18.bmp");
+	iw->tsz[18] = 1.0f;
+	iw->t_sur[19] = SDL_LoadBMP("textures/19.bmp");
+	iw->tsz[19] = 1.0f;
+	iw->t_sur[20] = SDL_LoadBMP("textures/20.bmp");
+	iw->tsz[20] = 1.0f;
+	iw->t_sur[21] = SDL_LoadBMP("textures/21.bmp");
+	iw->tsz[21] = 1.0f;
+	iw->t_sur[22] = SDL_LoadBMP("textures/22.bmp");
+	iw->tsz[22] = 1.0f;
+	iw->t_sur[23] = SDL_LoadBMP("textures/23.bmp");
+	iw->tsz[23] = 1.0f;
+	read_textures3(iw);
+}
+
 void	read_textures(t_sdl *iw)
 {
 	iw->t_sur[0] = SDL_LoadBMP("textures/0.bmp");
@@ -26,60 +76,42 @@ void	read_textures(t_sdl *iw)
 	iw->tsz[10] = 1.0f;
 	iw->t_sur[11] = SDL_LoadBMP("textures/11.bmp");
 	iw->tsz[11] = 1.0f;
-	iw->t_sur[12] = SDL_LoadBMP("textures/12.bmp");
-	iw->tsz[12] = 1.0f;
-	iw->t_sur[13] = SDL_LoadBMP("textures/13.bmp");
-	iw->tsz[13] = 1.0f;
-	iw->t_sur[14] = SDL_LoadBMP("textures/14.bmp");
-	iw->tsz[14] = 1.0f;
-	iw->t_sur[15] = SDL_LoadBMP("textures/15.bmp");
-	iw->tsz[15] = 1.0f;
-	iw->t_sur[16] = SDL_LoadBMP("textures/16.bmp");
-	iw->tsz[16] = 1.0f;
-	iw->t_sur[17] = SDL_LoadBMP("textures/17.bmp");
-	iw->tsz[17] = 1.0f;
-	iw->t_sur[18] = SDL_LoadBMP("textures/18.bmp");
-	iw->tsz[18] = 1.0f;
-	iw->t_sur[19] = SDL_LoadBMP("textures/19.bmp");
-	iw->tsz[19] = 1.0f;
-	iw->t_sur[20] = SDL_LoadBMP("textures/20.bmp");
-	iw->tsz[20] = 1.0f;
-	iw->t_sur[21] = SDL_LoadBMP("textures/21.bmp");
-	iw->tsz[21] = 1.0f;
-	iw->t_sur[22] = SDL_LoadBMP("textures/22.bmp");
-	iw->tsz[22] = 1.0f;
-	iw->t_sur[23] = SDL_LoadBMP("textures/23.bmp");
-	iw->tsz[23] = 1.0f;
-	iw->t_sur[24] = SDL_LoadBMP("textures/24.bmp");
-	iw->tsz[24] = 1.0f;
-	
-	iw->bag.button_sur[0] = SDL_LoadBMP("interface_textures/backpack/frame.bmp");
-	iw->bag.button_sur[1] = SDL_LoadBMP("interface_textures/backpack/del.bmp");
-	iw->bag.button_sur[2] = SDL_LoadBMP("interface_textures/backpack/ok.bmp");
+	read_textures2(iw);
+}
 
-	iw->menu.icons_sur[0] = SDL_LoadBMP("interface_textures/menu/0.bmp");
-	iw->menu.icons_sur[1] = SDL_LoadBMP("interface_textures/menu/1.bmp");
-	iw->menu.icons_sur[2] = SDL_LoadBMP("interface_textures/menu/2.bmp");
-	iw->menu.icons_sur[3] = SDL_LoadBMP("interface_textures/menu/3.bmp");
-	iw->menu.icons_sur[4] = SDL_LoadBMP("interface_textures/menu/4.bmp");
-	iw->menu.icons_sur[5] = SDL_LoadBMP("interface_textures/menu/5.bmp");
-
-	iw->map.player_sur = SDL_LoadBMP("interface_textures/map/player.bmp");
-	iw->hud.enot_sur = SDL_LoadBMP("interface_textures/HUD/enot.bmp");
-	iw->hud.miss_sur = SDL_LoadBMP("interface_textures/HUD/miss.bmp");
-	iw->hud.dead_sur = SDL_LoadBMP("interface_textures/HUD/groot_lose.bmp");
-	iw->hud.win_sur = SDL_LoadBMP("interface_textures/HUD/groot_win.bmp");
-	iw->hud.saved_sur = SDL_LoadBMP("interface_textures/HUD/saved.bmp");
+void	read_sprites_textures2(t_sdl *iw)
+{
+	iw->t_enemies_sur[16] = SDL_LoadBMP("sprites/enemies/16.bmp");
+	iw->t_enemies_sur[17] = SDL_LoadBMP("sprites/enemies/17.bmp");
+	iw->t_enemies_sur[18] = SDL_LoadBMP("sprites/enemies/18.bmp");
+	iw->t_enemies_sur[19] = SDL_LoadBMP("sprites/enemies/19.bmp");
+	iw->t_enemies_sur[20] = SDL_LoadBMP("sprites/enemies/20.bmp");
+	iw->t_enemies_sur[21] = SDL_LoadBMP("sprites/enemies/21.bmp");
+	iw->t_enemies_sur[22] = SDL_LoadBMP("sprites/enemies/22.bmp");
+	iw->t_enemies_sur[23] = SDL_LoadBMP("sprites/enemies/23.bmp");
+	iw->t_enemies_sur[24] = SDL_LoadBMP("sprites/enemies/24.bmp");
+	iw->t_enemies_sur[25] = SDL_LoadBMP("sprites/enemies/25.bmp");
+	iw->t_enemies_sur[26] = SDL_LoadBMP("sprites/enemies/26.bmp");
+	iw->t_enemies_sur[27] = SDL_LoadBMP("sprites/enemies/27.bmp");
+	iw->t_enemies_sur[28] = SDL_LoadBMP("sprites/enemies/28.bmp");
+	iw->t_enemies_sur[29] = SDL_LoadBMP("sprites/enemies/29.bmp");
+	iw->t_pickup_sur[0] = SDL_LoadBMP("sprites/to_pick_up/0.bmp");
+	iw->t_pickup_sur[1] = SDL_LoadBMP("sprites/to_pick_up/1.bmp");
+	iw->t_pickup_sur[2] = SDL_LoadBMP("sprites/to_pick_up/2.bmp");
+	iw->t_pickup_sur[3] = SDL_LoadBMP("sprites/to_pick_up/3.bmp");
+	iw->t_pickup_sur[4] = SDL_LoadBMP("sprites/to_pick_up/4.bmp");
+	iw->t_pickup_sur[5] = SDL_LoadBMP("sprites/to_pick_up/5.bmp");
+	iw->t_pickup_sur[6] = SDL_LoadBMP("sprites/to_pick_up/6.bmp");
+	iw->t_pickup_sur[7] = SDL_LoadBMP("sprites/to_pick_up/7.bmp");
+	iw->t_pickup_sur[8] = SDL_LoadBMP("sprites/to_pick_up/8.bmp");
+	iw->t_pickup_sur[9] = SDL_LoadBMP("sprites/to_pick_up/9.bmp");
+	iw->t_pickup_sur[10] = SDL_LoadBMP("sprites/to_pick_up/10.bmp");
 }
 
 void	read_sprites_textures(t_sdl *iw)
 {
 	iw->t_decor_sur[0] = SDL_LoadBMP("sprites/decorations/0.bmp");
 	iw->t_decor_sur[1] = SDL_LoadBMP("sprites/decorations/1.bmp");
-	/*iw->t_decor[1] = SDL_LoadBMP("sprites/decorations/1.bmp");
-	iw->t_decor[2] = SDL_LoadBMP("sprites/decorations/2.bmp");
-	iw->t_decor[3] = SDL_LoadBMP("sprites/decorations/3.bmp");*/
-
 	iw->t_enemies_sur[0] = SDL_LoadBMP("sprites/enemies/0.bmp");
 	iw->t_enemies_sur[1] = SDL_LoadBMP("sprites/enemies/1.bmp");
 	iw->t_enemies_sur[2] = SDL_LoadBMP("sprites/enemies/2.bmp");
@@ -96,34 +128,7 @@ void	read_sprites_textures(t_sdl *iw)
 	iw->t_enemies_sur[13] = SDL_LoadBMP("sprites/enemies/13.bmp");
 	iw->t_enemies_sur[14] = SDL_LoadBMP("sprites/enemies/14.bmp");
 	iw->t_enemies_sur[15] = SDL_LoadBMP("sprites/enemies/15.bmp");
-	iw->t_enemies_sur[16] = SDL_LoadBMP("sprites/enemies/16.bmp");
-	iw->t_enemies_sur[17] = SDL_LoadBMP("sprites/enemies/17.bmp");
-	iw->t_enemies_sur[18] = SDL_LoadBMP("sprites/enemies/18.bmp");
-	iw->t_enemies_sur[19] = SDL_LoadBMP("sprites/enemies/19.bmp");
-
-	iw->t_enemies_sur[20] = SDL_LoadBMP("sprites/enemies/20.bmp");
-	iw->t_enemies_sur[21] = SDL_LoadBMP("sprites/enemies/21.bmp");
-	iw->t_enemies_sur[22] = SDL_LoadBMP("sprites/enemies/22.bmp");
-	iw->t_enemies_sur[23] = SDL_LoadBMP("sprites/enemies/23.bmp");
-	iw->t_enemies_sur[24] = SDL_LoadBMP("sprites/enemies/24.bmp");
-	iw->t_enemies_sur[25] = SDL_LoadBMP("sprites/enemies/25.bmp");
-	iw->t_enemies_sur[26] = SDL_LoadBMP("sprites/enemies/26.bmp");
-	iw->t_enemies_sur[27] = SDL_LoadBMP("sprites/enemies/27.bmp");
-	iw->t_enemies_sur[28] = SDL_LoadBMP("sprites/enemies/28.bmp");
-	iw->t_enemies_sur[29] = SDL_LoadBMP("sprites/enemies/29.bmp");
-	
-
-	iw->t_pickup_sur[0] = SDL_LoadBMP("sprites/to_pick_up/0.bmp");
-	iw->t_pickup_sur[1] = SDL_LoadBMP("sprites/to_pick_up/1.bmp");
-	iw->t_pickup_sur[2] = SDL_LoadBMP("sprites/to_pick_up/2.bmp");
-	iw->t_pickup_sur[3] = SDL_LoadBMP("sprites/to_pick_up/3.bmp");
-	iw->t_pickup_sur[4] = SDL_LoadBMP("sprites/to_pick_up/4.bmp");
-	iw->t_pickup_sur[5] = SDL_LoadBMP("sprites/to_pick_up/5.bmp");
-	iw->t_pickup_sur[6] = SDL_LoadBMP("sprites/to_pick_up/6.bmp");
-	iw->t_pickup_sur[7] = SDL_LoadBMP("sprites/to_pick_up/7.bmp");
-	iw->t_pickup_sur[8] = SDL_LoadBMP("sprites/to_pick_up/8.bmp");
-	iw->t_pickup_sur[9] = SDL_LoadBMP("sprites/to_pick_up/9.bmp");
-	iw->t_pickup_sur[10] = SDL_LoadBMP("sprites/to_pick_up/10.bmp");
+	read_sprites_textures2(iw);
 }
 
 void	read_weapons_textures(t_sdl *iw)
@@ -156,24 +161,35 @@ void	get_sounds_game(t_sdl *iw)
 	i = -1;
 	while (++i < MUSIC_COUNT)
 	{
-		iw->sounds.music_rw[i] = SDL_RWFromConstMem(iw->sounds.music_pack[i], iw->sounds.music_pack_size[i]);
+		iw->sounds.music_rw[i] = SDL_RWFromConstMem(iw->sounds.music_pack[i],
+			iw->sounds.music_pack_size[i]);
 		iw->sounds.music[i] = Mix_LoadMUS_RW(iw->sounds.music_rw[i], 0);
 	}
 }
 
-void	get_sounds(t_sdl *iw)
+void	get_music(t_sdl *iw, int i, const char *file)
 {
-	SDL_RWops	*d;
-	void		*c;
-	size_t	size;
+	void	*tmp;
+	int		fd;
 
-	get_music(iw, 0, "sound/background/0.mp3");
-	get_music(iw, 1, "sound/background/1.mp3");
-	get_music(iw, 2, "sound/background/2.mp3");
-	get_music(iw, 3, "sound/background/3.mp3");
-	get_music(iw, 4, "sound/background/4.mp3");
-	get_music(iw, 5, "sound/background/5.mp3");
+	fd = open(file, READ_MAP);
+	if (fd < 0)
+	{
+		iw->sounds.music[i] = 0;
+		return;
+	}
+	tmp = malloc(MAX_MUSIC_SIZE);
+	iw->sounds.music_pack_size[i] = read(fd, tmp, MAX_MUSIC_SIZE);
+	close(fd);
+	iw->sounds.music_pack[i] = malloc(iw->sounds.music_pack_size[i]);
+	ft_memcpy(iw->sounds.music_pack[i], tmp, iw->sounds.music_pack_size[i]);
+	free(tmp);
+	iw->sounds.music_rw[i] = SDL_RWFromConstMem(iw->sounds.music_pack[i], iw->sounds.music_pack_size[i]);
+	iw->sounds.music[i] = Mix_LoadMUS_RW(iw->sounds.music_rw[i], 0);
+}
 
+void	get_sounds2(t_sdl *iw)
+{
 	iw->sounds.env[0] = Mix_LoadWAV("sound/environment/0.wav");
 	iw->sounds.env[1] = Mix_LoadWAV("sound/environment/1.wav");
 	iw->sounds.env[2] = Mix_LoadWAV("sound/environment/2.wav");
@@ -196,4 +212,19 @@ void	get_sounds(t_sdl *iw)
 	iw->sounds.env[19] = Mix_LoadWAV("sound/environment/19.wav");
 	iw->sounds.env[20] = Mix_LoadWAV("sound/environment/20.wav");
 	iw->sounds.env[21] = Mix_LoadWAV("sound/environment/21.wav");
+}
+
+void	get_sounds(t_sdl *iw)
+{
+	SDL_RWops	*d;
+	void		*c;
+	size_t	size;
+
+	get_music(iw, 0, "sound/background/0.mp3");
+	get_music(iw, 1, "sound/background/1.mp3");
+	get_music(iw, 2, "sound/background/2.mp3");
+	get_music(iw, 3, "sound/background/3.mp3");
+	get_music(iw, 4, "sound/background/4.mp3");
+	get_music(iw, 5, "sound/background/5.mp3");
+	get_sounds2(iw);
 }

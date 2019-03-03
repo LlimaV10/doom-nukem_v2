@@ -59,3 +59,18 @@ int		in_sec(int sector, t_sdl *iw)
 	}
 	return (d.wallCrossed >> 31);
 }
+
+int		get_sector(t_sdl *iw)
+{
+	int sec;
+
+	sec = iw->v.ls - 1;
+	while (++sec < iw->v.sc)
+		if (in_sec(sec, iw) != 0)
+			return (sec);
+	sec = -1;
+	while (++sec < iw->v.ls)
+		if (in_sec(sec, iw) != 0)
+			return (sec);
+	return (-1);
+}

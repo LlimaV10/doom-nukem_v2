@@ -134,7 +134,7 @@ int		move_enemy(t_sdl *iw, t_sprite *s);
 void	sprite_physics(t_sdl *iw, t_sprite *s);
 void	enemy_intelligence0(t_sdl *iw, t_sprite *s);
 void	enemy_intelligence1(t_sdl *iw, t_sprite *s);
-void	enemy_intelligence2(t_sdl *iw, t_sprite *s);
+void	enemy_intelligence2(t_sdl *iw, t_sprite *s, int i);
 void	check_enemies(t_sdl *iw);
 void	draw_miss(t_sdl *iw);
 void	draw_save(t_sdl *iw);
