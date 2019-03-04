@@ -63,7 +63,43 @@ SRC =	3d/main3d.c \
 		3d/SRC2/guns_mechanic.c \
 		3d/SRC2/loop.c \
 		3d/SRC2/main_loops.c \
-		3d/SRC2/read_from_files.c	
+		3d/SRC2/read_from_files.c \
+		3d/SRC3/bresenham_save.c \
+		3d/SRC3/checkpoints_game.c \
+		3d/SRC3/draw.c \
+		3d/SRC3/draw_between_sectors_bot_tex.c \
+		3d/SRC3/draw_between_sectors_top_tex.c \
+		3d/SRC3/draw_floor_ceil.c \
+		3d/SRC3/draw_get_between_sectors_walls.c \
+		3d/SRC3/draw_glass.c \
+		3d/SRC3/draw_gun.c \
+		3d/SRC3/draw_inclined_floor_ceil.c \
+		3d/SRC3/draw_inclined_wall_floor_ceil.c \
+		3d/SRC3/draw_left_right.c \
+		3d/SRC3/draw_pictures.c \
+		3d/SRC3/draw_skybox.c \
+		3d/SRC3/draw_sprites.c \
+		3d/SRC3/draw_subfunctions.c \
+		3d/SRC3/draw_wall_floor_ceil.c \
+		3d/SRC3/free_ways_exit_x.c \
+		3d/SRC3/ft_funcs.c \
+		3d/SRC3/get_floor_ceil_z.c \
+		3d/SRC3/get_kernel_mem.c \
+		3d/SRC3/get_left_right_visible_walls.c \
+		3d/SRC3/get_packaging_tex_from_sur.c \
+		3d/SRC3/get_sector_ways.c \
+		3d/SRC3/get_start_draw_vectors_lines.c \
+		3d/SRC3/get_visible_walls.c \
+		3d/SRC3/map_wall_equations.c \
+		3d/SRC3/next_sector.c \
+		3d/SRC3/set_defaults.c \
+		3d/SRC3/set_defaults_guns.c \
+		3d/SRC3/set_defaults_sprites.c \
+		3d/SRC3/sound_loops.c \
+		3d/SRC3/sprites_calculation.c \
+		3d/SRC3/undo_animations.c \
+		3d/SRC3/update_window.c \
+		3d/SRC3/wall_pairs_sort.c
 
 OBJ = $(SRC:.c=.o)
 

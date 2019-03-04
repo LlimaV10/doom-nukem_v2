@@ -2,7 +2,7 @@
 # define __DEFINES_H
 
 # define WINDOW_W 1000
-# define WINDOW_H 550
+# define WINDOW_H 400
 # define MAX_SOURCE_SIZE 0x100000
 # define TEXTURES_COUNT 25
 # define DECOR_TEXTURES_COUNT 2
