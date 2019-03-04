@@ -14,7 +14,8 @@ int		ft_max(int p1, int p2)
 	return (p2);
 }
 
-void	ft_scaled_blit(t_packaging_texture *tex, SDL_Surface *winsur, SDL_Rect *rect)
+void	ft_scaled_blit(t_packaging_texture *tex,
+	SDL_Surface *winsur, SDL_Rect *rect)
 {
 	int		i;
 	int		j;
@@ -33,7 +34,8 @@ void	ft_scaled_blit(t_packaging_texture *tex, SDL_Surface *winsur, SDL_Rect *rec
 	}
 }
 
-void	ft_scaled_blit2(t_packaging_texture *tex, SDL_Surface *winsur, SDL_Rect *rect)
+void	ft_scaled_blit2(t_packaging_texture *tex,
+	SDL_Surface *winsur, SDL_Rect *rect)
 {
 	int		i;
 	int		j;

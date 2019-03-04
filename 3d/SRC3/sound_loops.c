@@ -13,7 +13,6 @@ void	sound_loop(t_sdl *iw)
 
 void	environment_loop(t_sdl *iw)
 {
-	// steps
 	if (iw->v.fly_mode == 0 && iw->v.fall == 1 &&
 		(iw->v.front != 1 || iw->v.back != 1 || iw->v.left != 1 || iw->v.right != 1))
 	{

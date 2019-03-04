@@ -269,7 +269,7 @@ void	draw_glass_sprites_kernel(t_sdl *iw);
 void	draw_gun_kernel(t_sdl *iw);
 
 int		check_all_validation(t_sdl *iw);
-void	draw_minimap(t_sdl *iw);
+
 
 
 #endif

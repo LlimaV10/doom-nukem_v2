@@ -25,16 +25,6 @@ void	new_sort_pairs(t_sdl *iw)
 		}
 		else
 			tmp = tmp->next;
-		//////
-		/*t_save_wall_pairs *ttt;
-		ttt = iw->d.vwp;
-		while (ttt != 0)
-		{
-			printf("left: x %d len %f; right: x %d len %f\n", ttt->left->x, ttt->left->len, ttt->right->x, ttt->right->len);
-			ttt = ttt->next;
-		}
-		printf("\n\n");*/
-		/////
 	}
 	iw->d.vwp = start.next;
 }
@@ -68,14 +58,17 @@ t_save_wall_pairs	*get_closest_between_pair(t_save_wall_pairs	*pair)
 	tmp = pair->next;
 	while (tmp != 0)
 	{
-		//(bx-ax)*(py-ay)-(by-ay)*(px-ax)
 		if (tmp != pair)
 			if ((tmp->left->x >= pair->left->x && tmp->left->x < pair->right->x &&
-				((pair->left->wall->x - pair->right->wall->x) * (tmp->left->p.y - pair->right->wall->y) -
-				(pair->left->wall->y - pair->right->wall->y) * (tmp->left->p.x - pair->right->wall->x) > 0)) ||
+				((pair->left->wall->x - pair->right->wall->x) *
+				(tmp->left->p.y - pair->right->wall->y) -
+				(pair->left->wall->y - pair->right->wall->y) *
+					(tmp->left->p.x - pair->right->wall->x) > 0)) ||
 					(tmp->right->x > pair->left->x && tmp->right->x <= pair->right->x &&
-				((pair->left->wall->x - pair->right->wall->x) * (tmp->right->p.y - pair->right->wall->y) -
-						(pair->left->wall->y - pair->right->wall->y) * (tmp->right->p.x - pair->right->wall->x) > 0)))
+				((pair->left->wall->x - pair->right->wall->x) *
+						(tmp->right->p.y - pair->right->wall->y) -
+						(pair->left->wall->y - pair->right->wall->y) *
+					(tmp->right->p.x - pair->right->wall->x) > 0)))
 				save = tmp;
 		tmp = tmp->next;
 	}

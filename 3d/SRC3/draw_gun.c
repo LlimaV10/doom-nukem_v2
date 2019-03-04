@@ -1,42 +1,42 @@
 #include "../guardians.h"
 
+void	draw_gun2(t_sdl *iw, t_draw_gun *d)
+{
+	d->changed_rect = iw->guns.t_rect[iw->guns.t];
+	d->changed_rect.x += iw->v.weapon_change_x;
+	d->changed_rect.y += iw->v.weapon_change_y + iw->v.weapon_change_y_hide;
+	d->to_i = d->changed_rect.y + d->changed_rect.h;
+	if (d->to_i > WINDOW_H)
+		d->to_i = WINDOW_H;
+	if (d->changed_rect.y < 0)
+		d->i = -1;
+	else
+		d->i = d->changed_rect.y - 1;
+	if (d->changed_rect.x < 0)
+		d->start_j = -1;
+	else
+		d->start_j = d->changed_rect.x - 1;
+	d->to_j = d->changed_rect.w + d->changed_rect.x;
+	if (d->to_j > WINDOW_W)
+		d->to_j = WINDOW_W;
+}
+
 void	draw_gun(t_sdl *iw)
 {
-	int		i;
-	int		j;
-	int		to_i;
-	int		start_j;
-	int		to_j;
-	int		pixel;
-	SDL_Rect	changed_rect;
+	t_draw_gun	d;
 
-	changed_rect = iw->guns.t_rect[iw->guns.t];
-	changed_rect.x += iw->v.weapon_change_x;
-	changed_rect.y += iw->v.weapon_change_y + iw->v.weapon_change_y_hide;
-	to_i = changed_rect.y + changed_rect.h;
-	if (to_i > WINDOW_H)
-		to_i = WINDOW_H;
-	if (changed_rect.y < 0)
-		i = -1;
-	else
-		i = changed_rect.y - 1;
-	if (changed_rect.x < 0)
-		start_j = -1;
-	else
-		start_j = changed_rect.x - 1;
-	to_j = changed_rect.w + changed_rect.x;
-	if (to_j > WINDOW_W)
-		to_j = WINDOW_W;
-	while (++i < to_i)
+	draw_gun2(iw, &d);
+	while (++d.i < d.to_i)
 	{
-		j = start_j;
-		while (++j < to_j)
+		d.j = d.start_j;
+		while (++d.j < d.to_j)
 		{
-			pixel = get_pixel(iw->t_weap[iw->guns.t],
-				(j - changed_rect.x) * iw->t_weap[iw->guns.t]->w / changed_rect.w,
-				(i - changed_rect.y) * iw->t_weap[iw->guns.t]->h / changed_rect.h);
-			if (pixel != 0x010000)
-				set_pixel2(iw->sur, j, i, get_light_color(pixel, iw->sectors[iw->d.cs].light));
+			d.pixel = get_pixel(iw->t_weap[iw->guns.t],
+				(d.j - d.changed_rect.x) * iw->t_weap[iw->guns.t]->w / d.changed_rect.w,
+				(d.i - d.changed_rect.y) * iw->t_weap[iw->guns.t]->h / d.changed_rect.h);
+			if (d.pixel != 0x010000)
+				set_pixel2(iw->sur, d.j, d.i,
+					get_light_color(d.pixel, iw->sectors[iw->d.cs].light));
 		}
 	}
 }

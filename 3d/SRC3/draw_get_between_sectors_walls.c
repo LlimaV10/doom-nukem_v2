@@ -1,6 +1,49 @@
 #include "../guardians.h"
 
-void	draw_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right)
+void	draw_between_sectors_walls2(t_sdl *iw, t_save_wall *left,
+	t_save_wall *right, int *tmp)
+{
+	t_draw_line		l;
+	int				lz;
+	int				rz;
+
+	l.x0 = left->x;
+	l.x1 = right->x;
+	lz = get_ceil_z(iw, left->p.x + iw->walls[left->wall->nextsector_wall].x
+		- left->wall->next->x, left->p.y + iw->walls[left->wall->nextsector_wall].y
+		- left->wall->next->y);
+	rz = get_ceil_z(iw, right->p.x + iw->walls[left->wall->nextsector_wall].x
+		- left->wall->next->x, right->p.y + iw->walls[left->wall->nextsector_wall].y
+		- left->wall->next->y);
+	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz)
+		/ (int)left->plen + iw->p.rotup;
+	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz)
+		/ (int)right->plen + iw->p.rotup;
+	brez_line(tmp, l);
+	if (*(iw->v.look_wall) == 0 && iw->v.mouse_mode == 1
+		&& left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
+		&& tmp[WINDOW_W / 2 - left->x] > WINDOW_H / 2)
+	{
+		*(iw->v.look_wall) = left->wall;
+		*(iw->v.look_sector) = &iw->sectors[iw->d.cs];
+	}
+	draw_between_sectors_top_tex(iw, left, right, tmp);
+}
+
+void	draw_between_sectors_walls3(t_sdl *iw, t_save_wall *left,
+	t_save_wall *right, int *tmp)
+{
+	if (*(iw->v.look_wall) == 0 && iw->v.mouse_mode == 1
+		&& left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
+		&& tmp[WINDOW_W / 2 - left->x] < WINDOW_H / 2)
+	{
+		*(iw->v.look_wall) = left->wall;
+		*(iw->v.look_sector) = &iw->sectors[iw->d.cs];
+	}
+}
+
+void	draw_between_sectors_walls(t_sdl *iw, t_save_wall *left,
+	t_save_wall *right)
 {
 	t_draw_line		l;
 	int				lz;
@@ -10,42 +53,47 @@ void	draw_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right
 	tmp = (int *)malloc((right->x - left->x + 1) * sizeof(int));
 	l.x0 = left->x;
 	l.x1 = right->x;
-	/*lz = get_floor_z(iw, left->wall->x, left->wall->y);
-	rz = get_floor_z(iw, right->wall->x, right->wall->y);*/
-	// lz = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
-	// rz = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
-	lz = get_floor_z(iw, left->p.x + iw->walls[left->wall->nextsector_wall].x - left->wall->next->x, left->p.y + iw->walls[left->wall->nextsector_wall].y - left->wall->next->y);
-	rz = get_floor_z(iw, right->p.x + iw->walls[left->wall->nextsector_wall].x - left->wall->next->x, right->p.y + iw->walls[left->wall->nextsector_wall].y - left->wall->next->y);
-	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen + iw->p.rotup;
-	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen + iw->p.rotup;
+	lz = get_floor_z(iw, left->p.x + iw->walls[left->wall->nextsector_wall].x
+		- left->wall->next->x, left->p.y + iw->walls[left->wall->nextsector_wall].y
+		- left->wall->next->y);
+	rz = get_floor_z(iw, right->p.x + iw->walls[left->wall->nextsector_wall].x
+		- left->wall->next->x, right->p.y + iw->walls[left->wall->nextsector_wall].y
+		- left->wall->next->y);
+	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz)
+		/ (int)left->plen + iw->p.rotup;
+	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz)
+		/ (int)right->plen + iw->p.rotup;
 	brez_line(tmp, l);
-	if (*(iw->v.look_wall) == 0 && iw->v.mouse_mode == 1 && left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
-		&& tmp[WINDOW_W / 2 - left->x] < WINDOW_H / 2)
-	{
-		*(iw->v.look_wall) = left->wall;
-		*(iw->v.look_sector) = &iw->sectors[iw->d.cs];
-	}
+	draw_between_sectors_walls3(iw, left, right, tmp);
 	draw_between_sectors_bot_tex(iw, left, right, tmp);
-	/*lz = get_ceil_z(iw, left->wall->x, left->wall->y);
-	rz = get_ceil_z(iw, right->wall->x, right->wall->y);*/
-	// lz = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
-	// rz = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
-	lz = get_ceil_z(iw, left->p.x + iw->walls[left->wall->nextsector_wall].x - left->wall->next->x, left->p.y + iw->walls[left->wall->nextsector_wall].y - left->wall->next->y);
-	rz = get_ceil_z(iw, right->p.x + iw->walls[left->wall->nextsector_wall].x - left->wall->next->x, right->p.y + iw->walls[left->wall->nextsector_wall].y - left->wall->next->y);
-	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen + iw->p.rotup;
-	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen + iw->p.rotup;
-	brez_line(tmp, l);
-	if (*(iw->v.look_wall) == 0 && iw->v.mouse_mode == 1 && left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
-		&& tmp[WINDOW_W / 2 - left->x] > WINDOW_H / 2)
-	{
-		*(iw->v.look_wall) = left->wall;
-		*(iw->v.look_sector) = &iw->sectors[iw->d.cs];
-	}
-	draw_between_sectors_top_tex(iw, left, right, tmp);
+	draw_between_sectors_walls2(iw, left, right, tmp);
 	free(tmp);
 }
 
-int		*get_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right, int **top)
+void	get_between_sectors_walls2(t_sdl *iw, t_save_wall *left,
+	t_save_wall *right, int **top)
+{
+	int				lz;
+	int				rz;
+	t_draw_line		l;
+
+	l.x0 = left->x;
+	l.x1 = right->x;
+	lz = get_ceil_z(iw, left->p.x + iw->walls[left->wall->nextsector_wall].x
+		- left->wall->next->x, left->p.y + iw->walls[left->wall->nextsector_wall].y
+		- left->wall->next->y);
+	rz = get_ceil_z(iw, right->p.x + iw->walls[left->wall->nextsector_wall].x
+		- left->wall->next->x, right->p.y + iw->walls[left->wall->nextsector_wall].y
+		- left->wall->next->y);
+	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz)
+		/ (int)left->plen + iw->p.rotup;
+	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz)
+		/ (int)right->plen + iw->p.rotup;
+	brez_line(*top, l);
+}
+
+int		*get_between_sectors_walls(t_sdl *iw, t_save_wall *left,
+	t_save_wall *right, int **top)
 {
 	t_draw_line		l;
 	int				lz;
@@ -56,27 +104,18 @@ int		*get_between_sectors_walls(t_sdl *iw, t_save_wall *left, t_save_wall *right
 	*top = (int *)malloc((right->x - left->x + 1) * sizeof(int));
 	l.x0 = left->x;
 	l.x1 = right->x;
-	/*lz = get_floor_z(iw, left->wall->x, left->wall->y);
-	rz = get_floor_z(iw, right->wall->x, right->wall->y);*/
-	// lz = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
-	// rz = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
-	lz = get_floor_z(iw, left->p.x + iw->walls[left->wall->nextsector_wall].x - left->wall->next->x, left->p.y + iw->walls[left->wall->nextsector_wall].y - left->wall->next->y);
-	rz = get_floor_z(iw, right->p.x + iw->walls[left->wall->nextsector_wall].x - left->wall->next->x, right->p.y + iw->walls[left->wall->nextsector_wall].y - left->wall->next->y);
-	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen + iw->p.rotup;
-	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen + iw->p.rotup;
+	lz = get_floor_z(iw, left->p.x + iw->walls[left->wall->nextsector_wall].x
+		- left->wall->next->x, left->p.y + iw->walls[left->wall->nextsector_wall].y
+		- left->wall->next->y);
+	rz = get_floor_z(iw, right->p.x + iw->walls[left->wall->nextsector_wall].x
+		- left->wall->next->x, right->p.y + iw->walls[left->wall->nextsector_wall].y
+		- left->wall->next->y);
+	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz)
+		/ (int)left->plen + iw->p.rotup;
+	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz)
+		/ (int)right->plen + iw->p.rotup;
 	brez_line(bottom, l);
-	/*draw_between_sectors_bot_tex(iw, left, right, tmp);*/
-
-	/*lz = get_ceil_z(iw, left->wall->x, left->wall->y);
-	rz = get_ceil_z(iw, right->wall->x, right->wall->y);*/
-	// lz = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].next->x, iw->walls[left->wall->nextsector_wall].next->y);
-	// rz = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].x, iw->walls[left->wall->nextsector_wall].y);
-	lz = get_ceil_z(iw, left->p.x + iw->walls[left->wall->nextsector_wall].x - left->wall->next->x, left->p.y + iw->walls[left->wall->nextsector_wall].y - left->wall->next->y);
-	rz = get_ceil_z(iw, right->p.x + iw->walls[left->wall->nextsector_wall].x - left->wall->next->x, right->p.y + iw->walls[left->wall->nextsector_wall].y - left->wall->next->y);
-	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - lz) / (int)left->plen + iw->p.rotup;
-	l.y1 = WINDOW_H * (iw->p.z + (int)right->plen / 2 - rz) / (int)right->plen + iw->p.rotup;
-	brez_line(*top, l);
-	/*draw_between_sectors_top_tex(iw, left, right, tmp);*/
+	get_between_sectors_walls2(iw, left, right, top);
 	return (bottom);
 }
 

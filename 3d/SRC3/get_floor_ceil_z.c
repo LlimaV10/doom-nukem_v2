@@ -45,9 +45,11 @@ void	rotate_fc(t_sector_fc *fc, int xy, int pl)
 		fc->n->a = 0;
 		fc->n->b = 0;
 	}
-	if (xy && ((pl > 0 && fc->n->b < MAX_INCLINED_FC_XY) || (pl < 0 && fc->n->b > -MAX_INCLINED_FC_XY)))
+	if (xy && ((pl > 0 && fc->n->b < MAX_INCLINED_FC_XY)
+		|| (pl < 0 && fc->n->b > -MAX_INCLINED_FC_XY)))
 		fc->n->b += pl;
-	else if (!xy && ((pl > 0 && fc->n->a < MAX_INCLINED_FC_XY) || (pl < 0 && fc->n->a > -MAX_INCLINED_FC_XY)))
+	else if (!xy && ((pl > 0 && fc->n->a < MAX_INCLINED_FC_XY)
+		|| (pl < 0 && fc->n->a > -MAX_INCLINED_FC_XY)))
 		fc->n->a += pl;
 	if (fc->n->a == 0 && fc->n->b == 0)
 	{

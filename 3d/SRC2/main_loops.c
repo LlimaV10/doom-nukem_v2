@@ -72,7 +72,7 @@ void	main_loop2(t_sdl *iw, SDL_Event *e)
 	else if (e->type == SDL_MOUSEBUTTONUP && e->button.button == SDL_BUTTON_RIGHT)
 		mouse_buttonright_up(e->button.x, e->button.y, iw);
 	else if (e->type == SDL_MOUSEWHEEL && e->wheel.y != 0)
-		mouse_wheel(&e, iw);
+		mouse_wheel(e, iw);
 }
 
 void	main_loop(t_sdl *iw)

@@ -10,7 +10,8 @@ void	get_all_intersection_line(t_sdl *iw, t_line2d *nl, int right)
 		if (if_not_in_vw(iw, ((right == 0) ? &iw->walls[wall] : iw->walls[wall].next))
 			&& visible_wall(iw, wall) && cross_two_lines(nl, &iw->walls[wall].l, &p)
 			&& point_in_front_and_on_wall(iw, &p, wall))
-			add_lr_wall(iw, &p, ((right == 0) ? &iw->walls[wall] : iw->walls[wall].next), right * WINDOW_W);
+			add_lr_wall(iw, &p, ((right == 0) ? &iw->walls[wall]
+				: iw->walls[wall].next), right * WINDOW_W);
 }
 
 void	get_left_right_visible_walls(t_sdl *iw)
@@ -40,8 +41,10 @@ void	add_lr_wall(t_sdl *iw, t_intpoint2d *p, t_wall *wall, int x)
 	tmp = (t_save_wall *)malloc(sizeof(t_save_wall));
 	tmp->x = x;
 	tmp->wall = wall;
-	tmp->len = sqrtf(powf((float)(iw->p.x - p->x), 2.0f) + powf((float)(iw->p.y - p->y), 2.0f));
-	tmp->plen = fabsf(iw->d.screen.a * (float)p->x + iw->d.screen.b * (float)p->y + iw->d.screen.c) /
+	tmp->len = sqrtf(powf((float)(iw->p.x - p->x), 2.0f)
+		+ powf((float)(iw->p.y - p->y), 2.0f));
+	tmp->plen = fabsf(iw->d.screen.a * (float)p->x +
+		iw->d.screen.b * (float)p->y + iw->d.screen.c) /
 		sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
 	if ((int)tmp->plen == 0)
 		tmp->plen = 1.0f;
@@ -50,14 +53,15 @@ void	add_lr_wall(t_sdl *iw, t_intpoint2d *p, t_wall *wall, int x)
 	tmp->zd = get_floor_z(iw, p->x, p->y);
 	tmp->zu = get_ceil_z(iw, p->x, p->y);
 	tmp->next = 0;
-	//printf("Adding x %d px %d py %d len %f plen %f\n", tmp->x, p->x, p->y, tmp->len, tmp->plen);
 	add_wall(iw, tmp);
 }
 
 int		visible_wall(t_sdl *iw, int wall)
 {
-	if ((iw->p.x - iw->walls[wall].x) * (iw->walls[wall].next->y - iw->walls[wall].y) -
-		(iw->p.y - iw->walls[wall].y) * (iw->walls[wall].next->x - iw->walls[wall].x) >= 0)
+	if ((iw->p.x - iw->walls[wall].x) * (iw->walls[wall].next->y
+		- iw->walls[wall].y) -
+		(iw->p.y - iw->walls[wall].y) * (iw->walls[wall].next->x
+			- iw->walls[wall].x) >= 0)
 		return (1);
 	return (0);
 }
@@ -66,13 +70,12 @@ int		point_in_front_and_on_wall(t_sdl *iw, t_intpoint2d *p, int wall)
 {
 	float	side;
 
-	//(((d->rx - iw->p.x) * d->xdir) >= 0) && (((d->ry - iw->p.y) * d->ydir) >= 0)
 	side = iw->d.screen.a * p->x + iw->d.screen.b * p->y + iw->d.screen.c;
-	//if ((iw->d.view_dir.x < 0 && side < 0) || (iw->d.view_dir.x > 0 && side > 0))
-	//if (((int)p->x - iw->p.x) ^ iw->d.view_dir.x >= 0 && ((int)p->y - iw->p.y) ^ iw->d.view_dir.y >= 0)
 	if (side * iw->d.view_dir.y < 0)
-		if ((p->x >= ft_min(iw->walls[wall].x, iw->walls[wall].next->x) && p->x <= ft_max(iw->walls[wall].x, iw->walls[wall].next->x))
-			&& (p->y >= ft_min(iw->walls[wall].y, iw->walls[wall].next->y) && p->y <= ft_max(iw->walls[wall].y, iw->walls[wall].next->y)))
+		if ((p->x >= ft_min(iw->walls[wall].x, iw->walls[wall].next->x) &&
+			p->x <= ft_max(iw->walls[wall].x, iw->walls[wall].next->x))
+			&& (p->y >= ft_min(iw->walls[wall].y, iw->walls[wall].next->y) &&
+				p->y <= ft_max(iw->walls[wall].y, iw->walls[wall].next->y)))
 			return (1);
 	return (0);
 }

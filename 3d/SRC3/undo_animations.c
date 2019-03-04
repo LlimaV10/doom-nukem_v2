@@ -1,8 +1,31 @@
 #include "../guardians.h"
 
-void	undo_wall_animation(t_sdl *iw, t_picture *pic)
+void	undo_wall_animation2(t_sdl *iw, t_picture *pic)
 {
 	t_wall_animation	*tmp;
+	t_wall_animation	*tmp2;
+
+	tmp = iw->wall_animations;
+	while (tmp->next)
+	{
+		if (tmp->next->trigger == pic)
+		{
+			tmp2 = tmp->next;
+			do_wall_animation_step_dx(iw, tmp2, -tmp2->curr_dx);
+			do_wall_animation_step_dy(iw, tmp2, -tmp2->curr_dy);
+			tmp2->status = 0;
+			tmp2->curr_dx = 0;
+			tmp2->curr_dy = 0;
+			tmp->next = tmp->next->next;
+			return;
+		}
+		tmp = tmp->next;
+	}
+}
+
+void	undo_wall_animation(t_sdl *iw, t_picture *pic)
+{
+	
 	t_wall_animation	*tmp2;
 	t_wall_animation	*start;
 
@@ -20,24 +43,7 @@ void	undo_wall_animation(t_sdl *iw, t_picture *pic)
 		iw->wall_animations = iw->wall_animations->next;
 	}
 	else
-	{
-		tmp = iw->wall_animations;
-		while (tmp->next)
-		{
-			if (tmp->next->trigger == pic)
-			{
-				tmp2 = tmp->next;
-				do_wall_animation_step_dx(iw, tmp2, -tmp2->curr_dx);
-				do_wall_animation_step_dy(iw, tmp2, -tmp2->curr_dy);
-				tmp2->status = 0;
-				tmp2->curr_dx = 0;
-				tmp2->curr_dy = 0;
-				tmp->next = tmp->next->next;
-				return;
-			}
-			tmp = tmp->next;
-		}
-	}
+		undo_wall_animation2(iw, pic);
 	iw->wall_animations = start;
 }
 

@@ -163,6 +163,7 @@ typedef struct	s_draw_wall_tex
 	float	zd;
 	float	left_len;
 	float	len_lr;
+	int		j;
 }				t_draw_wall_tex;
 
 typedef struct	s_draw_wall_tex_kernel
@@ -237,16 +238,22 @@ typedef struct	s_draw_wall_floor_ceil_tex
 	float 		dy;
 	float 		sky_x;
 	float 		sky_y;
+	int			i;
+	int			j;
 }				t_draw_wall_floor_ceil_tex;
 
 typedef struct	s_draw_wall_floor_ceil_tex_kernel
 {
-	float	ang;
+	float		ang;
 	t_point2d	lv;
 	t_point2d	rv;
-	float	len_lr;
-	int		zu;
-	int		zd;
+	float		len_lr;
+	int			zu;
+	int			zd;
+	int			cint[26];
+	float		cfloat[19];
+	size_t		global_item_size;
+	size_t		local_item_size;
 }				t_draw_wall_floor_ceil_tex_kernel;
 
 typedef struct	s_draw_floor_tex_kernel
@@ -291,26 +298,8 @@ typedef struct	s_draw_glass
 	int		nright_zu;
 	int		nleft_zd;
 	int		nright_zd;
-	/*
-	float		wall_dist;
-	float		weight;
-	float		k;
-	float		frpl;
-	float		clpl;
-	t_point2d	floor;
-	t_point2d	r;
-	int		frcoef;
-	int		clcoef;
-	float		px;
-	float		py;
-	
-	
-
-	float 		rot;
-	float 		dx;
-	float 		dy;
-	float 		sky_x;
-	float 		sky_y;*/
+	int		i;
+	int		j;
 }				t_draw_glass;
 typedef struct	s_draw_picture
 {
@@ -332,6 +321,12 @@ typedef struct	s_draw_picture
 	float pic_y;
 	float	dy_plus;
 	int		pixel;
+	int		i;
+	int		j;
+	int		cint[9];
+	float	cfloat[6];
+	size_t global_item_size;
+	size_t local_item_size;
 }				t_draw_picture;
 
 typedef struct	s_save_wall
@@ -980,5 +975,38 @@ typedef struct	s_check_collisions
 	float	ny;
 	float	tmp;
 }				t_check_collisions;
+
+typedef struct	s_draw_gun
+{
+	int			i;
+	int			j;
+	int			to_i;
+	int			start_j;
+	int			to_j;
+	int			pixel;
+	SDL_Rect	changed_rect;
+}				t_draw_gun;
+
+typedef struct	s_draw_sprite
+{
+	int		i;
+	int		j;
+	int		stripe;
+	int		y;
+	float	koef;
+	int		texX;
+	int		texY;
+	int		colour;
+}				t_draw_sprite;
+
+typedef struct	s_free_sector_ways
+{
+	int				i;
+	int				j;
+	t_sector_ways	*tmp;
+	t_sector_way	*tmp2;
+	t_sector_ways	*tmp_f;
+	t_sector_way	*tmp2_f;
+}				t_free_sector_ways;
 
 #endif

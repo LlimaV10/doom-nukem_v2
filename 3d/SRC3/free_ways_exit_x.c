@@ -1,36 +1,34 @@
 #include "../guardians.h"
 
+void	free_sector_ways2(t_sdl *iw, t_free_sector_ways *d)
+{
+	d->tmp2 = d->tmp->way_start;
+	while (d->tmp2)
+	{
+		d->tmp2_f = d->tmp2;
+		d->tmp2 = d->tmp2->next;
+		free(d->tmp2_f);
+	}
+	d->tmp_f = d->tmp;
+	d->tmp = d->tmp->next;
+	free(d->tmp_f);
+}
+
 void	free_sector_ways(t_sdl *iw)
 {
-	int		i;
-	int		j;
-	t_sector_ways	*tmp;
-	t_sector_way	*tmp2;
-	t_sector_ways	*tmp_f;
-	t_sector_way	*tmp2_f;
+	t_free_sector_ways	d;
 
-	i = -1;
-	while (++i < iw->v.sc)
+	d.i = -1;
+	while (++d.i < iw->v.sc)
 	{
-		j = -1;
-		while (++j < iw->v.sc)
+		d.j = -1;
+		while (++d.j < iw->v.sc)
 		{
-			tmp = iw->ways[i][j];
-			while (tmp)
-			{
-				tmp2 = tmp->way_start;
-				while (tmp2)
-				{
-					tmp2_f = tmp2;
-					tmp2 = tmp2->next;
-					free(tmp2_f);
-				}
-				tmp_f = tmp;
-				tmp = tmp->next;
-				free(tmp_f);
-			}
+			d.tmp = iw->ways[d.i][d.j];
+			while (d.tmp)
+				free_sector_ways2(iw, &d);
 		}
-		free(iw->ways[i]);
+		free(iw->ways[d.i]);
 	}
 	free(iw->ways);
 }

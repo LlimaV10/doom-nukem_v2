@@ -12,6 +12,19 @@ void	get_packaging_texture(t_packaging_texture **pack, SDL_Surface *sur)
 	SDL_FreeSurface(sur);
 }
 
+void	get_packaging_textures2(t_sdl *iw)
+{
+	int		i;
+
+	get_packaging_texture(&iw->bag.button[0], iw->bag.button_sur[0]);
+	get_packaging_texture(&iw->bag.button[1], iw->bag.button_sur[1]);
+	get_packaging_texture(&iw->bag.button[2], iw->bag.button_sur[2]);
+	i = -1;
+	while (++i < 6)
+		get_packaging_texture(&iw->menu.icons[i], iw->menu.icons_sur[i]);
+	get_packaging_texture(&iw->map.player, iw->map.player_sur);
+}
+
 void	get_packaging_textures(t_sdl *iw)
 {
 	int		i;
@@ -36,13 +49,5 @@ void	get_packaging_textures(t_sdl *iw)
 	i = -1;
 	while (++i < WEAPONS_TEXTURES_COUNT)
 		get_packaging_texture(&iw->t_weap[i], iw->t_weap_sur[i]);
-
-	get_packaging_texture(&iw->bag.button[0], iw->bag.button_sur[0]);
-	get_packaging_texture(&iw->bag.button[1], iw->bag.button_sur[1]);
-	get_packaging_texture(&iw->bag.button[2], iw->bag.button_sur[2]);
-
-	i = -1;
-	while (++i < 6)
-		get_packaging_texture(&iw->menu.icons[i], iw->menu.icons_sur[i]);
-	get_packaging_texture(&iw->map.player, iw->map.player_sur);
+	get_packaging_textures2(iw);
 }

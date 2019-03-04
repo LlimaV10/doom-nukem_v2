@@ -77,7 +77,8 @@ t_sector_ways	*add_portal_in_way(t_sector_ways *current_way, int portal)
 	return (tmp);
 }
 
-void	go_in_sector_way(t_sdl *iw, t_get_sectors_ways *g, t_sector_ways *current_way)
+void	go_in_sector_way(t_sdl *iw, t_get_sectors_ways *g,
+	t_sector_ways *current_way)
 {
 	int				wall;
 	int				save;

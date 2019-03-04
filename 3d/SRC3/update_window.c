@@ -1,5 +1,27 @@
 #include "../guardians.h"
 
+void	update2(t_sdl *iw)
+{
+	if (iw->hud.saved_time != 1)
+	{
+		if (clock() - iw->hud.saved_time < HUD_SAVED_TIME)
+			draw_save(iw);
+		else
+			iw->hud.saved_time = 1;
+	}
+	if (iw->bag.bag == 1 || iw->map.back == 1)
+		transparency(iw);
+	if (iw->bag.bag == 1)
+		draw_items(iw);
+	if (iw->map.back == 1)
+		draw_minimap(iw);
+	if (iw->v.game_mode)
+		draw_icon_bag(iw);
+	draw_selected_tex(iw);
+	draw_selected_sprite(iw);
+	SDL_UpdateWindowSurface(iw->win);
+}
+
 void	update(t_sdl *iw)
 {
 	SDL_FillRect(iw->sur, &iw->winrect, 0x000000);
@@ -19,28 +41,5 @@ void	update(t_sdl *iw)
 		else
 			iw->hud.miss_time = 1;
 	}
-	if (iw->hud.saved_time != 1)
-	{
-		if (clock() - iw->hud.saved_time < HUD_SAVED_TIME)
-			draw_save(iw);
-		else
-			iw->hud.saved_time = 1;
-	}
-	if (iw->bag.bag == 1 || iw->map.back == 1)
-		transparency(iw);
-	if (iw->bag.bag == 1)
-		draw_items(iw);
-	if (iw->map.back == 1)
-		draw_minimap(iw);
-	if (iw->v.game_mode)
-		draw_icon_bag(iw);
-	draw_selected_tex(iw);
-	draw_selected_sprite(iw);
-	SDL_UpdateWindowSurface(iw->win);
-	//printf("Update\n");
-	//printf("update ret %d\n", ret);
-	/*if (iw->v.look_sprite == 0)
-		printf("SPRITE NOT SELECTED\n");
-	else
-		printf("SPRITE SELECTED\n");*/
+	update2(iw);
 }
