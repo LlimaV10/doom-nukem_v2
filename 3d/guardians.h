@@ -113,7 +113,7 @@ void	key_down_repeat(int code, t_sdl *iw);
 void	mouse_move(int xrel, int yrel, t_sdl *iw);
 void	rotate_fc(t_sector_fc *fc, int xy, int pl);
 void	mouse_buttonleft_up(int x, int y, t_sdl *iw);
-void	mouse_buttonright_up(int x, int y, t_sdl *iw);
+void	mouse_buttonright_up(t_sdl *iw);
 void	mouse_wheel(SDL_Event *e, t_sdl *iw);
 t_wall	*is_wall_portal(t_sdl *iw, int dx, int dy);
 void	move_collisions(t_sdl *iw, int dx, int dy, int tmp);
@@ -269,6 +269,7 @@ void	draw_glass_sprites_kernel(t_sdl *iw);
 void	draw_gun_kernel(t_sdl *iw);
 
 int		check_all_validation(t_sdl *iw);
+void	draw_minimap(t_sdl *iw);
 
 
 

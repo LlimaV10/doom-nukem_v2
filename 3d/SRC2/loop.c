@@ -1,10 +1,23 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   loop.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 12:07:23 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 12:11:18 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	loop1(t_sdl *iw)
 {
 	if (iw->guns.status != 0)
 		guns_loop(iw);
-	if (iw->guns.status == 2 && clock() - iw->guns.prev_update_time > CLKS_P_S / 8)
+	if (iw->guns.status == 2 &&
+		clock() - iw->guns.prev_update_time > CLKS_P_S / 8)
 		reload_gun(iw);
 	guns_movements(iw);
 	if (iw->v.game_mode)
@@ -20,8 +33,7 @@ void	loop1(t_sdl *iw)
 	if (iw->v.rot_right != 1)
 	{
 		iw->p.rot += (ROTATION_SPEED_PER_HALF_SEC *
-			(double)(clock() - iw->v.rot_right)
-			/ (float)CLKS_P_S * 2.0f) * G1;
+			USELESS3 / (float)CLKS_P_S * 2.0f) * G1;
 		while (iw->p.rot >= G360)
 			iw->p.rot -= G360;
 		iw->p.introt = (int)(iw->p.rot / G1);
@@ -33,7 +45,7 @@ void	loop2(t_sdl *iw)
 {
 	if (iw->v.rot_left != 1)
 	{
-		iw->p.rot -= (ROTATION_SPEED_PER_HALF_SEC * (double)(clock() - iw->v.rot_left)
+		iw->p.rot -= (ROTATION_SPEED_PER_HALF_SEC * USELESS2
 			/ (float)CLKS_P_S * 2.0f) * G1;
 		while (iw->p.rot < 0.0f)
 			iw->p.rot += G360;
@@ -93,8 +105,7 @@ void	loop4(t_sdl *iw)
 		iw->v.fall = clock();
 	if (iw->v.fly_up != 1)
 	{
-		iw->p.z += (int)(FLY_SPEED * (float)(clock()
-			- iw->v.fly_up) / (float)CLKS_P_S);
+		iw->p.z += (int)(FLY_SPEED * USELESS1 / (float)CLKS_P_S);
 		iw->v.fly_up = clock();
 	}
 	if (iw->v.fly_down != 1)
@@ -154,12 +165,9 @@ void	loop5(t_sdl *iw)
 
 void	loop(t_sdl *iw)
 {
-	clock_t	t;
-	float	jsz;
-
 	if ((double)(clock() - iw->loop_update_time)
 		< (double)CLKS_P_S / (double)MAX_FPS)
-		return;
+		return ;
 	sound_loop(iw);
 	environment_loop(iw);
 	if (iw->v.left_mouse_pressed && iw->v.mouse_mode == 1)
@@ -174,6 +182,7 @@ void	loop(t_sdl *iw)
 	if (iw->v.game_mode)
 		check_enemies(iw);
 	update(iw);
-	iw->v.fps = (int)((float)CLKS_P_S / (float)(clock() - iw->loop_update_time));
+	iw->v.fps = (int)((float)CLKS_P_S /
+		(float)(clock() - iw->loop_update_time));
 	iw->loop_update_time = clock();
 }

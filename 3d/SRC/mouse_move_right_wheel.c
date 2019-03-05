@@ -51,7 +51,7 @@ void	mouse_move(int xrel, int yrel, t_sdl *iw)
 		mouse_move1(xrel, yrel, iw, 0);
 }
 
-void	mouse_buttonright_up(int x, int y, t_sdl *iw)
+void	mouse_buttonright_up(t_sdl *iw)
 {
 	if (iw->v.game_mode)
 	{

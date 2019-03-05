@@ -157,7 +157,7 @@ void	get_kernels(t_sdl *iw)
 		sizeof(cl_mem), (void *)&iw->k.m_cint);
 }
 
-void	load_kernel2(t_kernel *k, t_sdl *iw)
+void	load_kernel2(t_kernel *k)
 {
 	k->platforms = (cl_platform_id*)malloc(k->ret_num_platforms
 		* sizeof(cl_platform_id));
@@ -194,5 +194,5 @@ void	load_kernel(t_kernel *k, t_sdl *iw)
 		k->ret = 1;
 		return;
 	}
-	load_kernel2(k, iw);
+	load_kernel2(k);
 }

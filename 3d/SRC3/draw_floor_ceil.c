@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   draw_floor_ceil.c                                  :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 13:02:39 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 13:02:40 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	draw_floor_ceil_tex1(t_sdl *iw, t_save_wall *left,
@@ -31,7 +43,7 @@ void	draw_floor_ceil_tex1(t_sdl *iw, t_save_wall *left,
 }
 
 void	draw_floor_ceil_tex2(t_sdl *iw, t_save_wall *left,
-	t_save_wall *right, t_draw_wall_floor_ceil_tex *d)
+	t_draw_wall_floor_ceil_tex *d)
 {
 	if (iw->sectors[iw->d.cs].cl.t < 0)
 	{
@@ -155,7 +167,7 @@ void	draw_floor_ceil_tex(t_sdl *iw, t_save_wall *left,
 	t_draw_wall_floor_ceil_tex	d;
 
 	draw_floor_ceil_tex1(iw, left, right, &d);
-	draw_floor_ceil_tex2(iw, left, right, &d);
+	draw_floor_ceil_tex2(iw, left, &d);
 	d.j = -1;
 	while (++d.j < len)
 	{

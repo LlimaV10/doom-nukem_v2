@@ -1,7 +1,7 @@
 #include "../guardians.h"
 
 void	draw_floor_ceil_betw_tex_kernel2(t_sdl *iw, t_save_wall *left,
-	t_save_wall *right, t_draw_wall_floor_ceil_tex_kernel *d)
+	t_draw_wall_floor_ceil_tex_kernel *d)
 {
 	if (iw->sectors[iw->d.cs].light == 0 || iw->sectors[iw->d.cs].light->t != 18)
 		d->cint[16] = 1;
@@ -93,7 +93,7 @@ void	draw_floor_ceil_betw_tex_kernel(t_sdl *iw, t_save_wall *left,
 {
 	t_draw_wall_floor_ceil_tex_kernel	d;
 
-	draw_floor_ceil_betw_tex_kernel2(iw, left, right, &d);
+	draw_floor_ceil_betw_tex_kernel2(iw, left, &d);
 	draw_floor_ceil_betw_tex_kernel3(iw, left, right, &d);
 	draw_floor_ceil_betw_tex_kernel4(iw, left, right, &d);
 	clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_bot_betw, CL_TRUE,

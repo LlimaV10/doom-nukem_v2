@@ -1,6 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   draw_pictures.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 13:03:27 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 13:03:28 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
-int		draw_picture2(t_sdl *iw, t_picture *pic, t_draw_picture *d)
+void	draw_picture2(t_sdl *iw, t_picture *pic, t_draw_picture *d)
 {
 	d->lang = get_vectors_angle(iw->d.left_point.x - (float)iw->p.x,
 		iw->d.left_point.y - (float)iw->p.y,
@@ -29,7 +41,7 @@ int		draw_picture2(t_sdl *iw, t_picture *pic, t_draw_picture *d)
 		/ (int)(d->plen + 1) + iw->p.rotup;
 }
 
-int		draw_picture3(t_sdl *iw, t_picture *pic, t_draw_picture *d)
+void	draw_picture3(t_sdl *iw, t_picture *pic, t_draw_picture *d)
 {
 	d->ry0_down = WINDOW_H * (iw->p.z + (int)d->plen / 2 - pic->zd)
 		/ (int)(d->plen + 1) + iw->p.rotup;
@@ -56,7 +68,7 @@ int		draw_picture3(t_sdl *iw, t_picture *pic, t_draw_picture *d)
 	}
 }
 
-int		draw_picture4(t_sdl *iw, t_picture *pic, t_draw_picture *d)
+void	draw_picture4(t_sdl *iw, t_picture *pic, t_draw_picture *d)
 {
 	d->dy_plus = iw->t[pic->t]->h / ((d->ry1_down +
 		(float)d->dy_down) - (d->ry1_up + (float)d->dy_up));

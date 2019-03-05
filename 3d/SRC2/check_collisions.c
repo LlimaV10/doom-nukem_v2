@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   check_collisions.c                                 :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 12:02:47 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 12:04:56 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 int		check_walls_collisions_on_line_segment(t_sdl *iw, int wall, int len)
@@ -44,17 +56,20 @@ void	check_walls_collisions(t_sdl *iw)
 	t_check_collisions	d;
 
 	if (iw->d.cs < 0)
-		return;
+		return ;
 	d.wall = iw->sectors[iw->d.cs].sw - 1;
 	while (++d.wall < iw->sectors[iw->d.cs].sw + iw->sectors[iw->d.cs].nw)
 	{
-		if ((iw->walls[d.wall].nextsector == -1 || iw->walls[d.wall].glass != -1)
+		if ((iw->walls[d.wall].nextsector == -1 ||
+					iw->walls[d.wall].glass != -1)
 			&& (iw->walls[d.wall].x != iw->walls[d.wall].next->x ||
 				iw->walls[d.wall].y != iw->walls[d.wall].next->y))
 		{
 			d.len = (int)(fabsf(iw->walls[d.wall].l.a * iw->p.x
-				+ iw->walls[d.wall].l.b * iw->p.y + iw->walls[d.wall].l.c) / sqrtf
-				(powf(iw->walls[d.wall].l.a, 2.0f) + powf(iw->walls[d.wall].l.b, 2.0f)));
+				+ iw->walls[d.wall].l.b * iw->p.y +
+				iw->walls[d.wall].l.c) / sqrtf(
+					powf(iw->walls[d.wall].l.a, 2.0f) +
+					powf(iw->walls[d.wall].l.b, 2.0f)));
 			if (d.len < COLLISION_SIZE2 &&
 				check_walls_collisions_on_line_segment(iw, d.wall, d.len))
 				check_walls_collisions2(iw, &d);

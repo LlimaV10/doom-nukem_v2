@@ -1,10 +1,23 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   read_from_files.c                                  :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 12:07:38 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 12:07:39 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	read_textures3(t_sdl *iw)
 {
 	iw->t_sur[24] = SDL_LoadBMP("textures/24.bmp");
 	iw->tsz[24] = 1.0f;
-	iw->bag.button_sur[0] = SDL_LoadBMP("interface_textures/backpack/frame.bmp");
+	iw->bag.button_sur[0] =
+		SDL_LoadBMP("interface_textures/backpack/frame.bmp");
 	iw->bag.button_sur[1] = SDL_LoadBMP("interface_textures/backpack/del.bmp");
 	iw->bag.button_sur[2] = SDL_LoadBMP("interface_textures/backpack/ok.bmp");
 	iw->menu.icons_sur[0] = SDL_LoadBMP("interface_textures/menu/0.bmp");
@@ -176,7 +189,7 @@ void	get_music(t_sdl *iw, int i, const char *file)
 	if (fd < 0)
 	{
 		iw->sounds.music[i] = 0;
-		return;
+		return ;
 	}
 	tmp = malloc(MAX_MUSIC_SIZE);
 	iw->sounds.music_pack_size[i] = read(fd, tmp, MAX_MUSIC_SIZE);
@@ -184,7 +197,8 @@ void	get_music(t_sdl *iw, int i, const char *file)
 	iw->sounds.music_pack[i] = malloc(iw->sounds.music_pack_size[i]);
 	ft_memcpy(iw->sounds.music_pack[i], tmp, iw->sounds.music_pack_size[i]);
 	free(tmp);
-	iw->sounds.music_rw[i] = SDL_RWFromConstMem(iw->sounds.music_pack[i], iw->sounds.music_pack_size[i]);
+	iw->sounds.music_rw[i] = SDL_RWFromConstMem(iw->sounds.music_pack[i],
+		iw->sounds.music_pack_size[i]);
 	iw->sounds.music[i] = Mix_LoadMUS_RW(iw->sounds.music_rw[i], 0);
 }
 
@@ -216,10 +230,6 @@ void	get_sounds2(t_sdl *iw)
 
 void	get_sounds(t_sdl *iw)
 {
-	SDL_RWops	*d;
-	void		*c;
-	size_t	size;
-
 	get_music(iw, 0, "sound/background/0.mp3");
 	get_music(iw, 1, "sound/background/1.mp3");
 	get_music(iw, 2, "sound/background/2.mp3");

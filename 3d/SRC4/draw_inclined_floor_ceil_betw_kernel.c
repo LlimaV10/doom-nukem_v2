@@ -1,7 +1,7 @@
 #include "../guardians.h"
 
 void	draw_inclined_floor_ceil_betw_tex_kernel1(t_sdl *iw, t_save_wall *left,
-	t_save_wall *right, t_draw_wall_floor_ceil_tex_kernel *d)
+	t_draw_wall_floor_ceil_tex_kernel *d)
 {
 	if (iw->sectors[iw->d.cs].light == 0 || iw->sectors[iw->d.cs].light->t != 18)
 		d->cint[25] = 1;
@@ -30,8 +30,8 @@ void	draw_inclined_floor_ceil_betw_tex_kernel1(t_sdl *iw, t_save_wall *left,
 	d->cint[22] = iw->d.screen_right;
 }
 
-void	draw_inclined_floor_ceil_betw_tex_kernel2(t_sdl *iw, t_save_wall *left,
-	t_save_wall *right, t_draw_wall_floor_ceil_tex_kernel *d)
+void	draw_inclined_floor_ceil_betw_tex_kernel2(t_sdl *iw,
+	t_draw_wall_floor_ceil_tex_kernel *d)
 {
 	d->cint[23] = iw->sectors[iw->d.cs].cl.t;
 	d->cint[24] = iw->p.rotup;
@@ -52,7 +52,7 @@ void	draw_inclined_floor_ceil_betw_tex_kernel2(t_sdl *iw, t_save_wall *left,
 }
 
 void	draw_inclined_floor_ceil_betw_tex_kernel3(t_sdl *iw, t_save_wall *left,
-	t_save_wall *right, t_draw_wall_floor_ceil_tex_kernel *d)
+	t_draw_wall_floor_ceil_tex_kernel *d)
 {
 	if (iw->sectors[iw->d.cs].cl.n == 0)
 	{
@@ -143,9 +143,9 @@ void	draw_inclined_floor_ceil_betw_tex_kernel(t_sdl *iw, t_save_wall *left,
 {
 	t_draw_wall_floor_ceil_tex_kernel	d;
 
-	draw_inclined_floor_ceil_betw_tex_kernel1(iw, left, right, &d);
-	draw_inclined_floor_ceil_betw_tex_kernel2(iw, left, right, &d);
-	draw_inclined_floor_ceil_betw_tex_kernel3(iw, left, right, &d);
+	draw_inclined_floor_ceil_betw_tex_kernel1(iw, left, &d);
+	draw_inclined_floor_ceil_betw_tex_kernel2(iw, &d);
+	draw_inclined_floor_ceil_betw_tex_kernel3(iw, left, &d);
 	draw_inclined_floor_ceil_betw_tex_kernel4(iw, left, right, &d);
 	draw_inclined_floor_ceil_betw_tex_kernel5(iw, left, right, &d);
 	if (iw->sectors[iw->d.cs].cl.t >= 0)

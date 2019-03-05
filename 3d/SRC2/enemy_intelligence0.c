@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   enemy_intelligence0.c                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 12:05:15 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 12:08:06 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	enemy_intelligence0_s0(t_sdl *iw, t_sprite *s)
@@ -70,21 +82,18 @@ void	enemy_intelligence0_2(t_sdl *iw, t_sprite *s)
 		s->t_kernel = &iw->k.m_t_enemies[s->t_numb];
 	}
 	else if (s->e.status == 1)
-	{
-		if (s->e.health < 10 || ((i = enemy_sees_player(iw, s)) != -1 && i < 1000))
+		if (s->e.health < 10 ||
+			((i = enemy_sees_player(iw, s)) != -1 && i < 1000))
 		{
 			s->e.status = 0;
 			s->t_numb = 0;
 			s->t = iw->t_enemies[s->t_numb];
 			s->t_kernel = &iw->k.m_t_enemies[s->t_numb];
 		}
-	}
 }
 
 void	enemy_intelligence0(t_sdl *iw, t_sprite *s)
 {
-	int		i;
-
 	if (s->e.status == 0)
 		enemy_intelligence0_s0(iw, s);
 	else if (s->e.status == 3 && clock() -

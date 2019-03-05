@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   draw_glass.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 13:02:52 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 13:02:53 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	draw_glass_tex1(t_sdl *iw, t_save_wall *left,
@@ -53,7 +65,7 @@ void	draw_glass_tex2(t_sdl *iw, t_save_wall *left,
 }
 
 void	draw_glass_tex3(t_sdl *iw, t_save_wall *left,
-	t_save_wall *right, t_draw_glass *d)
+	t_draw_glass *d)
 {
 	d->zd = (float)d->nleft_zd + d->left_len * d->zddiff;
 	d->dty = ((d->zu - d->zd) * (float)iw->t[left->wall->glass]->h / 1000.0f) /
@@ -105,7 +117,7 @@ void	draw_glass_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 		d.tx = (left->olen + d.left_len) * (float)iw->t[left->wall->glass]->w
 			* iw->tsz[left->wall->glass] / 1000.0f;
 		d.zu = (float)d.nleft_zu + d.left_len * d.zudiff;
-		draw_glass_tex3(iw, left, right, &d);
+		draw_glass_tex3(iw, left, &d);
 	}
 }
 

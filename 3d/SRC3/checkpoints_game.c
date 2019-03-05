@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   checkpoints_game.c                                 :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 13:01:53 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 13:01:54 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	death(t_sdl *iw)
@@ -18,11 +30,11 @@ void	set_checkpoint(t_sdl *iw, t_sprite *s)
 	while (tmp)
 	{
 		if (tmp->sprite == s)
-			break;
+			break ;
 		tmp = tmp->next;
 	}
 	if (!tmp)
-		return;
+		return ;
 	iw->l.start_x = s->x;
 	iw->l.start_y = s->y;
 	iw->v.last_checkpoint = s;
@@ -42,7 +54,7 @@ void	check_checkpoints(t_sdl *iw)
 		{
 			if (tmp != iw->v.last_checkpoint)
 				set_checkpoint(iw, tmp);
-			return;
+			return ;
 		}
 		tmp = tmp->next;
 	}

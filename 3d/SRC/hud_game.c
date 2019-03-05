@@ -107,18 +107,19 @@ void			make_health(t_hud *den, t_sdl *iw)
 	}
 }
 
-void	draw_miss(t_sdl *iw)
+void			draw_miss(t_sdl *iw)
 {
 	SDL_Rect	rect;
 
 	rect.w = WINDOW_W / 10;
 	rect.h = rect.w * iw->hud.miss->h / iw->hud.miss->w;
 	rect.x = WINDOW_W / 2 - rect.w / 2;
-	rect.y = WINDOW_H / 3 - WINDOW_H / 10 * (clock() - iw->hud.miss_time) / CLKS_P_S;
+	rect.y = WINDOW_H / 3 - WINDOW_H / 10 *
+		(clock() - iw->hud.miss_time) / CLKS_P_S;
 	ft_scaled_blit(iw->hud.miss, iw->sur, &rect);
 }
 
-void	draw_save(t_sdl *iw)
+void			draw_save(t_sdl *iw)
 {
 	SDL_Rect	rect;
 

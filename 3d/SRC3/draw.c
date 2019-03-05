@@ -1,13 +1,25 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   draw.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 13:02:00 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 13:02:00 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	draw_start(t_sdl *iw)
 {
-	t_save_wall *left;
-	t_save_wall	*right;
+	t_save_wall			*left;
+	t_save_wall			*right;
 	t_save_wall_pairs	*tmp;
 
 	if (iw->d.vw == 0)
-		return;
+		return ;
 	left = iw->d.vw;
 	while (left != 0)
 	{
@@ -40,8 +52,9 @@ void	draw4(t_sdl *iw)
 	else if (iw->v.game_mode)
 		draw_gun_kernel(iw);
 	if (iw->v.kernel)
-		iw->k.ret = clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_sur, CL_TRUE, 0,
-			WINDOW_W * WINDOW_H * sizeof(int), iw->sur->pixels, 0, NULL, NULL);
+		iw->k.ret = clEnqueueReadBuffer(iw->k.command_queue, iw->k.m_sur,
+		CL_TRUE, 0, WINDOW_W * WINDOW_H * sizeof(int),
+		iw->sur->pixels, 0, NULL, NULL);
 	if (iw->v.wall_anim != 0)
 		draw_selected_walls_to_be_animated(iw);
 	iw->d.vw = *(iw->vw_save);
@@ -126,7 +139,7 @@ void	draw(t_sdl *iw)
 		iw->sectors[j].visited = 0;
 	set_top_bottom(iw);
 	if ((iw->d.cs = get_sector(iw)) == -1)
-		return;
+		return ;
 	iw->p.z -= iw->v.crouch;
 	iw->v.ls = iw->d.cs;
 	draw2(iw);

@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   enemy_intelligence2.c                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 12:07:07 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 12:07:08 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	enemy_intelligence2_s0(t_sdl *iw, t_sprite *s, int i)
@@ -43,7 +55,7 @@ void	enemy_intelligence2_s2_2(t_sdl *iw, t_sprite *s, int i)
 	}
 }
 
-void	enemy_intelligence2_s2(t_sdl *iw, t_sprite *s, int i)
+void	enemy_intelligence2_s2(t_sdl *iw, t_sprite *s)
 {
 	if (clock() - s->e.previous_picture_change > CLKS_P_S / 7)
 	{
@@ -111,7 +123,7 @@ void	enemy_intelligence2(t_sdl *iw, t_sprite *s, int i)
 		}
 	}
 	else if (s->e.status == 2)
-		enemy_intelligence2_s2(iw, s, 0);
+		enemy_intelligence2_s2(iw, s);
 	else if (s->e.status == 3 && clock()
 		- s->e.previous_picture_change > CLKS_P_S / 5)
 		enemy_intelligence2_s3(iw, s, 0);

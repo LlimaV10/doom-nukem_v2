@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   draw_between_sectors_top_tex.c                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 13:02:16 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 13:02:17 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	draw_between_sectors_top_tex1(t_sdl *iw, t_save_wall *left,
@@ -63,7 +75,6 @@ void	draw_between_sectors_top_tex2(t_sdl *iw, t_save_wall *left,
 void	draw_between_sectors_top_tex(t_sdl *iw, t_save_wall *left,
 	t_save_wall *right, int *tmp)
 {
-	int		i;
 	t_draw_wall_tex	d;
 
 	if (left->wall->t < 0)

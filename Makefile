@@ -99,7 +99,17 @@ SRC =	3d/main3d.c \
 		3d/SRC3/sprites_calculation.c \
 		3d/SRC3/undo_animations.c \
 		3d/SRC3/update_window.c \
-		3d/SRC3/wall_pairs_sort.c
+		3d/SRC3/wall_pairs_sort.c \
+		3d/SRC4/draw_floor_ceil_betw_kernel.c \
+		3d/SRC4/draw_glass_kernel.c \
+		3d/SRC4/draw_gun_kernel.c \
+		3d/SRC4/draw_inclined_floor_ceil_betw_kernel.c \
+		3d/SRC4/draw_inclined_wall_floor_ceil_kernel.c \
+		3d/SRC4/draw_pictures_kernel.c \
+		3d/SRC4/draw_skybox_kernel.c \
+		3d/SRC4/draw_sprites_kernel.c \
+		3d/SRC4/draw_wall_floor_ceil_kernel.c \
+		3d/SRC4/setup_opencl.c
 
 OBJ = $(SRC:.c=.o)
 

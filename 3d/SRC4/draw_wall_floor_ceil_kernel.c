@@ -1,7 +1,7 @@
 #include "../guardians.h"
 
 void	draw_wall_floor_ceil_tex_kernel1(t_sdl *iw, t_save_wall *left,
-	t_save_wall *right, t_draw_wall_floor_ceil_tex_kernel *d)
+	t_draw_wall_floor_ceil_tex_kernel *d)
 {
 	if (iw->sectors[iw->d.cs].light == 0 || iw->sectors[iw->d.cs].light->t != 18)
 		d->cint[15] = 1;
@@ -95,7 +95,7 @@ void	draw_wall_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left,
 {
 	t_draw_wall_floor_ceil_tex_kernel	d;
 
-	draw_wall_floor_ceil_tex_kernel1(iw, left, right, &d);
+	draw_wall_floor_ceil_tex_kernel1(iw, left, &d);
 	draw_wall_floor_ceil_tex_kernel2(iw, left, right, &d);
 	draw_wall_floor_ceil_tex_kernel3(iw, left, right, &d);
 	iw->k.ret = clSetKernelArg(iw->k.kernel1, 4, sizeof(cl_mem),

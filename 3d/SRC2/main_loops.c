@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main_loops.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 12:07:33 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 12:07:34 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	menu_loop(t_sdl *iw)
@@ -60,7 +72,8 @@ void	main_loop2(t_sdl *iw, SDL_Event *e)
 		iw->v.mouse_x = e->motion.x;
 		iw->v.mouse_y = e->motion.y;
 	}
-	else if (e->type == SDL_MOUSEBUTTONUP && e->button.button == SDL_BUTTON_LEFT)
+	else if (e->type == SDL_MOUSEBUTTONUP &&
+		e->button.button == SDL_BUTTON_LEFT)
 	{
 		mouse_buttonleft_up(e->button.x, e->button.y, iw);
 		iw->bag.click_x = e->button.x;
@@ -69,8 +82,9 @@ void	main_loop2(t_sdl *iw, SDL_Event *e)
 	else if (e->type == SDL_MOUSEBUTTONDOWN &&
 		e->button.button == SDL_BUTTON_LEFT && iw->v.game_mode)
 		iw->v.left_mouse_pressed = 1;
-	else if (e->type == SDL_MOUSEBUTTONUP && e->button.button == SDL_BUTTON_RIGHT)
-		mouse_buttonright_up(e->button.x, e->button.y, iw);
+	else if (e->type == SDL_MOUSEBUTTONUP &&
+		e->button.button == SDL_BUTTON_RIGHT)
+		mouse_buttonright_up(iw);
 	else if (e->type == SDL_MOUSEWHEEL && e->wheel.y != 0)
 		mouse_wheel(e, iw);
 }
@@ -99,25 +113,31 @@ void	main_loop(t_sdl *iw)
 	}
 }
 
+void	game_start_menu1(t_sdl *iw, SDL_Rect *player,
+	SDL_Rect *zast, SDL_Rect *diff)
+{
+	player->x = 0;
+	player->y = 0;
+	player->w = WINDOW_W;
+	player->h = WINDOW_H;
+	zast->x = WINDOW_W / 10;
+	zast->y = WINDOW_H / 8;
+	zast->w = WINDOW_W / 4;
+	zast->h = WINDOW_H / 8;
+	diff->w = WINDOW_W / 6;
+	diff->h = WINDOW_H / 10;
+	diff->x = zast->x + (zast->w - diff->w) / 2;
+	diff->y = zast->y + (zast->h - diff->h) / 2;
+	ft_scaled_blit(iw->menu.icons[0], iw->sur, player);
+}
+
 void	game_start_menu(t_sdl *iw)
 {
 	SDL_Rect player;
 	SDL_Rect zast;
 	SDL_Rect diff;
 
-	player.x = 0;
-	player.y = 0;
-	player.w = WINDOW_W;
-	player.h = WINDOW_H;
-	zast.x = WINDOW_W / 10;
-	zast.y = WINDOW_H / 8;
-	zast.w = WINDOW_W / 4;
-	zast.h = WINDOW_H / 8;
-	diff.w = WINDOW_W / 6;
-	diff.h = WINDOW_H / 10;
-	diff.x = zast.x + (zast.w - diff.w) / 2;
-	diff.y = zast.y + (zast.h - diff.h) / 2;
-	ft_scaled_blit(iw->menu.icons[0], iw->sur, &player);
+	game_start_menu1(iw, &player, &zast, &diff);
 	if (iw->menu.count == 1)
 		ft_scaled_blit(iw->menu.icons[2], iw->sur, &zast);
 	else

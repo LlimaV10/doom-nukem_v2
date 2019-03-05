@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   enemies_main_functions.c                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 12:05:36 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 12:05:37 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 int		esp_check_walls(t_sdl *iw, t_enemy_sees_player *esp)
@@ -14,13 +26,15 @@ int		esp_check_walls(t_sdl *iw, t_enemy_sees_player *esp)
 			iw->walls[wall].l.b * (float)esp->py + iw->walls[wall].l.c;
 		esp->k2 = iw->walls[wall].l.a * (float)esp->ex +
 			iw->walls[wall].l.b * (float)esp->ey + iw->walls[wall].l.c;
-		if ((esp->k1 > 0.0f && esp->k2 < 0.0f) || (esp->k1 < 0.0f && esp->k2 > 0.0f))
+		if ((esp->k1 > 0.0f && esp->k2 < 0.0f)
+			|| (esp->k1 < 0.0f && esp->k2 > 0.0f))
 		{
 			esp->k1 = esp->a * (float)iw->walls[wall].x +
 				esp->b * (float)iw->walls[wall].y + esp->c;
 			esp->k2 = esp->a * (float)iw->walls[wall].next->x
 				+ esp->b * (float)iw->walls[wall].next->y + esp->c;
-			if ((esp->k1 > 0.0f && esp->k2 < 0.0f) || (esp->k1 < 0.0f && esp->k2 > 0.0f))
+			if ((esp->k1 > 0.0f && esp->k2 < 0.0f)
+			|| (esp->k1 < 0.0f && esp->k2 > 0.0f))
 				return (0);
 		}
 	}
@@ -36,13 +50,15 @@ int		esp_check_portal(t_sdl *iw, t_enemy_sees_player *esp, int portal)
 		iw->walls[portal].l.b * (float)esp->py + iw->walls[portal].l.c;
 	esp->k2 = iw->walls[portal].l.a * (float)esp->ex +
 		iw->walls[portal].l.b * (float)esp->ey + iw->walls[portal].l.c;
-	if ((esp->k1 > 0.0f && esp->k2 < 0.0f) || (esp->k1 < 0.0f && esp->k2 > 0.0f))
+	if ((esp->k1 > 0.0f && esp->k2 < 0.0f)
+		|| (esp->k1 < 0.0f && esp->k2 > 0.0f))
 	{
 		esp->k1 = esp->a * (float)iw->walls[portal].x +
 			esp->b * (float)iw->walls[portal].y + esp->c;
 		esp->k2 = esp->a * (float)iw->walls[portal].next->x +
 			esp->b * (float)iw->walls[portal].next->y + esp->c;
-		if ((esp->k1 > 0.0f && esp->k2 < 0.0f) || (esp->k1 < 0.0f && esp->k2 > 0.0f))
+		if ((esp->k1 > 0.0f && esp->k2 < 0.0f) ||
+			(esp->k1 < 0.0f && esp->k2 > 0.0f))
 			return (1);
 	}
 	return (0);
@@ -92,8 +108,9 @@ int		enemy_sees_player2(t_sdl *iw, t_sprite *s,
 		esp->a = (float)(esp->py - esp->ey);
 		esp->b = (float)(esp->ex - esp->px);
 		esp->c = (float)(esp->px * esp->ey - esp->ex * esp->py);
-		if (!esp_check_walls(iw, esp) || !esp_check_portal(iw, esp, way->portal))
-			break;
+		if (!esp_check_walls(iw, esp) ||
+			!esp_check_portal(iw, esp, way->portal))
+			break ;
 		esp->px += iw->walls[iw->walls[way->portal].nextsector_wall].x
 			- iw->walls[way->portal].next->x;
 		esp->py += iw->walls[iw->walls[way->portal].nextsector_wall].y
@@ -146,7 +163,7 @@ int		enemy_sees_player(t_sdl *iw, t_sprite *s)
 	return (-1);
 }
 
-int		move_enemy_in_portal2_1(t_sdl *iw, t_sprite *s,
+void	move_enemy_in_portal2_1(t_sdl *iw, t_sprite *s,
 			t_intpoint2d *vect, int wall)
 {
 	s->x += vect->x + iw->walls[iw->walls[wall].nextsector_wall].x
@@ -164,7 +181,8 @@ int		move_enemy_in_portal2_1(t_sdl *iw, t_sprite *s,
 		- iw->walls[wall].next->y;
 }
 
-int		move_enemy_in_portal2(t_sdl *iw, t_sprite *s, t_intpoint2d *vect, int wall)
+int		move_enemy_in_portal2(t_sdl *iw, t_sprite *s,
+	t_intpoint2d *vect, int wall)
 {
 	float	k1;
 	float	k2;

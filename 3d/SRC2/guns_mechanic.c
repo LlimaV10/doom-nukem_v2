@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   guns_mechanic.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 12:07:13 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 12:07:16 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	damaging_enemy(t_sdl *iw, int damage, int max_distance)
@@ -7,10 +19,7 @@ void	damaging_enemy(t_sdl *iw, int damage, int max_distance)
 		iw->v.look_portal->glass = -1;
 	if (iw->v.look_sprite == 0 || iw->v.look_sprite->type != 2
 		|| iw->v.look_sprite->e.status >= 4)
-		return;
-	/*if ((int)sqrtf(powf(iw->p.x - iw->v.look_sprite->x, 2.0f) +
-			powf(iw->p.y - iw->v.look_sprite->y, 2.0f) +
-			powf(iw->p.z - iw->v.look_sprite->z, 2.0f)) < max_distance)*/
+		return ;
 	if (iw->v.look_sprite->plen < max_distance)
 		iw->v.look_sprite->e.health -= damage;
 	else
@@ -74,7 +83,7 @@ void	reload_gun1(t_sdl *iw)
 	else
 	{
 		iw->guns.bullets_in_stock[1] -= iw->guns.max_bullets[1]
-			- iw->guns.bullets[1];;
+			- iw->guns.bullets[1];
 		iw->guns.bullets[iw->guns.gun_in_hands] =
 			iw->guns.max_bullets[iw->guns.gun_in_hands];
 		iw->hud.shell = 100;
@@ -208,8 +217,8 @@ void	guns_movements2(t_sdl *iw, int t)
 
 void	guns_movements(t_sdl *iw)
 {
-	if (iw->v.game_mode &&
-		(iw->v.front != 1 || iw->v.back != 1 || iw->v.left != 1 || iw->v.right != 1))
+	if (iw->v.game_mode && (iw->v.front != 1 ||
+		iw->v.back != 1 || iw->v.left != 1 || iw->v.right != 1))
 		guns_movements2(iw, 0);
 	if (iw->guns.status == 3)
 	{

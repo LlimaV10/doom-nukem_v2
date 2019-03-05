@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   enemy_intelligence1.c                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 12:07:02 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 12:08:36 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	enemy_intelligence1_s2_1(t_sdl *iw, t_sprite *s, int i)
@@ -20,7 +32,6 @@ void	enemy_intelligence1_s2_1(t_sdl *iw, t_sprite *s, int i)
 			s->t_numb = 8;
 			s->e.status = 0;
 		}
-
 	}
 }
 

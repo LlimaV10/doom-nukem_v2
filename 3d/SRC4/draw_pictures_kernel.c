@@ -27,6 +27,7 @@ int		draw_picture_kernel2(t_sdl *iw, t_picture *pic, t_draw_picture *d)
 	d->rang = get_vectors_angle(iw->d.right_point.x -
 		(float)iw->p.x, iw->d.right_point.y - (float)iw->p.y,
 		(float)(pic->x1 - iw->p.x), (float)(pic->y1 - iw->p.y));
+	return (1);
 }
 
 int		draw_picture_kernel3(t_sdl *iw, t_picture *pic, t_draw_picture *d)
@@ -56,9 +57,10 @@ int		draw_picture_kernel3(t_sdl *iw, t_picture *pic, t_draw_picture *d)
 	d->up = d->ry0_up - d->cint[3];
 	d->dx = d->rx0 - d->rx1;
 	d->cint[0] = d->rx1;
+	return (1);
 }
 
-int		draw_picture_kernel4(t_sdl *iw, t_picture *pic, t_draw_picture *d)
+void	draw_picture_kernel4(t_sdl *iw, t_picture *pic, t_draw_picture *d)
 {
 	d->cfloat[2] = d->down / d->dx;
 	d->cfloat[3] = d->down / d->dx;
@@ -84,8 +86,10 @@ int		draw_picture_kernel(t_sdl *iw, t_picture *pic)
 {
 	t_draw_picture	d;
 
-	draw_picture_kernel2(iw, pic, &d);
-	draw_picture_kernel3(iw, pic, &d);
+	if (!draw_picture_kernel2(iw, pic, &d))
+		return (0);
+	if (!draw_picture_kernel3(iw, pic, &d))
+		return (0);
 	draw_picture_kernel4(iw, pic, &d);
 	if (d.rx0 < WINDOW_W)
 		d.global_item_size = d.rx0 - d.cint[0];

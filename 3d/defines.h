@@ -1,8 +1,8 @@
 #ifndef __DEFINES_H
 # define __DEFINES_H
 
-# define WINDOW_W 1000
-# define WINDOW_H 550
+# define WINDOW_W 2000
+# define WINDOW_H 1100
 # define MAX_SOURCE_SIZE 0x100000
 # define TEXTURES_COUNT 25
 # define DECOR_TEXTURES_COUNT 2
@@ -15,7 +15,7 @@
 # define G180 3.1415926f
 # define G360 6.2831852f
 # define MOVING_SPEED_PER_HALF_SEC 1000.0f
-# define ROTATION_SPEED_PER_HALF_SEC 80.0
+# define ROTATION_SPEED_PER_HALF_SEC 80.0f
 # define MOUSE_SENSIVITY 0.002f
 # define MOUSE_UP_DOWN_SENSIVITY 2
 
@@ -45,6 +45,10 @@
 # define INPUT_STRING_LEN 32
 # define INPUT_LINE_LEN 200
 
+
+# define USELESS1 (float)(clock() - iw->v.fly_up)
+# define USELESS2 (float)(clock() - iw->v.rot_left)
+# define USELESS3 (float)(clock() - iw->v.rot_right)
 
 #ifdef __APPLE__
 # define WRITE_MAP O_WRONLY | O_TRUNC

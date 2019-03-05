@@ -1,6 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   free_ways_exit_x.c                                 :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 13:04:14 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 13:04:15 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
-void	free_sector_ways2(t_sdl *iw, t_free_sector_ways *d)
+void	free_sector_ways2(t_free_sector_ways *d)
 {
 	d->tmp2 = d->tmp->way_start;
 	while (d->tmp2)
@@ -26,7 +38,7 @@ void	free_sector_ways(t_sdl *iw)
 		{
 			d.tmp = iw->ways[d.i][d.j];
 			while (d.tmp)
-				free_sector_ways2(iw, &d);
+				free_sector_ways2(&d);
 		}
 		free(iw->ways[d.i]);
 	}
