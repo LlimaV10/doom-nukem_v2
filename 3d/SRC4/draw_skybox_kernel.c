@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   draw_skybox_kernel.c                               :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 14:38:19 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 14:38:20 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	draw_skybox_kernel2(t_sdl *iw, int *cint, float *cfloat)
@@ -30,8 +42,8 @@ void	draw_skybox_kernel(t_sdl *iw)
 		(void *)&iw->k.m_t[iw->l.skybox]);
 	global_item_size = iw->d.screen_right - iw->d.screen_left;
 	local_item_size = 1;
-	iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel4, 1, NULL,
-		&global_item_size, &local_item_size, 0, NULL, NULL);
+	iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel4, 1,
+	NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
 	iw->k.ret = clFlush(iw->k.command_queue);
 	iw->k.ret = clFinish(iw->k.command_queue);
 }

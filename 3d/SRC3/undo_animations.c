@@ -29,7 +29,7 @@ void	undo_wall_animation2(t_sdl *iw, t_picture *pic)
 			tmp2->curr_dx = 0;
 			tmp2->curr_dy = 0;
 			tmp->next = tmp->next->next;
-			return;
+			return ;
 		}
 		tmp = tmp->next;
 	}
@@ -37,12 +37,11 @@ void	undo_wall_animation2(t_sdl *iw, t_picture *pic)
 
 void	undo_wall_animation(t_sdl *iw, t_picture *pic)
 {
-	
 	t_wall_animation	*tmp2;
 	t_wall_animation	*start;
 
 	if (iw->wall_animations == 0)
-		return;
+		return ;
 	start = iw->wall_animations;
 	if (iw->wall_animations->trigger == pic)
 	{
@@ -83,8 +82,8 @@ void	undo_animations2(t_sdl *iw, t_picture *pic)
 
 void	undo_animations(t_sdl *iw)
 {
-	int		sec;
-	int		w;
+	int			sec;
+	int			w;
 	t_picture	*tmp;
 
 	sec = -1;

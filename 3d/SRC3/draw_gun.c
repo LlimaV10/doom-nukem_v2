@@ -44,8 +44,10 @@ void	draw_gun(t_sdl *iw)
 		while (++d.j < d.to_j)
 		{
 			d.pixel = get_pixel(iw->t_weap[iw->guns.t],
-				(d.j - d.changed_rect.x) * iw->t_weap[iw->guns.t]->w / d.changed_rect.w,
-				(d.i - d.changed_rect.y) * iw->t_weap[iw->guns.t]->h / d.changed_rect.h);
+				(d.j - d.changed_rect.x) * iw->t_weap[iw->guns.t]->w
+				/ d.changed_rect.w,
+				(d.i - d.changed_rect.y) * iw->t_weap[iw->guns.t]->h
+				/ d.changed_rect.h);
 			if (d.pixel != 0x010000)
 				set_pixel2(iw->sur, d.j, d.i,
 					get_light_color(d.pixel, iw->sectors[iw->d.cs].light));

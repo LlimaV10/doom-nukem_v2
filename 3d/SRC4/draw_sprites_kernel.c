@@ -1,8 +1,21 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   draw_sprites_kernel.c                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 14:38:26 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 14:38:27 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	draw_sprite_kernel1(t_sdl *iw, t_sprite *sprite, int *cint)
 {
-	sprite->spriteheight = 2 * sprite->spritewidth * sprite->t->h / sprite->t->w;
+	sprite->spriteheight = 2 * sprite->spritewidth *
+		sprite->t->h / sprite->t->w;
 	if (abs(sprite->z - iw->p.z) > 1500)
 		sprite->spriteheight = (float)sprite->spriteheight * 1.0f /
 		((float)abs(sprite->z - iw->p.z) / 1500.0f);
@@ -43,13 +56,13 @@ void	draw_sprite_kernel(t_sdl *iw, t_sprite *sprite)
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_save_top3,
 		CL_TRUE, 0, (WINDOW_W + 1) * sizeof(int), sprite->top, 0, NULL, NULL);
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_save_bottom3,
-		CL_TRUE, 0, (WINDOW_W + 1) * sizeof(int), sprite->bottom, 0, NULL, NULL);
+	CL_TRUE, 0, (WINDOW_W + 1) * sizeof(int), sprite->bottom, 0, NULL, NULL);
 	iw->k.ret = clSetKernelArg(iw->k.kernel7, 3,
 		sizeof(cl_mem), (void *)sprite->t_kernel);
 	global_item_size = ft_min(WINDOW_W, sprite->ex) - ft_max(0, sprite->sx);
 	local_item_size = 1;
-	iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel7, 1, NULL,
-		&global_item_size, &local_item_size, 0, NULL, NULL);
+	iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel7, 1,
+	NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
 	clFlush(iw->k.command_queue);
 	clFinish(iw->k.command_queue);
 }
@@ -61,7 +74,8 @@ void	draw_sprites_kernel(t_sdl *iw)
 	tmp1 = *iw->sprite;
 	while (tmp1 != 0)
 	{
-		if (iw->sectors[tmp1->num_sec].visited && tmp1->draweble && tmp1->taken == 0)
+		if (iw->sectors[tmp1->num_sec].visited &&
+			tmp1->draweble && tmp1->taken == 0)
 		{
 			if (tmp1->top[WINDOW_W / 2] != -1 && tmp1->sx < WINDOW_W / 2
 				&& tmp1->ex > WINDOW_W / 2 &&

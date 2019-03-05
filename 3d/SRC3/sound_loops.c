@@ -26,7 +26,8 @@ void	sound_loop(t_sdl *iw)
 void	environment_loop(t_sdl *iw)
 {
 	if (iw->v.fly_mode == 0 && iw->v.fall == 1 &&
-		(iw->v.front != 1 || iw->v.back != 1 || iw->v.left != 1 || iw->v.right != 1))
+		(iw->v.front != 1 || iw->v.back != 1 ||
+		iw->v.left != 1 || iw->v.right != 1))
 	{
 		if (!Mix_Playing(0))
 			Mix_PlayChannel(0, iw->sounds.env[0], -1);

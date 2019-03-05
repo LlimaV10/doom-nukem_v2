@@ -17,7 +17,8 @@ void	draw_skybox2(t_sdl *iw, t_draw_skybox *d)
 	d->rot = iw->p.rot - iw->v.angle;
 	if (d->rot < 0.0f)
 		d->rot += G360;
-	d->dx = (float)iw->t[iw->l.skybox]->w / (G360 / (iw->v.angle * 2) * WINDOW_W);
+	d->dx = (float)iw->t[iw->l.skybox]->w /
+		(G360 / (iw->v.angle * 2) * WINDOW_W);
 	d->sky_x = d->rot * ((float)iw->t[iw->l.skybox]->w) / G360
 		+ d->dx * (float)iw->d.screen_left;
 	d->dy = (float)iw->t[iw->l.skybox]->h / (float)(4 * WINDOW_H);
@@ -25,8 +26,8 @@ void	draw_skybox2(t_sdl *iw, t_draw_skybox *d)
 
 void	draw_skybox(t_sdl *iw)
 {
-	int j;
-	int i;
+	int				j;
+	int				i;
 	t_draw_skybox	d;
 
 	draw_skybox2(iw, &d);

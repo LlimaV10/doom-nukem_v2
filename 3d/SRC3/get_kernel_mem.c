@@ -71,8 +71,8 @@ void	get_kernel_mem2(t_sdl *iw)
 	{
 		iw->k.m_t_enemies[i] = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
 			iw->t_enemies[i]->pitch * iw->t_enemies[i]->h, NULL, &iw->k.ret);
-		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t_enemies[i], CL_TRUE, 0,
-			iw->t_enemies[i]->pitch * iw->t_enemies[i]->h,
+		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t_enemies[i], CL_TRUE,
+			0, iw->t_enemies[i]->pitch * iw->t_enemies[i]->h,
 			iw->t_enemies[i]->pixels, 0, NULL, NULL);
 	}
 	i = -1;
@@ -80,8 +80,8 @@ void	get_kernel_mem2(t_sdl *iw)
 	{
 		iw->k.m_t_pickup[i] = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
 			iw->t_pickup[i]->pitch * iw->t_pickup[i]->h, NULL, &iw->k.ret);
-		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t_pickup[i], CL_TRUE, 0,
-			iw->t_pickup[i]->pitch * iw->t_pickup[i]->h,
+		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t_pickup[i], CL_TRUE,
+			0, iw->t_pickup[i]->pitch * iw->t_pickup[i]->h,
 			iw->t_pickup[i]->pixels, 0, NULL, NULL);
 	}
 	get_kernel_mem3(iw);
@@ -104,8 +104,8 @@ void	get_kernel_mem(t_sdl *iw)
 	{
 		iw->k.m_t_decor[i] = clCreateBuffer(iw->k.context, CL_MEM_READ_ONLY,
 			iw->t_decor[i]->pitch * iw->t_decor[i]->h, NULL, &iw->k.ret);
-		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t_decor[i], CL_TRUE, 0,
-			iw->t_decor[i]->pitch * iw->t_decor[i]->h,
+		clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_t_decor[i], CL_TRUE,
+			0, iw->t_decor[i]->pitch * iw->t_decor[i]->h,
 			iw->t_decor[i]->pixels, 0, NULL, NULL);
 	}
 	get_kernel_mem2(iw);

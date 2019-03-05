@@ -35,8 +35,8 @@ void	draw_picture2(t_sdl *iw, t_picture *pic, t_draw_picture *d)
 	else
 		d->rx1 = -(int)(d->lang * (float)WINDOW_W / (2.0f * iw->v.angle));
 	d->plen = fabsf(iw->d.screen.a * (float)pic->x0 +
-		iw->d.screen.b * (float)pic->y0 + iw->d.screen.c) /
-		sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
+		iw->d.screen.b * (float)pic->y0 + iw->d.screen.c) / sqrtf(
+			iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
 	d->ry0_up = WINDOW_H * (iw->p.z + (int)d->plen / 2 - pic->zu)
 		/ (int)(d->plen + 1) + iw->p.rotup;
 }
@@ -46,8 +46,8 @@ void	draw_picture3(t_sdl *iw, t_picture *pic, t_draw_picture *d)
 	d->ry0_down = WINDOW_H * (iw->p.z + (int)d->plen / 2 - pic->zd)
 		/ (int)(d->plen + 1) + iw->p.rotup;
 	d->plen = fabsf(iw->d.screen.a * (float)pic->x1 +
-		iw->d.screen.b * (float)pic->y1 + iw->d.screen.c) /
-		sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
+		iw->d.screen.b * (float)pic->y1 + iw->d.screen.c) / sqrtf(
+			iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
 	d->ry1_up = WINDOW_H * (iw->p.z + (int)d->plen / 2 - pic->zu)
 		/ (int)(d->plen + 1) + iw->p.rotup;
 	d->ry1_down = WINDOW_H * (iw->p.z + (int)d->plen / 2 - pic->zd)

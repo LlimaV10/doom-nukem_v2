@@ -1,9 +1,22 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   draw_glass_kernel.c                                :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 14:37:38 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 14:37:39 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	draw_glass_tex_kernel2(t_sdl *iw, t_save_wall *left,
 	t_save_wall *right, t_draw_wall_floor_ceil_tex_kernel *d)
 {
-	if (iw->sectors[iw->d.cs].light == 0 || iw->sectors[iw->d.cs].light->t != 18)
+	if (iw->sectors[iw->d.cs].light == 0 ||
+		iw->sectors[iw->d.cs].light->t != 18)
 		d->cint[6] = 1;
 	else
 		d->cint[6] = 0;
@@ -27,7 +40,6 @@ void	draw_glass_tex_kernel2(t_sdl *iw, t_save_wall *left,
 	d->len_lr = sqrtf(powf(left->p.x - right->p.x, 2.0f) +
 		powf(left->p.y - right->p.y, 2.0f));
 	d->cint[0] = iw->d.cs;
-	iw->d.cs = left->wall->nextsector;
 }
 
 void	draw_glass_tex_kernel3(t_sdl *iw, t_save_wall *left,
@@ -69,11 +81,11 @@ void	draw_glass_tex_kernel4(t_sdl *iw, t_save_wall *left,
 	d->cint[5] = WINDOW_W;
 	d->cfloat[3] = left->olen;
 	d->cfloat[4] = iw->tsz[left->wall->glass];
-	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallTop, CL_TRUE,
-		0, (right->x - left->x + 1) * sizeof(int),
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallTop,
+	CL_TRUE, 0, (right->x - left->x + 1) * sizeof(int),
 		iw->d.save_top_betw, 0, NULL, NULL);
-	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallBot, CL_TRUE,
-		0, (right->x - left->x + 1) * sizeof(int),
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallBot,
+	CL_TRUE, 0, (right->x - left->x + 1) * sizeof(int),
 		iw->d.save_bot_betw, 0, NULL, NULL);
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE,
 		0, 7 * sizeof(int), d->cint, 0, NULL, NULL);
@@ -85,16 +97,17 @@ void	draw_glass_tex_kernel(t_sdl *iw, t_save_wall *left,
 	t_draw_wall_floor_ceil_tex_kernel	d;
 
 	draw_glass_tex_kernel2(iw, left, right, &d);
+	iw->d.cs = left->wall->nextsector;
 	draw_glass_tex_kernel3(iw, left, right, &d);
 	draw_glass_tex_kernel4(iw, left, right, &d);
-	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cfloat, CL_TRUE,
-		0, 7 * sizeof(float), d.cfloat, 0, NULL, NULL);
+	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cfloat,
+	CL_TRUE, 0, 7 * sizeof(float), d.cfloat, 0, NULL, NULL);
 	iw->k.ret = clSetKernelArg(iw->k.kernel5, 3, sizeof(cl_mem),
 		(void *)&iw->k.m_t[left->wall->glass]);
 	d.global_item_size = len;
 	d.local_item_size = 1;
-	iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel5, 1, NULL,
-		&d.global_item_size, &d.local_item_size, 0, NULL, NULL);
+	iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel5, 1,
+	NULL, &d.global_item_size, &d.local_item_size, 0, NULL, NULL);
 	clFlush(iw->k.command_queue);
 	clFinish(iw->k.command_queue);
 }

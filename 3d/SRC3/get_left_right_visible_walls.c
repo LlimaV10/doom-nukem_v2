@@ -12,26 +12,6 @@
 
 #include "../guardians.h"
 
-void	get_all_intersection_line(t_sdl *iw, t_line2d *nl, int right)
-{
-	int		wall;
-	t_intpoint2d	p;
-
-	wall = iw->sectors[iw->d.cs].sw - 1;
-	while (++wall < iw->sectors[iw->d.cs].sw + iw->sectors[iw->d.cs].nw)
-		if (if_not_in_vw(iw, ((right == 0) ? &iw->walls[wall] : iw->walls[wall].next))
-			&& visible_wall(iw, wall) && cross_two_lines(nl, &iw->walls[wall].l, &p)
-			&& point_in_front_and_on_wall(iw, &p, wall))
-			add_lr_wall(iw, &p, ((right == 0) ? &iw->walls[wall]
-				: iw->walls[wall].next), right * WINDOW_W);
-}
-
-void	get_left_right_visible_walls(t_sdl *iw)
-{
-	get_all_intersection_line(iw, &iw->d.left_line, 0);
-	get_all_intersection_line(iw, &iw->d.right_line, 1);
-}
-
 int		if_not_in_vw(t_sdl *iw, t_wall *wall)
 {
 	t_save_wall	*tmp;
@@ -56,8 +36,8 @@ void	add_lr_wall(t_sdl *iw, t_intpoint2d *p, t_wall *wall, int x)
 	tmp->len = sqrtf(powf((float)(iw->p.x - p->x), 2.0f)
 		+ powf((float)(iw->p.y - p->y), 2.0f));
 	tmp->plen = fabsf(iw->d.screen.a * (float)p->x +
-		iw->d.screen.b * (float)p->y + iw->d.screen.c) /
-		sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
+		iw->d.screen.b * (float)p->y + iw->d.screen.c) / sqrtf(
+			iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
 	if ((int)tmp->plen == 0)
 		tmp->plen = 1.0f;
 	tmp->olen = sqrtf(powf(p->x - wall->x, 2.0f) + powf(p->y - wall->y, 2.0f));

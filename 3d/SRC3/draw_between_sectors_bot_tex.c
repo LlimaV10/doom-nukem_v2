@@ -61,7 +61,8 @@ void	draw_between_sectors_bot_tex2(t_sdl *iw, t_save_wall *left,
 
 	d->ty = d->ty * (float)iw->t[left->wall->t]->h / 1000.0f;
 	d->dty = ((d->zu - d->zd) * (float)iw->t[left->wall->t]->h / 1000.0f) /
-		(float)(iw->d.wallBot[d->j] - iw->d.wallTop[d->j]) * iw->tsz[left->wall->t];
+		(float)(iw->d.wallBot[d->j] - iw->d.wallTop[d->j])
+		* iw->tsz[left->wall->t];
 	while (d->ty > (float)iw->t[left->wall->t]->h)
 		d->ty -= (float)iw->t[left->wall->t]->h;
 	if (tmp[d->j] > iw->d.top[d->j + left->x])
@@ -89,7 +90,7 @@ void	draw_between_sectors_bot_tex(t_sdl *iw, t_save_wall *left,
 	t_draw_wall_tex	d;
 
 	if (left->wall->t < 0)
-		return;
+		return ;
 	draw_between_sectors_bot_tex1(iw, left, right, &d);
 	d.j = -1;
 	while (++d.j < right->x - left->x)

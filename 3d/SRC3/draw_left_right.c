@@ -18,8 +18,8 @@ void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	{
 		if (left->wall->p != 0)
 		{
-			ft_memcpy(iw->d.top_save, iw->d.top, WINDOW_W * sizeof(int));
-			ft_memcpy(iw->d.bottom_save, iw->d.bottom, WINDOW_W * sizeof(int));
+			ft_memcpy(iw->d.top_save, iw->d.top, USELESS4);
+			ft_memcpy(iw->d.bottom_save, iw->d.bottom, USELESS4);
 		}
 		if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
 			draw_wall_floor_ceil_tex(iw, left, right, len);
@@ -38,16 +38,17 @@ void	draw_all(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
 	}
 }
 
-void	draw_all_kernel(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
+void	draw_all_kernel(t_sdl *iw, t_save_wall *left,
+	t_save_wall *right, int len)
 {
 	if (left->wall->nextsector == -1)
 	{
 		if (left->wall->p != 0)
 		{
 			clEnqueueCopyBuffer(iw->k.command_queue, iw->k.m_top,
-				iw->k.m_save_top2, 0, 0, WINDOW_W * sizeof(int), 0, NULL, NULL);
+				iw->k.m_save_top2, 0, 0, USELESS4, 0, NULL, NULL);
 			clEnqueueCopyBuffer(iw->k.command_queue, iw->k.m_bottom,
-				iw->k.m_save_bottom2, 0, 0, WINDOW_W * sizeof(int), 0, NULL, NULL);
+				iw->k.m_save_bottom2, 0, 0, USELESS4, 0, NULL, NULL);
 		}
 		if (iw->sectors[iw->d.cs].fr.n == 0 && iw->sectors[iw->d.cs].cl.n == 0)
 			draw_wall_floor_ceil_tex_kernel(iw, left, right, len);
@@ -64,7 +65,8 @@ void	draw_left_right2(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 {
 	if (*(iw->v.look_wall) == 0 && iw->v.mouse_mode == 1
 		&& left->x < WINDOW_W / 2 && right->x > WINDOW_W / 2
-		&& iw->d.screen_left < WINDOW_W / 2 && iw->d.screen_right > WINDOW_W / 2)
+		&& iw->d.screen_left < WINDOW_W / 2 &&
+		iw->d.screen_right > WINDOW_W / 2)
 	{
 		if (left->wall->nextsector != -1 && iw->v.look_portal == 0)
 			iw->v.look_portal = left->wall;
@@ -90,11 +92,11 @@ void	draw_left_right(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	t_draw_line		l;
 
 	if (left->x >= right->x)
-		return;
+		return ;
 	iw->d.wallTop = (int *)malloc((right->x - left->x + 1) * sizeof(int));
 	iw->d.wallBot = (int *)malloc((right->x - left->x + 1) * sizeof(int));
 	if (!iw->d.wallTop || !iw->d.wallBot)
-		return;
+		return ;
 	l.x0 = left->x;
 	l.x1 = right->x;
 	l.y0 = WINDOW_H * (iw->p.z + (int)left->plen / 2 - left->zd)

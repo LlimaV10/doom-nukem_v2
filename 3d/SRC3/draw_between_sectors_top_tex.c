@@ -78,7 +78,7 @@ void	draw_between_sectors_top_tex(t_sdl *iw, t_save_wall *left,
 	t_draw_wall_tex	d;
 
 	if (left->wall->t < 0)
-		return;
+		return ;
 	draw_between_sectors_top_tex1(iw, left, right, &d);
 	d.j = -1;
 	while (++d.j < right->x - left->x)

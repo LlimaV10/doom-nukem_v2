@@ -4,9 +4,9 @@
 # define _CRT_SECURE_NO_WARNINGS
 //# include "SDL2/SDL2.framework/Headers/SDL.h"
 #ifdef __linux__
-    # include <SDL2/SDL.h>
-    # include <SDL2/SDL_ttf.h>
-    # include <SDL2/SDL_mixer.h>
+	# include <SDL2/SDL.h>
+	# include <SDL2/SDL_ttf.h>
+	# include <SDL2/SDL_mixer.h>
 #else
  # include <SDL.h>
  # include <SDL_ttf.h>
@@ -270,7 +270,45 @@ void	draw_gun_kernel(t_sdl *iw);
 
 int		check_all_validation(t_sdl *iw);
 void	draw_minimap(t_sdl *iw);
-
-
+void	draw_some_info2(t_sdl *iw);
+void	mouse_buttonleft_up1(int x, int y, t_sdl *iw);
+void	mouse_buttonleft_up1_9(int x, t_sdl *iw);
+void	mouse_buttonleft_up1_5(int x, t_sdl *iw);
+int		enemy_sees_player2(t_sdl *iw, t_sprite *s, t_sector_way *way, t_enemy_sees_player *esp);
+void	enemy_intelligence2_s0(t_sdl *iw, t_sprite *s, int i);
+void	reload_gun1(t_sdl *iw);
+void	reload_gun2(t_sdl *iw);
+void	loop1(t_sdl *iw);
+void	loop2(t_sdl *iw);
+void	game_start_menu1(t_sdl *iw, SDL_Rect *player, SDL_Rect *zast, SDL_Rect *diff);
+void	draw_floor_ceil_tex1(t_sdl *iw, t_save_wall *left,
+	t_save_wall *right, t_draw_wall_floor_ceil_tex *d);
+void	draw_floor_ceil_tex2(t_sdl *iw, t_save_wall *left,
+	t_draw_wall_floor_ceil_tex *d);
+void	draw_inclined_floor_ceil_tex1(t_sdl *iw, t_save_wall *left,
+	t_save_wall *right, t_draw_wall_floor_ceil_tex *d);
+void	draw_inclined_floor_ceil_tex2(t_sdl *iw, t_save_wall *left,
+	t_draw_wall_floor_ceil_tex *d);
+void	draw_inclined_floor_ceil_tex3(t_sdl *iw, t_save_wall *left,
+	t_draw_wall_floor_ceil_tex *d);
+void	draw_inclined_floor_ceil_tex4(t_sdl *iw, t_save_wall *left,
+	t_draw_wall_floor_ceil_tex *d);
+void	draw_inclined_wall_floor_ceil_tex1(t_sdl *iw, t_save_wall *left,
+	t_save_wall *right, t_draw_wall_floor_ceil_tex *d);
+void	draw_inclined_wall_floor_ceil_tex3(t_sdl *iw, t_save_wall *left,
+	t_draw_wall_floor_ceil_tex *d);
+void	draw_wall_floor_ceil_tex1(t_sdl *iw, t_save_wall *left,
+	t_save_wall *right, t_draw_wall_floor_ceil_tex *d);
+void	draw_wall_floor_ceil_tex2(t_sdl *iw, t_save_wall *left,
+	t_draw_wall_floor_ceil_tex *d);
+void	draw_next_sector_kernel4(t_sdl *iw, t_save_wall *left,
+	t_save_wall *right, t_sdl *iw2);
+void	draw_inclined_floor_ceil_betw_tex_kernel1(t_sdl *iw, t_save_wall *left,
+	t_draw_wall_floor_ceil_tex_kernel *d);
+void	draw_inclined_wall_floor_ceil_tex_kernel1(t_sdl *iw, t_save_wall *left,
+	t_draw_wall_floor_ceil_tex_kernel *d);
+void	get_kernels2(t_sdl *iw);
+void	get_kernels3(t_sdl *iw);
+void	get_kernels4(t_sdl *iw);
 
 #endif

@@ -1,8 +1,21 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   draw_pictures_kernel.c                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 14:38:13 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 14:38:14 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 int		draw_picture_kernel2(t_sdl *iw, t_picture *pic, t_draw_picture *d)
 {
-	if (iw->sectors[iw->d.cs].light == 0 || iw->sectors[iw->d.cs].light->t != 18)
+	if (iw->sectors[iw->d.cs].light == 0 ||
+		iw->sectors[iw->d.cs].light->t != 18)
 		d->cint[8] = 1;
 	else
 		d->cint[8] = 0;
@@ -24,9 +37,6 @@ int		draw_picture_kernel2(t_sdl *iw, t_picture *pic, t_draw_picture *d)
 	d->lang = get_vectors_angle(iw->d.left_point.x -
 		(float)iw->p.x, iw->d.left_point.y - (float)iw->p.y,
 		(float)(pic->x1 - iw->p.x), (float)(pic->y1 - iw->p.y));
-	d->rang = get_vectors_angle(iw->d.right_point.x -
-		(float)iw->p.x, iw->d.right_point.y - (float)iw->p.y,
-		(float)(pic->x1 - iw->p.x), (float)(pic->y1 - iw->p.y));
 	return (1);
 }
 
@@ -46,8 +56,8 @@ int		draw_picture_kernel3(t_sdl *iw, t_picture *pic, t_draw_picture *d)
 	d->ry0_down = WINDOW_H * (iw->p.z + (int)d->plen / 2 - pic->zd)
 		/ (int)(d->plen + 1) + iw->p.rotup;
 	d->plen = fabsf(iw->d.screen.a * (float)pic->x1 +
-		iw->d.screen.b * (float)pic->y1 + iw->d.screen.c) /
-		sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
+		iw->d.screen.b * (float)pic->y1 + iw->d.screen.c) / sqrtf(
+		iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
 	d->cint[3] = WINDOW_H * (iw->p.z + (int)d->plen / 2 - pic->zu)
 		/ (int)(d->plen + 1) + iw->p.rotup;
 	d->cint[2] = WINDOW_H * (iw->p.z + (int)d->plen / 2 - pic->zd)
@@ -56,7 +66,6 @@ int		draw_picture_kernel3(t_sdl *iw, t_picture *pic, t_draw_picture *d)
 	d->down = d->ry0_down - d->cint[2];
 	d->up = d->ry0_up - d->cint[3];
 	d->dx = d->rx0 - d->rx1;
-	d->cint[0] = d->rx1;
 	return (1);
 }
 
@@ -88,8 +97,12 @@ int		draw_picture_kernel(t_sdl *iw, t_picture *pic)
 
 	if (!draw_picture_kernel2(iw, pic, &d))
 		return (0);
+	d.rang = get_vectors_angle(iw->d.right_point.x -
+		(float)iw->p.x, iw->d.right_point.y - (float)iw->p.y,
+		(float)(pic->x1 - iw->p.x), (float)(pic->y1 - iw->p.y));
 	if (!draw_picture_kernel3(iw, pic, &d))
 		return (0);
+	d.cint[0] = d.rx1;
 	draw_picture_kernel4(iw, pic, &d);
 	if (d.rx0 < WINDOW_W)
 		d.global_item_size = d.rx0 - d.cint[0];
@@ -97,8 +110,8 @@ int		draw_picture_kernel(t_sdl *iw, t_picture *pic)
 		d.global_item_size = WINDOW_W - d.cint[0];
 	d.local_item_size = 1;
 	if (d.global_item_size <= WINDOW_W)
-		iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel6, 1,
-			NULL, &d.global_item_size, &d.local_item_size, 0, NULL, NULL);
+		iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel6,
+		1, NULL, &d.global_item_size, &d.local_item_size, 0, NULL, NULL);
 	clFlush(iw->k.command_queue);
 	clFinish(iw->k.command_queue);
 	if (d.rx1 <= WINDOW_W / 2 && d.rx0 >= WINDOW_W / 2)

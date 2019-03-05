@@ -12,7 +12,7 @@
 
 #include "../guardians.h"
 
-void	new_sort_pairs(t_sdl *iw)
+void				new_sort_pairs(t_sdl *iw)
 {
 	t_save_wall_pairs	start;
 	t_save_wall_pairs	*tmp;
@@ -27,7 +27,7 @@ void	new_sort_pairs(t_sdl *iw)
 	{
 		i++;
 		if (i > 1000)
-			break;
+			break ;
 		if ((after = get_closest_between_pair(tmp->next)) != 0)
 		{
 			tmp2 = tmp->next;
@@ -41,7 +41,7 @@ void	new_sort_pairs(t_sdl *iw)
 	iw->d.vwp = start.next;
 }
 
-void	add_pair(t_sdl *iw, t_save_wall *left, t_save_wall *right)
+void				add_pair(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 {
 	t_save_wall_pairs	*tmp;
 	t_save_wall_pairs	*tmp2;
@@ -61,7 +61,7 @@ void	add_pair(t_sdl *iw, t_save_wall *left, t_save_wall *right)
 	}
 }
 
-t_save_wall_pairs	*get_closest_between_pair(t_save_wall_pairs	*pair)
+t_save_wall_pairs	*get_closest_between_pair(t_save_wall_pairs *pair)
 {
 	t_save_wall_pairs	*save;
 	t_save_wall_pairs	*tmp;
@@ -71,12 +71,14 @@ t_save_wall_pairs	*get_closest_between_pair(t_save_wall_pairs	*pair)
 	while (tmp != 0)
 	{
 		if (tmp != pair)
-			if ((tmp->left->x >= pair->left->x && tmp->left->x < pair->right->x &&
+			if ((tmp->left->x >= pair->left->x &&
+			tmp->left->x < pair->right->x &&
 				((pair->left->wall->x - pair->right->wall->x) *
 				(tmp->left->p.y - pair->right->wall->y) -
 				(pair->left->wall->y - pair->right->wall->y) *
 					(tmp->left->p.x - pair->right->wall->x) > 0)) ||
-					(tmp->right->x > pair->left->x && tmp->right->x <= pair->right->x &&
+					(tmp->right->x > pair->left->x &&
+					tmp->right->x <= pair->right->x &&
 				((pair->left->wall->x - pair->right->wall->x) *
 						(tmp->right->p.y - pair->right->wall->y) -
 						(pair->left->wall->y - pair->right->wall->y) *
@@ -87,7 +89,7 @@ t_save_wall_pairs	*get_closest_between_pair(t_save_wall_pairs	*pair)
 	return (save);
 }
 
-void	free_pairs(t_sdl *iw)
+void				free_pairs(t_sdl *iw)
 {
 	t_save_wall_pairs	*tmp;
 	t_save_wall_pairs	*tmp2;

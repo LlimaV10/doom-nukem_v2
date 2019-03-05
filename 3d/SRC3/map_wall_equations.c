@@ -37,11 +37,13 @@ void	create_map(t_sdl *iw)
 	while (++i < iw->v.sc)
 	{
 		if (iw->sectors[i].fr.n != 0)
-			iw->sectors[i].fr.n->d = -iw->sectors[i].fr.n->a * iw->sectors[i].fr.x -
+			iw->sectors[i].fr.n->d = -iw->sectors[i].fr.n->a
+			* iw->sectors[i].fr.x -
 			iw->sectors[i].fr.n->b * iw->sectors[i].fr.y -
 			iw->sectors[i].fr.n->c * iw->sectors[i].fr.z;
 		if (iw->sectors[i].cl.n != 0)
-			iw->sectors[i].cl.n->d = -iw->sectors[i].cl.n->a * iw->sectors[i].cl.x -
+			iw->sectors[i].cl.n->d = -iw->sectors[i].cl.n->a
+			* iw->sectors[i].cl.x -
 			iw->sectors[i].cl.n->b * iw->sectors[i].cl.y -
 			iw->sectors[i].cl.n->c * iw->sectors[i].cl.z;
 		j = iw->sectors[i].sw - 1;
@@ -49,4 +51,3 @@ void	create_map(t_sdl *iw)
 			get_wall_line(iw, j);
 	}
 }
-

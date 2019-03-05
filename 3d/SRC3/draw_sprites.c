@@ -14,7 +14,8 @@
 
 void	draw_sprite2(t_sdl *iw, t_sprite *sprite, t_draw_sprite *d)
 {
-	sprite->spriteheight = 2 * sprite->spritewidth * sprite->t->h / sprite->t->w;
+	sprite->spriteheight = 2 * sprite->spritewidth
+		* sprite->t->h / sprite->t->w;
 	if (abs(sprite->z - iw->p.z) > 1500)
 		sprite->spriteheight = (float)sprite->spriteheight * 1.0f /
 		(float)(abs(sprite->z - iw->p.z) / 1500.0f);
@@ -48,7 +49,7 @@ void	draw_sprite3(t_sdl *iw, t_sprite *sprite, t_draw_sprite *d)
 			d->colour = get_pixel(sprite->t, d->texX, d->texY);
 			if (d->colour != 0x010000)
 				set_pixel2(iw->sur, d->stripe, d->y,
-					get_light_color(d->colour, iw->sectors[sprite->num_sec].light));
+			get_light_color(d->colour, iw->sectors[sprite->num_sec].light));
 		}
 		d->j++;
 	}
@@ -78,7 +79,8 @@ void	draw_sprites(t_sdl *iw)
 	tmp1 = *iw->sprite;
 	while (tmp1 != 0)
 	{
-		if (iw->sectors[tmp1->num_sec].visited && tmp1->draweble && tmp1->taken == 0)
+		if (iw->sectors[tmp1->num_sec].visited &&
+			tmp1->draweble && tmp1->taken == 0)
 		{
 			if (tmp1->top[WINDOW_W / 2] != -1 && tmp1->sx
 				< WINDOW_W / 2 && tmp1->ex > WINDOW_W / 2 &&

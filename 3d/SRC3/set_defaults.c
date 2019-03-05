@@ -106,7 +106,7 @@ void	get_def_new2(t_sdl *iw)
 void	get_def_new(t_sdl *iw)
 {
 	iw->v.ls = 0;
-	iw->v.angle = (float)WINDOW_W / (float)WINDOW_H * 22.0f * G1;// 0.698132f;
+	iw->v.angle = (float)WINDOW_W / (float)WINDOW_H * 22.0f * G1;
 	iw->loop_update_time = clock();
 	iw->v.fps = 0;
 	iw->winrect.x = 0;

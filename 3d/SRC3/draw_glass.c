@@ -38,8 +38,8 @@ void	draw_glass_tex1(t_sdl *iw, t_save_wall *left,
 void	draw_glass_tex2(t_sdl *iw, t_save_wall *left,
 	t_save_wall *right, t_draw_glass *d)
 {
-	d->nleft_zd = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].next->x,
-		iw->walls[left->wall->nextsector_wall].next->y);
+	d->nleft_zd = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].
+		next->x, iw->walls[left->wall->nextsector_wall].next->y);
 	if (left->zu < d->nleft_zu)
 	{
 		d->zudiff = (right->zu - left->zu) / d->len_lr;
@@ -94,7 +94,8 @@ void	draw_glass_tex3(t_sdl *iw, t_save_wall *left,
 	d->ang += d->dang;
 }
 
-void	draw_glass_tex(t_sdl *iw, t_save_wall *left, t_save_wall *right, int len)
+void	draw_glass_tex(t_sdl *iw, t_save_wall *left,
+	t_save_wall *right, int len)
 {
 	t_draw_glass	d;
 

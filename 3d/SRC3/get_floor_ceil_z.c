@@ -17,8 +17,10 @@ int		get_floor_z(t_sdl *iw, int x, int y)
 	if (iw->sectors[iw->d.cs].fr.n == 0)
 		return (iw->sectors[iw->d.cs].fr.z);
 	else
-		return ((iw->sectors[iw->d.cs].fr.n->a * x + iw->sectors[iw->d.cs].fr.n->b *
-			y + iw->sectors[iw->d.cs].fr.n->d) / (-iw->sectors[iw->d.cs].fr.n->c));
+		return ((iw->sectors[iw->d.cs].fr.n->a * x +
+			iw->sectors[iw->d.cs].fr.n->b * y +
+			iw->sectors[iw->d.cs].fr.n->d) /
+			(-iw->sectors[iw->d.cs].fr.n->c));
 }
 
 int		get_ceil_z(t_sdl *iw, int x, int y)
@@ -26,8 +28,9 @@ int		get_ceil_z(t_sdl *iw, int x, int y)
 	if (iw->sectors[iw->d.cs].cl.n == 0)
 		return (iw->sectors[iw->d.cs].cl.z);
 	else
-		return ((iw->sectors[iw->d.cs].cl.n->a * x + iw->sectors[iw->d.cs].cl.n->b *
-			y + iw->sectors[iw->d.cs].cl.n->d) / (-iw->sectors[iw->d.cs].cl.n->c));
+		return ((iw->sectors[iw->d.cs].cl.n->a * x + iw->sectors[iw->d.cs].cl.
+		n->b * y + iw->sectors[iw->d.cs].cl.n->d) /
+		(-iw->sectors[iw->d.cs].cl.n->c));
 }
 
 int		get_floor_z_sec(t_sdl *iw, int x, int y, int sector)

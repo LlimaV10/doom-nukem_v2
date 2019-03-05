@@ -34,8 +34,8 @@ void	get_visible_walls2(t_sdl *iw, int wall, float lang)
 	w->len = sqrtf(powf((float)(iw->p.x - iw->walls[wall].x), 2.0f)
 		+ powf((float)(iw->p.y - iw->walls[wall].y), 2.0f));
 	w->plen = fabsf(iw->d.screen.a * (float)iw->walls[wall].x +
-		iw->d.screen.b * (float)iw->walls[wall].y + iw->d.screen.c) /
-		sqrtf(iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
+		iw->d.screen.b * (float)iw->walls[wall].y + iw->d.screen.c) / sqrtf(
+		iw->d.screen.a * iw->d.screen.a + iw->d.screen.b * iw->d.screen.b);
 	if ((int)w->plen == 0)
 		w->plen = 1.0f;
 	w->olen = 0.0f;
@@ -58,11 +58,11 @@ void	get_visible_walls(t_sdl *iw)
 	while (wall < iw->sectors[iw->d.cs].sw + iw->sectors[iw->d.cs].nw)
 	{
 		lang = get_vectors_angle(iw->d.left_point.x -
-			(float)iw->p.x, iw->d.left_point.y - (float)iw->p.y,
-			(float)(iw->walls[wall].x - iw->p.x), (float)(iw->walls[wall].y - iw->p.y));
+		(float)iw->p.x, iw->d.left_point.y - (float)iw->p.y, (float)(
+		iw->walls[wall].x - iw->p.x), (float)(iw->walls[wall].y - iw->p.y));
 		rang = get_vectors_angle(iw->d.right_point.x -
-			(float)iw->p.x, iw->d.right_point.y - (float)iw->p.y,
-			(float)(iw->walls[wall].x - iw->p.x), (float)(iw->walls[wall].y - iw->p.y));
+		(float)iw->p.x, iw->d.right_point.y - (float)iw->p.y, (float)(
+		iw->walls[wall].x - iw->p.x), (float)(iw->walls[wall].y - iw->p.y));
 		if ((lang <= 2 * iw->v.angle && rang <= 2 * iw->v.angle)
 			|| lang == 0.0f || rang == 0.0f)
 			get_visible_walls2(iw, wall, lang);

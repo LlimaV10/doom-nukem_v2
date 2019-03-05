@@ -4,7 +4,7 @@
 # define WINDOW_W 2000
 # define WINDOW_H 1100
 # define MAX_SOURCE_SIZE 0x100000
-# define TEXTURES_COUNT 25
+# define TEXTURES_COUNT 38
 # define DECOR_TEXTURES_COUNT 2
 # define ENEMIES_TEXTURES_COUNT 30
 # define PICK_UP_TEXTURES_COUNT 11
@@ -49,6 +49,7 @@
 # define USELESS1 (float)(clock() - iw->v.fly_up)
 # define USELESS2 (float)(clock() - iw->v.rot_left)
 # define USELESS3 (float)(clock() - iw->v.rot_right)
+# define USELESS4 WINDOW_W * sizeof(int)
 
 #ifdef __APPLE__
 # define WRITE_MAP O_WRONLY | O_TRUNC

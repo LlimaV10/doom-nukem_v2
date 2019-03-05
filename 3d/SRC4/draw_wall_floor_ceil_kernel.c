@@ -1,9 +1,22 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   draw_wall_floor_ceil_kernel.c                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 14:38:36 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 14:38:37 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	draw_wall_floor_ceil_tex_kernel1(t_sdl *iw, t_save_wall *left,
 	t_draw_wall_floor_ceil_tex_kernel *d)
 {
-	if (iw->sectors[iw->d.cs].light == 0 || iw->sectors[iw->d.cs].light->t != 18)
+	if (iw->sectors[iw->d.cs].light == 0 ||
+		iw->sectors[iw->d.cs].light->t != 18)
 		d->cint[15] = 1;
 	else
 		d->cint[15] = 0;
@@ -27,7 +40,6 @@ void	draw_wall_floor_ceil_tex_kernel1(t_sdl *iw, t_save_wall *left,
 	d->cint[8] = left->x;
 	d->cint[9] = left->p.x;
 	d->cint[10] = left->p.y;
-	d->cint[12] = iw->d.screen_left;
 }
 
 void	draw_wall_floor_ceil_tex_kernel2(t_sdl *iw, t_save_wall *left,
@@ -96,6 +108,7 @@ void	draw_wall_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left,
 	t_draw_wall_floor_ceil_tex_kernel	d;
 
 	draw_wall_floor_ceil_tex_kernel1(iw, left, &d);
+	d.cint[12] = iw->d.screen_left;
 	draw_wall_floor_ceil_tex_kernel2(iw, left, right, &d);
 	draw_wall_floor_ceil_tex_kernel3(iw, left, right, &d);
 	iw->k.ret = clSetKernelArg(iw->k.kernel1, 4, sizeof(cl_mem),
@@ -108,8 +121,8 @@ void	draw_wall_floor_ceil_tex_kernel(t_sdl *iw, t_save_wall *left,
 		(void *)&iw->k.m_t[iw->sectors[iw->d.cs].fr.t]);
 	d.global_item_size = len;
 	d.local_item_size = 1;
-	iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel1, 1, NULL,
-		&d.global_item_size, &d.local_item_size, 0, NULL, NULL);
+	iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel1, 1,
+	NULL, &d.global_item_size, &d.local_item_size, 0, NULL, NULL);
 	iw->k.ret = clFlush(iw->k.command_queue);
 	iw->k.ret = clFinish(iw->k.command_queue);
 }

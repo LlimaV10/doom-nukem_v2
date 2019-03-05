@@ -1,9 +1,22 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   draw_floor_ceil_betw_kernel.c                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbolilyi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/05 14:37:31 by dbolilyi          #+#    #+#             */
+/*   Updated: 2019/03/05 14:37:32 by dbolilyi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../guardians.h"
 
 void	draw_floor_ceil_betw_tex_kernel2(t_sdl *iw, t_save_wall *left,
 	t_draw_wall_floor_ceil_tex_kernel *d)
 {
-	if (iw->sectors[iw->d.cs].light == 0 || iw->sectors[iw->d.cs].light->t != 18)
+	if (iw->sectors[iw->d.cs].light == 0 ||
+		iw->sectors[iw->d.cs].light->t != 18)
 		d->cint[16] = 1;
 	else
 		d->cint[16] = 0;
@@ -27,7 +40,6 @@ void	draw_floor_ceil_betw_tex_kernel2(t_sdl *iw, t_save_wall *left,
 	d->cint[9] = left->p.x;
 	d->cint[10] = left->p.y;
 	d->cint[12] = iw->d.screen_left;
-	d->cint[13] = iw->d.screen_right;
 }
 
 void	draw_floor_ceil_betw_tex_kernel3(t_sdl *iw, t_save_wall *left,
@@ -76,9 +88,9 @@ void	draw_floor_ceil_betw_tex_kernel4(t_sdl *iw, t_save_wall *left,
 	d->cfloat[11] = (float)iw->p.x / 1000.0f;
 	d->cfloat[12] = (float)iw->p.y / 1000.0f;
 	clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallTop, CL_TRUE,
-		0, (right->x - left->x + 1) * sizeof(int), iw->d.wallTop, 0, NULL, NULL);
+	0, (right->x - left->x + 1) * sizeof(int), iw->d.wallTop, 0, NULL, NULL);
 	clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_wallBot, CL_TRUE,
-		0, (right->x - left->x + 1) * sizeof(int), iw->d.wallBot, 0, NULL, NULL);
+	0, (right->x - left->x + 1) * sizeof(int), iw->d.wallBot, 0, NULL, NULL);
 	clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE,
 		0, 17 * sizeof(int), d->cint, 0, NULL, NULL);
 	clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cfloat, CL_TRUE,
@@ -94,6 +106,7 @@ void	draw_floor_ceil_betw_tex_kernel(t_sdl *iw, t_save_wall *left,
 	t_draw_wall_floor_ceil_tex_kernel	d;
 
 	draw_floor_ceil_betw_tex_kernel2(iw, left, &d);
+	d.cint[13] = iw->d.screen_right;
 	draw_floor_ceil_betw_tex_kernel3(iw, left, right, &d);
 	draw_floor_ceil_betw_tex_kernel4(iw, left, right, &d);
 	clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_bot_betw, CL_TRUE,
@@ -111,8 +124,8 @@ void	draw_floor_ceil_betw_tex_kernel(t_sdl *iw, t_save_wall *left,
 		(void *)&iw->k.m_t[iw->l.skybox]);
 	d.global_item_size = len;
 	d.local_item_size = 1;
-	iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel3, 1, NULL,
-		&d.global_item_size, &d.local_item_size, 0, NULL, NULL);
+	iw->k.ret = clEnqueueNDRangeKernel(iw->k.command_queue, iw->k.kernel3, 1,
+		NULL, &d.global_item_size, &d.local_item_size, 0, NULL, NULL);
 	clFlush(iw->k.command_queue);
 	clFinish(iw->k.command_queue);
 }
