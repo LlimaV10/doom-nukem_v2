@@ -87,6 +87,7 @@ __kernel void draw_inclined_wall_floor_ceil_tex_kernel(
 	float	dty;
 	float	zu;
 	float	zd;
+	float	ty_tsz;
 
 	//printf("1");
 	j = get_global_id(0);
@@ -157,11 +158,12 @@ __kernel void draw_inclined_wall_floor_ceil_tex_kernel(
 
 	if (cint[0] > 0)
 	{
+		ty_tsz = cfloat[14] * ((float)cint[0] / (float)cint[1]);
 		tx = (cfloat[13] + left_len) * (float)cint[0] * cfloat[14] / 1000.0f;
 		zu = (float)cint[19] + left_len * cfloat[15];
 		zd = (float)cint[20] + left_len * cfloat[16];
 		dty = ((zu - zd) * (float)cint[1] / 1000.0f) /
-			(float)(wallBot[j] - wallTop[j]) * cfloat[14];
+			(float)(wallBot[j] - wallTop[j]) * ty_tsz;
 		//invzu = (float)((int)invzu - ((int)invzu % 1000) + 1000) - invzu;
 		//invzd = (float)((int)invzd - ((int)invzd % 1000) + 1000) - invzd;
 		if (wallTop[j] < top[j])
@@ -169,9 +171,9 @@ __kernel void draw_inclined_wall_floor_ceil_tex_kernel(
 			(float)(wallBot[j] - wallTop[j]);
 		else
 			ty = zu;
-		ty = (float)((int)ty - ((int)ty % (int)(1000.0f / cfloat[14])) +
-			(int)(1000.0f / cfloat[14])) - ty;
-		ty = ty * (float)cint[1] / (1000.0f / cfloat[14]);
+		ty = (float)((int)ty - ((int)ty % (int)(1000.0f / ty_tsz)) +
+			(int)(1000.0f / ty_tsz)) - ty;
+		ty = ty * (float)cint[1] / (1000.0f / ty_tsz);
 		//i = top[j] - 1;
 		if (wallTop[j] < top[j])
 			i = top[j] - 1;
@@ -255,6 +257,7 @@ __kernel void draw_wall_floor_ceil_tex_kernel(
 	float	tx;
 	float	ty;
 	float	dty;
+	float	ty_tsz;
 
 	//printf("2");
 	j = get_global_id(0);
@@ -320,16 +323,17 @@ __kernel void draw_wall_floor_ceil_tex_kernel(
 
 	if (cint[0] > 0)
 	{
+		ty_tsz = cfloat[14] * ((float)cint[0] / (float)cint[1]);
 		tx = (cfloat[13] + left_len) * (float)cint[0] * cfloat[14] / 1000.0f;
 		if (wallTop[j] < top[j])
-			ty = (float)cfloat[15] - cfloat[14] * (float)(cfloat[15] - cfloat[16]) * (float)(top[j] - wallTop[j]) /
+			ty = (float)cfloat[15] - ty_tsz * (float)(cfloat[15] - cfloat[16]) * (float)(top[j] - wallTop[j]) /
 			(float)(wallBot[j] - wallTop[j]);
 		else
 			ty = (float)cfloat[15];
 		ty = (float)((int)ty - ((int)ty % 1000) + 1000) - ty;
 		ty = ty * (float)cint[1] / 1000.0f;
 		dty = ((float)(cfloat[15] - cfloat[16]) * (float)cint[1] / 1000.0f) /
-			(float)(wallBot[j] - wallTop[j]) * cfloat[14];
+			(float)(wallBot[j] - wallTop[j]) * ty_tsz;
 		//i = top[j] - 1;
 		if (wallTop[j] < top[j])
 			i = top[j] - 1;
