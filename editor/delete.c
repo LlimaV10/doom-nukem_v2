@@ -46,10 +46,7 @@ int		go_delete(int sec, t_wals *rmp, t_doom *den, int k)
 	while (rmp)
 	{
 		if (rmp->next_sector != 0)
-		{
 			go_delete_one(rmp, nmp);
-			delete_pointer(den, rmp);
-		}
 		cmp = rmp;
 		den->i += 1;
 		if ((m = go_delete_help(sec, rmp, den, k)) != 0)

@@ -26,6 +26,7 @@ void	get_birth_def2(t_sdl *iw)
 	iw->v.left_mouse_pressed = 0;
 	iw->v.crouch = 0;
 	iw->v.crouch_pressed = 0;
+	iw->v.fall_z = iw->p.z;
 }
 
 void	get_birth_def(t_sdl *iw)

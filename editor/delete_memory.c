@@ -101,13 +101,13 @@ void	delete_wall(t_doom *den, t_col *vec)
 	{
 		check_finish_sprite(den);
 		delete_sector_memory(den);
-		delete_sector(den);
+		delete_sector(den);       // удаляю сектор
 		den->change = 0;
 	}
 	else
 	{
 		den->button = 0;
-		write_list(den, den->tmp);
+		write_list(den, den->tmp); // удаляю стену
 		clean_vec(vec);
 	}
 	clean_find_vec(den);

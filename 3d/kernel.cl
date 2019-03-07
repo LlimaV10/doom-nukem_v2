@@ -894,6 +894,8 @@ __kernel void draw_skybox_kernel(
 //4 - nleft_zd
 //5 - WINDOW_W
 //6 - light
+//7 - bpp
+//8 - pitch
 
 //float
 //0 - dang
@@ -952,7 +954,7 @@ __kernel void draw_glass_tex_kernel(
 
 	while (++i < wallBot[j] && i < bottom[j])
 	{
-		tp = ((int)tx % cint[1]) * 3 + ((int)ty % cint[2]) * cint[1] * 3;
+		tp = ((int)tx % cint[1]) * cint[7] + ((int)ty % cint[2]) * cint[8];
 		pixel = (int)(glass_pixels[tp] | glass_pixels[tp + 1] << 8 | glass_pixels[tp + 2] << 16);
 		if (pixel != 0x010000)
 			wpixels[cint[0] + j + i * cint[5]] = get_light_color(pixel, cint[6]);

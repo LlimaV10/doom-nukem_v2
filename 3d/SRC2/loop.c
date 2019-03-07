@@ -44,7 +44,10 @@ void	loop4(t_sdl *iw)
 {
 	if (iw->v.fall == 1 && iw->v.jump_time == 1
 		&& (iw->p.z - iw->v.plrzd) > PLAYER_HEIGHT && !iw->v.fly_mode)
+	{
 		iw->v.fall = clock();
+		iw->v.fall_z = iw->p.z;
+	}
 	if (iw->v.fly_up != 1)
 	{
 		iw->p.z += (int)(FLY_SPEED * USELESS1 / (float)CLKS_P_S);
@@ -63,6 +66,8 @@ void	loop4(t_sdl *iw)
 	{
 		iw->p.z = iw->v.plrzd + PLAYER_HEIGHT;
 		iw->v.fall = 1;
+		if (iw->v.fall_z - iw->p.z >= FALLING_DIE_SIZE && iw->v.game_mode)
+			iw->p.health = 0;
 	}
 }
 

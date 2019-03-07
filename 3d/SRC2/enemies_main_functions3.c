@@ -50,13 +50,21 @@ int		enemy_sees_player(t_sdl *iw, t_sprite *s)
 	return (-1);
 }
 
-void	move_enemy_in_portal2_1(t_sdl *iw, t_sprite *s,
+int		move_enemy_in_portal2_1(t_sdl *iw, t_sprite *s,
 			t_intpoint2d *vect, int wall)
 {
-	s->x += vect->x + iw->walls[iw->walls[wall].nextsector_wall].x
+	int		nx;
+	int		ny;
+
+	nx = s->x + vect->x + iw->walls[iw->walls[wall].nextsector_wall].x
 		- iw->walls[wall].next->x;
-	s->y += vect->y + iw->walls[iw->walls[wall].nextsector_wall].y
+	ny = s->y + vect->y + iw->walls[iw->walls[wall].nextsector_wall].y
 		- iw->walls[wall].next->y;
+	if (get_ceil_z_sec(iw, nx, ny, iw->walls[wall].nextsector) -
+		get_floor_z_sec(iw, nx, ny, iw->walls[wall].nextsector) < SPRITE_HEIGHT)
+		return (0);
+	s->x = nx;
+	s->y = ny;
 	s->num_sec = iw->walls[wall].nextsector;
 	s->e.vis_esp.ex += iw->walls[iw->walls[wall].nextsector_wall].x
 		- iw->walls[wall].next->x;
@@ -66,6 +74,7 @@ void	move_enemy_in_portal2_1(t_sdl *iw, t_sprite *s,
 		- iw->walls[wall].next->x;
 	s->e.vis_esp.py += iw->walls[iw->walls[wall].nextsector_wall].y
 		- iw->walls[wall].next->y;
+	return (1);
 }
 
 int		move_enemy_in_portal2(t_sdl *iw, t_sprite *s,
@@ -81,9 +90,9 @@ int		move_enemy_in_portal2(t_sdl *iw, t_sprite *s,
 		* iw->walls[wall].y + s->e.vis_esp.c;
 	k2 = s->e.vis_esp.a * iw->walls[wall].next->x +
 		s->e.vis_esp.b * iw->walls[wall].next->y + s->e.vis_esp.c;
-	if (!((k1 < 0.0f && k2 > 0.0f) || (k1 > 0.0f && k2 < 0.0f)))
+	if ((!((k1 < 0.0f && k2 > 0.0f) || (k1 > 0.0f && k2 < 0.0f))) ||
+		(!move_enemy_in_portal2_1(iw, s, vect, wall)))
 		return (0);
-	move_enemy_in_portal2_1(iw, s, vect, wall);
 	return (1);
 }
 

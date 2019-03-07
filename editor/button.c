@@ -54,7 +54,7 @@ void	pres_button(int x, int y, t_doom *den, t_col *vec)
 
 int		check_picture_wall(t_doom *den, t_wals *tmp)
 {
-	while (tmp->next)
+	while (tmp)
 	{
 		if (tmp == den->find_tmp)
 		{
@@ -73,24 +73,25 @@ int		check_picture(t_doom *den)
 	t_wals		*tmp;
 
 	tmp = den->tmp;
-	if (tmp->sec != den->find_tmp->sec)
+	if (den->change != 3)
 	{
-		while (tmp->next && tmp->next->sec != den->find_tmp->sec)
-			tmp = tmp->next;
+		if (check_picture_wall(den, tmp) == 1)
+			return (1);
 	}
-	if (den->change == 3)
+	else
 	{
-		while (tmp->next && tmp->next->sec == den->find_tmp->sec)
+		if (tmp->sec != den->find_tmp->sec)
+		{
+			while (tmp->next && tmp->next->sec != den->find_tmp->sec)
+				tmp = tmp->next;
+			tmp = tmp->next;
+		}
+		while (tmp && tmp->sec == den->find_tmp->sec)
 		{
 			if (tmp->p != NULL)
 				return (1);
 			tmp = tmp->next;
 		}
-	}
-	else
-	{
-		if (check_picture_wall(den, tmp) == 1)
-			return (1);
 	}
 	return (0);
 }

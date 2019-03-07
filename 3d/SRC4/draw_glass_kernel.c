@@ -45,6 +45,8 @@ void	draw_glass_tex_kernel2(t_sdl *iw, t_save_wall *left,
 void	draw_glass_tex_kernel3(t_sdl *iw, t_save_wall *left,
 	t_save_wall *right, t_draw_wall_floor_ceil_tex_kernel *d)
 {
+	d->cint[7] = iw->t[left->wall->glass]->bpp;
+	d->cint[8] = iw->t[left->wall->glass]->pitch;
 	d->cint[3] = get_ceil_z(iw, iw->walls[left->wall->nextsector_wall].next->x,
 		iw->walls[left->wall->nextsector_wall].next->y);
 	d->cint[4] = get_floor_z(iw, iw->walls[left->wall->nextsector_wall].next->x,
@@ -88,7 +90,7 @@ void	draw_glass_tex_kernel4(t_sdl *iw, t_save_wall *left,
 	CL_TRUE, 0, (right->x - left->x + 1) * sizeof(int),
 		iw->d.save_bot_betw, 0, NULL, NULL);
 	iw->k.ret = clEnqueueWriteBuffer(iw->k.command_queue, iw->k.m_cint, CL_TRUE,
-		0, 7 * sizeof(int), d->cint, 0, NULL, NULL);
+		0, 9 * sizeof(int), d->cint, 0, NULL, NULL);
 }
 
 void	draw_glass_tex_kernel(t_sdl *iw, t_save_wall *left,

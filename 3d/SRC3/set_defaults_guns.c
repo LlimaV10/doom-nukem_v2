@@ -76,12 +76,12 @@ void	get_guns(t_sdl *iw)
 	iw->guns.max_bullets_in_stock[0] = 0;
 	iw->guns.max_bullets_in_stock[1] = 40;
 	iw->guns.max_bullets_in_stock[2] = 100;
-	iw->guns.bullets[0] = iw->guns.max_bullets[0];
-	iw->guns.bullets[1] = iw->guns.max_bullets[1];
-	iw->guns.bullets[2] = iw->guns.max_bullets[2];
+	iw->guns.bullets[0] = 1;
+	iw->guns.bullets[1] = 0;
+	iw->guns.bullets[2] = 0;
 	iw->guns.bullets_in_stock[0] = 0;
-	iw->guns.bullets_in_stock[1] = 8;
-	iw->guns.bullets_in_stock[2] = 10;
+	iw->guns.bullets_in_stock[1] = 0;
+	iw->guns.bullets_in_stock[2] = 0;
 	iw->guns.gun_in_hands = 0;
 	iw->guns.status = 0;
 	get_guns_center_down(iw, 17, 2000);

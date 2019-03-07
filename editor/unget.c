@@ -74,8 +74,8 @@ void	unget_map(t_sdl *iw, t_doom *den, t_wals *tmp)
 	tmp2 = den->sprite;
 	while (tmp2)
 	{
-		tmp2->x /= 400;
-		tmp2->y /= -400;
+		tmp2->x /= MAP_SCALE;
+		tmp2->y /= -MAP_SCALE;
 		tmp2 = tmp2->next;
 	}
 }

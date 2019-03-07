@@ -729,6 +729,7 @@ typedef struct	s_variables
 	int		sprint;
 	int		crouch;
 	int		crouch_pressed;
+	int		fall_z;
 }				t_variables;
 
 typedef struct	s_level
