@@ -240,6 +240,7 @@ typedef struct	s_draw_wall_floor_ceil_tex
 	float 		sky_y;
 	int			i;
 	int			j;
+	float		ty_tsz;
 }				t_draw_wall_floor_ceil_tex;
 
 typedef struct	s_draw_wall_floor_ceil_tex_kernel
@@ -300,6 +301,7 @@ typedef struct	s_draw_glass
 	int		nright_zd;
 	int		i;
 	int		j;
+	float	ty_tsz;
 }				t_draw_glass;
 typedef struct	s_draw_picture
 {

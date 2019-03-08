@@ -84,17 +84,19 @@ void	draw_wall_floor_ceil_tex5_1(t_sdl *iw, t_save_wall *left,
 void	draw_wall_floor_ceil_tex5(t_sdl *iw, t_save_wall *left,
 	t_draw_wall_floor_ceil_tex *d)
 {
+	d->ty_tsz = iw->tsz[left->wall->t] * (float)iw->t[left->wall->t]->w /
+		(float)iw->t[left->wall->t]->h;
 	d->tx = (left->olen + d->left_len) * (float)iw->t[left->wall->t]->w *
 		iw->tsz[left->wall->t] / 1000.0f;
 	if (iw->d.wallTop[d->j] < iw->d.top[d->j + left->x])
-		d->ty = d->zu + iw->tsz[left->wall->t] * (d->zu - d->zd) *
+		d->ty = d->zu + d->ty_tsz * (d->zu - d->zd) *
 		(float)(iw->d.top[d->j + left->x] - iw->d.wallTop[d->j]) /
 		(float)(iw->d.wallBot[d->j] - iw->d.wallTop[d->j]);
 	else
 		d->ty = d->zu;
 	d->ty = d->ty * (float)iw->t[left->wall->t]->h / 1000.0f;
 	d->dty = ((d->zu - d->zd) * (float)iw->t[left->wall->t]->h / 1000.0f) / (
-	float)(iw->d.wallBot[d->j] - iw->d.wallTop[d->j]) * iw->tsz[left->wall->t];
+	float)(iw->d.wallBot[d->j] - iw->d.wallTop[d->j]) * d->ty_tsz;
 	if (iw->d.wallTop[d->j] < iw->d.top[d->j + left->x])
 		d->i = iw->d.top[left->x + d->j] - 1;
 	else

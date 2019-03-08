@@ -19,8 +19,8 @@ void	add_picture(t_sdl *iw, t_wall *wall)
 	if (iw->v.submenu_mode != 0 || iw->v.f_button_mode != 0)
 		return ;
 	tmp = (t_picture *)malloc(sizeof(t_picture));
-	tmp->left_plus = 500;
-	tmp->zu = get_ceil_z(iw, wall->x, wall->y) - 100;
+	tmp->left_plus = 0;
+	tmp->zu = get_ceil_z(iw, wall->x, wall->y);
 	tmp->tw = 500;
 	tmp->t = iw->v.tex_to_fill;
 	tmp->next = wall->p;

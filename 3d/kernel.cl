@@ -928,6 +928,7 @@ __kernel void draw_glass_tex_kernel(
 	float	ty;
 	int		tp;
 	int		pixel;
+	float	ty_tsz;
 
 	j = get_global_id(0);
 	top += cint[0];
@@ -939,8 +940,9 @@ __kernel void draw_glass_tex_kernel(
 	tx = (cfloat[3] + left_len) * (float)cint[1] * cfloat[4] / 1000.0f;
 	zu = (float)cint[3] + left_len * cfloat[5];
 	zd = (float)cint[4] + left_len * cfloat[6];
+	ty_tsz = cfloat[4] * (float)cint[1] / (float)cint[2];
 	dty = ((zu - zd) * (float)cint[2] / 1000.0f) /
-		(float)(wallBot[j] - wallTop[j]) * cfloat[4];
+		(float)(wallBot[j] - wallTop[j]) * ty_tsz;
 	/*ty = (float)((int)zu % (int)(1000.0f / cfloat[4]) +
 		(int)(1000.0f / cfloat[4])) - zu;
 	ty = ty * (float)cint[1] / (1000.0f / cfloat[4]);
