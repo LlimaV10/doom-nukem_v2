@@ -399,11 +399,11 @@ typedef struct	s_enemy
 	// 4.. other custom modes
 	int		status;
 	// time of previous loop update
-	clock_t	prev_update_time;
+	long long int	prev_update_time;
 	int		start_x;
 	int		start_y;
 	t_enemy_sees_player	vis_esp;
-	clock_t	previous_picture_change;
+	long long int	previous_picture_change;
 }				t_enemy;
 
 typedef struct	s_sprite
@@ -414,7 +414,7 @@ typedef struct	s_sprite
 	cl_mem		*t_kernel;
 	int		y;
 	int		z;
-	clock_t	fall_time;
+	long long int	fall_time;
 	int		x_s;
 	float	plen;
 	float	pplen;
@@ -451,7 +451,7 @@ typedef struct	s_sector_animation
 	// Change value for a some clocks
 	int		speed;
 	// Previous change time
-	clock_t	prev_clock;
+	long long int	prev_clock;
 	// Sector to be animated
 	int		sector;
 	// 0 - not animated, 1 - animated
@@ -487,7 +487,7 @@ typedef struct	s_wall_animation
 	// 0 - not animated, 1 - animated
 	int		status;
 	// Previous change time
-	clock_t	prev_clock;
+	long long int	prev_clock;
 	// Count wall to be animated
 	int		count_walls;
 	// ->next Walls to be animated
