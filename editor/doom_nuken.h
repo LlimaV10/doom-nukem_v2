@@ -13,6 +13,8 @@
 #ifndef _DOOM_NUKEN_H
 # define _DOOM_NUKEN_H
 
+# define _CRT_SECURE_NO_WARNINGS
+
 # include <stdlib.h>
 # include <math.h>
 # include <time.h>

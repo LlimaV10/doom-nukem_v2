@@ -44,8 +44,8 @@ void	set_pixel(SDL_Surface *bmp, int x, int y, Uint32 pixel)
 	target_pixel = NULL;
 	if (x < WIDTH && x >= 0 && y < HEIGHT && y >= 0)
 	{
-		target_pixel = bmp->pixels + y * bmp->pitch + x
-			* sizeof(*target_pixel);
+		target_pixel = (char *)bmp->pixels + y * bmp->pitch + x
+			* sizeof(int);
 		*target_pixel = pixel;
 	}
 }
