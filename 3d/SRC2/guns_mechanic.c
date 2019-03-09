@@ -14,7 +14,8 @@
 
 void	damaging_enemy(t_sdl *iw, int damage, int max_distance)
 {
-	if (iw->v.look_portal != 0 && iw->v.look_portal->glass != -1
+	if (iw->v.look_portal != 0 && (iw->v.look_portal->glass == 16
+		|| iw->v.look_portal->glass == 17)
 		&& iw->guns.gun_in_hands != 0)
 		iw->v.look_portal->glass = -1;
 	if (iw->v.look_sprite == 0 || iw->v.look_sprite->type != 2

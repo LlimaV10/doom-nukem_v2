@@ -310,5 +310,6 @@ void	draw_inclined_wall_floor_ceil_tex_kernel1(t_sdl *iw, t_save_wall *left,
 void	get_kernels2(t_sdl *iw);
 void	get_kernels3(t_sdl *iw);
 void	get_kernels4(t_sdl *iw);
+void	check_enemies_in_sector(t_sdl *iw, t_sprite *e);
 
 #endif

@@ -97,6 +97,7 @@ void	enemy_intelligence2(t_sdl *iw, t_sprite *s, int i)
 		if ((s->e.health < ENEMY_HEALTH2) ||
 			((i = enemy_sees_player(iw, s)) != -1 && i <= 2000))
 		{
+			check_enemies_in_sector(iw, s);
 			s->e.status = 0;
 			s->t_numb = 20;
 		}

@@ -61,6 +61,22 @@ void	mouse_buttonright_up(t_sdl *iw)
 	else if (iw->v.mouse_mode == 1 &&
 			*(iw->v.look_picture) != 0 && *(iw->v.look_wall) != 0)
 		delete_picture(*(iw->v.look_wall), *(iw->v.look_picture), iw);
+	else if (iw->v.look_sprite != 0 &&
+		iw->v.look_sprite->type == 2 && iw->v.sprite_editing)
+	{
+		if (iw->v.look_sprite->e.status == 0)
+		{
+			iw->v.look_sprite->e.status = 1;
+			iw->v.look_sprite->t_numb++;
+		}
+		else
+		{
+			iw->v.look_sprite->e.status = 0;
+			iw->v.look_sprite->t_numb--;
+		}
+		iw->v.look_sprite->t = iw->t_enemies[iw->v.look_sprite->t_numb];
+		iw->v.look_sprite->t_kernel = &iw->k.m_t_enemies[iw->v.look_sprite->t_numb];
+	}
 }
 
 void	mouse_wheel1(SDL_Event *e, t_sdl *iw)

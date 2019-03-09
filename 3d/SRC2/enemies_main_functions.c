@@ -12,6 +12,19 @@
 
 #include "../guardians.h"
 
+void	check_enemies_in_sector(t_sdl *iw, t_sprite *e)
+{
+	t_sprite	*tmp;
+
+	tmp = *iw->sprite;
+	while (tmp)
+	{
+		if (tmp->num_sec == e->num_sec && tmp->e.status == 1)
+			tmp->e.status = 0;
+		tmp = tmp->next;
+	}
+}
+
 int		move_enemy(t_sdl *iw, t_sprite *s)
 {
 	t_point2d		vect_norm;
