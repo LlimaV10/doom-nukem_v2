@@ -39,8 +39,7 @@ void	set_sprites_z(t_sdl *iw)
 	while (s)
 	{
 		get_sprite_texture(iw, s);
-		if (s->type != 2 || s->e.enemy_numb != 0)
-			s->z = get_floor_z_sec(iw, s->x, s->y, s->num_sec);
+		s->z = get_floor_z_sec(iw, s->x, s->y, s->num_sec);
 		s = s->next;
 	}
 }
