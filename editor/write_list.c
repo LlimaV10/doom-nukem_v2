@@ -79,29 +79,31 @@ void	write_list_help(t_doom *den, t_wals *tmp, t_wals *rmp, t_wals *nmp)
 
 void	write_list(t_doom *den, t_wals *tmp)
 {
-	t_wals *rmp;
-	t_wals *nmp;
+	t_wals	*rmp;
+	t_wals	*nmp;
+	int		nw;
 
 	nmp = NULL;
 	SDL_FillRect(den->bmp, NULL, 0x000000);
 	rmp = tmp;
 	if (den->retskape != den->skape)
 		findstart(den);
-	if (tmp)
-	{
-		if (tmp != den->find_tmp)
+	if (!tmp)
+		return ;
+	nw = 0;
+	if (tmp != den->find_tmp)
+		while (tmp->next && tmp->next != den->find_tmp)
 		{
-			while (tmp->next && tmp->next != den->find_tmp)
-				tmp = tmp->next;
+			nw++;
+			tmp = tmp->next;
 		}
-		rmp = tmp->next;
-		if (tmp->next->next && tmp->next->next->sec == tmp->next->sec)
-		{
-			write_list_help(den, tmp, rmp, nmp);
-			free(rmp);
-			den->walls -= 1;
-		}
-	}
+	rmp = tmp->next;
+	if (!(tmp->next->next && tmp->next->next->sec == tmp->next->sec))
+		return ;
+	check_deleting_wall_animations(den, nw);
+	write_list_help(den, tmp, rmp, nmp);
+	free(rmp);
+	den->walls -= 1;
 }
 
 void	move_sector(t_doom *den, int y, int x)

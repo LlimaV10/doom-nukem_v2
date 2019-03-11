@@ -47,12 +47,12 @@ int		check_new(t_doom *den, char *fname)
 		close(den->fd);
 		return (0);
 	}
-	/*den->fd = open(fname, O_DIRECTORY);
+	den->fd = open(fname, O_DIRECTORY);
 	if (den->fd >= 0)
 	{
 		close(den->fd);
 		return (0);
-	}*/
+	}
 	den->fd = open(fname, O_WRONLY | O_CREAT | S_IRUSR | S_IWUSR);
 	if (den->fd < 0)
 		return (0);
@@ -63,12 +63,12 @@ int		check_new(t_doom *den, char *fname)
 
 int		check_load(t_doom *den, char *fname)
 {
-	//den->fd = open(fname, O_DIRECTORY);
-	//if (den->fd >= 0)
-	//{
-	//	close(den->fd);
-	//	return (0);
-	//}
+	den->fd = open(fname, O_DIRECTORY);
+	if (den->fd >= 0)
+	{
+		close(den->fd);
+		return (0);
+	}
 	den->fd = open(fname, O_RDWR);
 	if (den->fd < 0)
 		return (0);

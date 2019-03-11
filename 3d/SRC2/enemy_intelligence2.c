@@ -110,10 +110,9 @@ void	enemy_intelligence2(t_sdl *iw, t_sprite *s, int i)
 	else if (s->e.status == 4 && clock()
 		- s->e.previous_picture_change > CLKS_P_S / 7)
 		enemy_intelligence2_s4(iw, s);
-	if (s->e.health <= 0 && s->e.status < 4)
-	{
-		Mix_PlayChannel(7, iw->sounds.env[19], 0);
-		s->e.status = 4;
-	}
 	sprite_physics(iw, s);
+	if (!(s->e.health <= 0 && s->e.status < 4))
+		return ;
+	Mix_PlayChannel(7, iw->sounds.env[19], 0);
+	s->e.status = 4;
 }

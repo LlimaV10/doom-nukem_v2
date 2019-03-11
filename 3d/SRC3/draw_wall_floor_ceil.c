@@ -73,6 +73,14 @@ void	draw_wall_floor_ceil_tex4(t_sdl *iw, t_save_wall *left,
 void	draw_wall_floor_ceil_tex5_1(t_sdl *iw, t_save_wall *left,
 	t_draw_wall_floor_ceil_tex *d)
 {
+	while (++d->i < iw->d.bottom[left->x + d->j])
+	{
+		set_pixel2(iw->sur, left->x + d->j, d->i,
+	get_light_color(get_pixel(iw->t[left->wall->t], (int)d->tx
+	% iw->t[left->wall->t]->w, (int)d->ty % iw->t[left->wall->t]->h),
+	iw->sectors[iw->d.cs].light));
+		d->ty += d->dty;
+	}
 	if (iw->d.wallTop[d->j] < iw->d.top[d->j + left->x] &&
 		iw->d.top[left->x + d->j] < iw->d.bottom[left->x + d->j])
 		iw->d.bottom[left->x + d->j] = iw->d.top[left->x + d->j] - 1;
@@ -101,14 +109,6 @@ void	draw_wall_floor_ceil_tex5(t_sdl *iw, t_save_wall *left,
 		d->i = iw->d.top[left->x + d->j] - 1;
 	else
 		d->i = iw->d.wallTop[d->j] - 1;
-	while (++d->i < iw->d.bottom[left->x + d->j])
-	{
-		set_pixel2(iw->sur, left->x + d->j, d->i,
-	get_light_color(get_pixel(iw->t[left->wall->t], (int)d->tx
-	% iw->t[left->wall->t]->w, (int)d->ty % iw->t[left->wall->t]->h),
-	iw->sectors[iw->d.cs].light));
-		d->ty += d->dty;
-	}
 	draw_wall_floor_ceil_tex5_1(iw, left, d);
 }
 

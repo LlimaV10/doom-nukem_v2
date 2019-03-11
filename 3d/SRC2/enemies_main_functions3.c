@@ -24,17 +24,6 @@ int		enemy_sees_player3(t_sdl *iw, t_sprite *s, t_enemy_sees_player *esp)
 		+ powf(esp->py - esp->ey, 2.0f)));
 }
 
-int		esp_check_return(t_sdl *iw, t_sprite *s, int ret)
-{
-	if (ret < 0)
-		return (-1);
-	if (abs(iw->p.z - s->z) < ENEMY_SEES_PLAYER_MAX_Z_DIFF ||
-		(s->draweble && s->x_s >= 0 && s->x_s < WINDOW_W &&
-			s->sy > s->top[s->x_s] && s->sy < s->bottom[s->x_s]))
-		return (ret);
-	return (-1);
-}
-
 int		enemy_sees_player(t_sdl *iw, t_sprite *s)
 {
 	t_enemy_sees_player	esp;

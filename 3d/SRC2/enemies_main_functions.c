@@ -91,3 +91,14 @@ void	check_enemies(t_sdl *iw)
 		tmp = tmp->next;
 	}
 }
+
+int		esp_check_return(t_sdl *iw, t_sprite *s, int ret)
+{
+	if (ret < 0)
+		return (-1);
+	if (abs(iw->p.z - s->z) < ENEMY_SEES_PLAYER_MAX_Z_DIFF ||
+		(s->draweble && s->x_s >= 0 && s->x_s < WINDOW_W &&
+			s->sy > s->top[s->x_s] && s->sy < s->bottom[s->x_s]))
+		return (ret);
+	return (-1);
+}

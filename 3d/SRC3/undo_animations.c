@@ -28,7 +28,6 @@ void	undo_wall_animation2(t_sdl *iw, t_picture *pic)
 			tmp2->status = 0;
 			tmp2->curr_dx = 0;
 			tmp2->curr_dy = 0;
-			tmp->next = tmp->next->next;
 			return ;
 		}
 		tmp = tmp->next;
@@ -51,7 +50,6 @@ void	undo_wall_animation(t_sdl *iw, t_picture *pic)
 		tmp2->status = 0;
 		tmp2->curr_dx = 0;
 		tmp2->curr_dy = 0;
-		iw->wall_animations = iw->wall_animations->next;
 	}
 	else
 		undo_wall_animation2(iw, pic);

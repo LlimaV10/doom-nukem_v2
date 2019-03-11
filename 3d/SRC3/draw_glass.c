@@ -118,8 +118,8 @@ void	draw_glass_tex(t_sdl *iw, t_save_wall *left,
 		d.tx = (left->olen + d.left_len) * (float)iw->t[left->wall->glass]->w
 			* iw->tsz[left->wall->glass] / 1000.0f;
 		d.zu = (float)d.nleft_zu + d.left_len * d.zudiff;
-		d.ty_tsz = iw->tsz[left->wall->glass] * (float)iw->t[left->wall->glass]->w
-			/ (float)iw->t[left->wall->glass]->h;
+		d.ty_tsz = iw->tsz[left->wall->glass] * (float)iw->t[left->
+			wall->glass]->w / (float)iw->t[left->wall->glass]->h;
 		draw_glass_tex3(iw, left, &d);
 	}
 }

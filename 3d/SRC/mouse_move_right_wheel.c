@@ -61,7 +61,8 @@ void	mouse_buttonright_up(t_sdl *iw)
 		iw->v.look_sprite->e.status = 1;
 		iw->v.look_sprite->t_numb++;
 		iw->v.look_sprite->t = iw->t_enemies[iw->v.look_sprite->t_numb];
-		iw->v.look_sprite->t_kernel = &iw->k.m_t_enemies[iw->v.look_sprite->t_numb];
+		iw->v.look_sprite->t_kernel =
+			&iw->k.m_t_enemies[iw->v.look_sprite->t_numb];
 	}
 	else if (iw->v.mouse_mode == 1 && iw->v.look_portal != 0)
 		iw->v.look_portal->glass = iw->v.tex_to_fill;

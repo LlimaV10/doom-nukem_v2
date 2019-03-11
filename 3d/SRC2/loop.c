@@ -42,12 +42,6 @@ void	loop3(t_sdl *iw, clock_t t, float jsz)
 
 void	loop4(t_sdl *iw)
 {
-	if (iw->v.fall == 1 && iw->v.jump_time == 1
-		&& (iw->p.z - iw->v.plrzd) > PLAYER_HEIGHT && !iw->v.fly_mode)
-	{
-		iw->v.fall = clock();
-		iw->v.fall_z = iw->p.z;
-	}
 	if (iw->v.fly_up != 1)
 	{
 		iw->p.z += (int)(FLY_SPEED * USELESS1 / (float)CLKS_P_S);
@@ -104,6 +98,12 @@ void	loop5(t_sdl *iw)
 		if (iw->v.left != 1)
 			move(iw, 270, &iw->v.left);
 		loop3(iw, 0, 0.0f);
+		if (iw->v.fall == 1 && iw->v.jump_time == 1
+			&& (iw->p.z - iw->v.plrzd) > PLAYER_HEIGHT && !iw->v.fly_mode)
+		{
+			iw->v.fall = clock();
+			iw->v.fall_z = iw->p.z;
+		}
 		loop4(iw);
 	}
 	else

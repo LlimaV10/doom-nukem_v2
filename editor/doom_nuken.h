@@ -424,4 +424,6 @@ int     connect_map_sectors(t_doom *den);
 
 void	save_map_file(t_doom *den);
 
+void	delete_sector2(t_doom *den, int sec, int nw);
+void	check_deleting_wall_animations(t_doom *den, int nw);
 #endif

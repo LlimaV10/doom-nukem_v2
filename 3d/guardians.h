@@ -311,5 +311,5 @@ void	get_kernels2(t_sdl *iw);
 void	get_kernels3(t_sdl *iw);
 void	get_kernels4(t_sdl *iw);
 void	check_enemies_in_sector(t_sdl *iw, t_sprite *e);
-
+int		esp_check_return(t_sdl *iw, t_sprite *s, int ret);
 #endif

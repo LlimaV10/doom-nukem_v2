@@ -163,7 +163,9 @@ SRC =	3d/SRC/minimap.c \
 		editor/new_game.c \
 		editor/chech_new_load.c \
 		editor/game_mode.c \
-		editor/move_scan.c
+		editor/move_scan.c \
+		editor/delete2.c \
+		editor/write_list2.c
 
 OBJ = $(SRC:.c=.o)
 

@@ -88,10 +88,12 @@ void	delete_sector(t_doom *den)
 {
 	t_wals	*first;
 	int		sec;
+	int		nw;
 
 	den->i = 0;
 	sec = den->find_tmp->sec;
 	first = den->tmp;
+	nw = 0;
 	while (den->tmp)
 	{
 		if (den->tmp->sec == sec)
@@ -105,10 +107,8 @@ void	delete_sector(t_doom *den)
 			den->tmp = first;
 			break ;
 		}
+		nw++;
 		den->tmp = den->tmp->next;
 	}
-	den->walls = den->walls - den->i;
-	den->sec -= 1;
-	den->secbak -= 1;
-	den->incede = 0;
+	delete_sector2(den, sec, nw);
 }
