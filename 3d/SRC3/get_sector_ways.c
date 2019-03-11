@@ -17,6 +17,7 @@ void			add_portal_in_way2(t_sector_ways *tmp, int portal)
 	t_sector_way	*nw;
 	t_sector_way	*w;
 
+	tmp->way_len++;
 	nw = (t_sector_way *)malloc(sizeof(t_sector_way));
 	nw->portal = portal;
 	nw->next = 0;
@@ -38,8 +39,10 @@ t_sector_ways	*add_portal_in_way(t_sector_ways *current_way, int portal)
 
 	tmp = (t_sector_ways *)malloc(sizeof(t_sector_ways));
 	tmp->way_start = 0;
+	tmp->way_len = 0;
 	if (current_way == 0)
 	{
+		tmp->way_len = 1;
 		tmp->way_start = (t_sector_way *)malloc(sizeof(t_sector_way));
 		tmp->way_start->next = 0;
 		tmp->way_start->portal = portal;
@@ -68,17 +71,18 @@ void			go_in_sector_way(t_sdl *iw, t_get_sectors_ways *g,
 		return ;
 	}
 	wall = iw->sectors[g->current].sw - 1;
-	while (++wall < iw->sectors[g->current].sw + iw->sectors[g->current].nw)
-	{
-		if (iw->walls[wall].nextsector == -1 ||
-			sector_in_way(iw, current_way, iw->walls[wall].nextsector) ||
-			iw->walls[wall].nextsector == g->from)
-			continue;
-		save = g->current;
-		g->current = iw->walls[wall].nextsector;
-		go_in_sector_way(iw, g, add_portal_in_way(current_way, wall));
-		g->current = save;
-	}
+	if (current_way == 0 || current_way->way_len < MAX_PORTALS_IN_SECTOR_WAY)
+		while (++wall < iw->sectors[g->current].sw + iw->sectors[g->current].nw)
+		{
+			if (iw->walls[wall].nextsector == -1 ||
+				sector_in_way(iw, current_way, iw->walls[wall].nextsector) ||
+				iw->walls[wall].nextsector == g->from)
+				continue;
+			save = g->current;
+			g->current = iw->walls[wall].nextsector;
+			go_in_sector_way(iw, g, add_portal_in_way(current_way, wall));
+			g->current = save;
+		}
 	free_way(&current_way);
 }
 

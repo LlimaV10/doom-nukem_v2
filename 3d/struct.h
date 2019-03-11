@@ -764,6 +764,7 @@ typedef struct	s_sector_way
 typedef struct	s_sector_ways
 {
 	t_sector_way			*way_start;
+	int						way_len;
 	struct s_sector_ways	*next;
 }				t_sector_ways;
 
