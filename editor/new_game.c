@@ -72,3 +72,24 @@ int		get_3d_def_new(t_doom *den)
 	get_guns(&den->iw);
 	return (ret);
 }
+
+void	save_map_info(t_doom *den)
+{
+	char		*cmp;
+	SDL_Color	color_text;
+
+	clean_string(den);
+	color_text.g = 255;
+	color_text.r = 0;
+	color_text.b = 0;
+	cmp = "map SAVED\n";
+	den->TTF_TextSolid = TTF_RenderText_Blended_Wrapped(den->font, cmp,
+		color_text, 200);
+	den->rect.x = 1770;
+	den->rect.y = 380;
+	den->rect.h = 50;
+	den->rect.w = 30;
+	SDL_BlitSurface(den->TTF_TextSolid, NULL, den->bmp, &den->rect);
+	SDL_FreeSurface(den->TTF_TextSolid);
+	SDL_UpdateWindowSurface(den->window);
+}

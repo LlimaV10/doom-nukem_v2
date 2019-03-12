@@ -14,13 +14,13 @@
 
 void	sound_loop(t_sdl *iw)
 {
-	// if (!Mix_PlayingMusic())
-	// {
-	// 	Mix_PlayMusic(iw->sounds.music[iw->v.next_music], 0);
-	// 	iw->v.next_music++;
-	// 	if (iw->v.next_music >= MUSIC_COUNT)
-	// 		iw->v.next_music = 0;
-	// }
+	if (!Mix_PlayingMusic())
+	{
+		Mix_PlayMusic(iw->sounds.music[iw->v.next_music], 0);
+		iw->v.next_music++;
+		if (iw->v.next_music >= MUSIC_COUNT)
+			iw->v.next_music = 0;
+	}
 }
 
 void	environment_loop(t_sdl *iw)

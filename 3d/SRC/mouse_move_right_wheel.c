@@ -64,11 +64,11 @@ void	mouse_buttonright_up(t_sdl *iw)
 		iw->v.look_sprite->t_kernel =
 			&iw->k.m_t_enemies[iw->v.look_sprite->t_numb];
 	}
-	else if (iw->v.mouse_mode == 1 && iw->v.look_portal != 0)
-		iw->v.look_portal->glass = iw->v.tex_to_fill;
-	else if (iw->v.mouse_mode == 1 &&
+	else if (iw->v.mouse_mode == 1 && iw->v.picture_changing == 0 &&
 			*(iw->v.look_picture) != 0 && *(iw->v.look_wall) != 0)
 		delete_picture(*(iw->v.look_wall), *(iw->v.look_picture), iw);
+	else if (iw->v.mouse_mode == 1 && iw->v.look_portal != 0)
+		iw->v.look_portal->glass = iw->v.tex_to_fill;
 }
 
 void	mouse_wheel1(SDL_Event *e, t_sdl *iw)

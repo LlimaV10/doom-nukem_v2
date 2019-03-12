@@ -109,6 +109,7 @@ void	movie_button_two(t_doom *den, t_col *vec)
 	else if (den->button_change == 6)
 	{
 		save_map_file(den);
+		save_map_info(den);
 		den->button_change = 0;
 	}
 }

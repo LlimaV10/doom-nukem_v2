@@ -44,7 +44,7 @@ void	main3d_game_help(t_doom *den)
 	set_sprites_z(&den->iw);
 	get_sectors_ways(&den->iw);
 	create_map(&den->iw);
-	Mix_PlayMusic(den->iw.sounds.music[5], -1);
+	Mix_PlayMusic(den->iw.sounds.music[4], -1);
 	image_loop(&den->iw, den->iw.t[den->iw.l.story]);
 	menu_loop(&den->iw);
 	Mix_HaltMusic();

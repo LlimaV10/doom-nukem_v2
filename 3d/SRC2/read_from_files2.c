@@ -76,6 +76,10 @@ void	read_textures2_1(t_sdl *iw)
 	iw->tsz[43] = 1.0f;
 	iw->t_sur[44] = SDL_LoadBMP("textures/44.bmp");
 	iw->tsz[44] = 1.0f;
+	iw->t_sur[45] = SDL_LoadBMP("textures/45.bmp");
+	iw->tsz[45] = 2.0f;
+	iw->t_sur[46] = SDL_LoadBMP("textures/46.bmp");
+	iw->tsz[46] = 2.0f;
 }
 
 void	read_textures2(t_sdl *iw)
@@ -170,6 +174,12 @@ void	read_sprites_textures(t_sdl *iw)
 {
 	iw->t_decor_sur[0] = SDL_LoadBMP("sprites/decorations/0.bmp");
 	iw->t_decor_sur[1] = SDL_LoadBMP("sprites/decorations/1.bmp");
+	iw->t_decor_sur[2] = SDL_LoadBMP("sprites/decorations/2.bmp");
+	iw->t_decor_sur[3] = SDL_LoadBMP("sprites/decorations/3.bmp");
+	iw->t_decor_sur[4] = SDL_LoadBMP("sprites/decorations/4.bmp");
+	iw->t_decor_sur[5] = SDL_LoadBMP("sprites/decorations/5.bmp");
+	iw->t_decor_sur[6] = SDL_LoadBMP("sprites/decorations/6.bmp");
+	iw->t_decor_sur[7] = SDL_LoadBMP("sprites/decorations/7.bmp");
 	iw->t_enemies_sur[0] = SDL_LoadBMP("sprites/enemies/0.bmp");
 	iw->t_enemies_sur[1] = SDL_LoadBMP("sprites/enemies/1.bmp");
 	iw->t_enemies_sur[2] = SDL_LoadBMP("sprites/enemies/2.bmp");

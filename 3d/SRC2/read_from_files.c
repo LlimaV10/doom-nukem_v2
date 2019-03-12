@@ -103,6 +103,5 @@ void	get_sounds(t_sdl *iw)
 	get_music(iw, 2, "sound/background/2.mp3");
 	get_music(iw, 3, "sound/background/3.mp3");
 	get_music(iw, 4, "sound/background/4.mp3");
-	get_music(iw, 5, "sound/background/5.mp3");
 	get_sounds2(iw);
 }
