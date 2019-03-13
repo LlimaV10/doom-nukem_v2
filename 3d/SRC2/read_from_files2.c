@@ -80,6 +80,8 @@ void	read_textures2_1(t_sdl *iw)
 	iw->tsz[45] = 2.0f;
 	iw->t_sur[46] = SDL_LoadBMP("textures/46.bmp");
 	iw->tsz[46] = 2.0f;
+	iw->t_sur[47] = SDL_LoadBMP("textures/47.bmp");
+	iw->tsz[47] = 1.0f;
 }
 
 void	read_textures2(t_sdl *iw)
