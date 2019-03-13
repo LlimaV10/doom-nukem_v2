@@ -55,7 +55,7 @@ void	loop4(t_sdl *iw)
 	}
 	if (iw->sectors[iw->d.cs].cl.t >= 0 && iw->p.z +
 		PLAYER_HEAD_SIZE - iw->v.crouch > iw->v.plrzu && iw->v.fly_mode != 2)
-		iw->p.z = iw->v.plrzu - PLAYER_HEAD_SIZE + iw->v.crouch;
+		iw->v.fall_z = (iw->p.z = iw->v.plrzu - PLAYER_HEAD_SIZE + iw->v.crouch);
 	else if (iw->p.z - iw->v.plrzd < PLAYER_HEIGHT && iw->v.fly_mode != 2)
 	{
 		iw->p.z = iw->v.plrzd + PLAYER_HEIGHT;

@@ -63,7 +63,9 @@ int		move_enemy_in_portal2_1(t_sdl *iw, t_sprite *s,
 	if (get_ceil_z_sec(iw, nx, ny, iw->walls[wall].nextsector) -
 		get_floor_z_sec(iw, nx, ny, iw->walls[wall].nextsector) < SPRITE_HEIGHT
 		|| get_floor_z_sec(iw, nx, ny, iw->walls[wall].nextsector) -
-			s->z > ENEMY_MAX_CLIMB_HEIGHT)
+			s->z > ENEMY_MAX_CLIMB_HEIGHT ||
+			get_floor_z_sec(iw, nx, ny, iw->walls[wall].nextsector) <
+			s->z + SPRITE_HEIGHT)
 		return (0);
 	s->x = nx;
 	s->y = ny;

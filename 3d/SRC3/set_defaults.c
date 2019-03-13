@@ -14,7 +14,7 @@
 
 void	get_birth_def2(t_sdl *iw)
 {
-	iw->v.fall = 1;
+	iw->v.fall = clock();
 	iw->v.jump_time = 1;
 	iw->v.jump = 0;
 	iw->v.fly_mode = 0;
