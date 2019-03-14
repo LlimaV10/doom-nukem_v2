@@ -26,7 +26,7 @@ void	mouse_button_down_sdl(t_doom *den, t_col *vec, SDL_Event e)
 	else if (e.button.button == SDL_BUTTON_LEFT && den->select == 1
 		&& e.button.x <= den->border)
 		blouk_write(den);
-	if (e.button.button == SDL_BUTTON_RIGHT && den->select == 1)
+	if (e.button.button == SDL_BUTTON_RIGHT && den->select == 1 && den->blouk == 1)
 		mouse_button_down_select(den, vec, e);
 }
 
