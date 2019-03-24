@@ -26,8 +26,8 @@ Press:
  - Right mouse button on the portal to put selected texture as glass
  - '/' to put selected texture on floor
  - '.' to put selected texture on ceil
- - ',' to remove ceil with skybox
- - M to remove wall with skybox
+ - ',' to replace ceil with skybox
+ - M to replace wall with skybox
  - P to place selected texture as picture on wall
  - V to change fly_mode (0 - no flymode, 1 - jetpack, 2 - noclip)
  - Numpad '+' and '-' to change lunar gravity on map
