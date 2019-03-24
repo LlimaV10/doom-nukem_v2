@@ -84,3 +84,5 @@ Use:
  - 1, 2, 3 to change weapons in hands
 
 Visit https://github.com/LlimaV10/doom-nukem_binaries to play our game levels on any PC OS.
+
+# Doom-nukem Wiki describing the main formulas and mathematical functions will be around April. Please Star this repository if you want it to give me more motivation to do it.
