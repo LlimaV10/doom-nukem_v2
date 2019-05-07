@@ -86,3 +86,5 @@ Use:
 Visit https://github.com/LlimaV10/doom-nukem_binaries to play our game levels on any PC OS.
 
 # Doom-nukem Wiki describing the main formulas and mathematical functions will be around April(May). Please Star this repository if you want it. To give me more motivation to do it.
+https://github.com/LlimaV10/doom-nukem_v2/wiki
+***
