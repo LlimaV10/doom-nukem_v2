@@ -89,6 +89,6 @@ Visit [doom-nukem_binaries](https://github.com/LlimaV10/doom-nukem_binaries) to 
 
 ***
 
-## Doom-nukem [Wiki](https://github.com/LlimaV10/doom-nukem_v2/wiki) describing the main formulas and mathematical functions will be around April(May). Please Star this repository if you want it. To give me more motivation to do it.
+## Doom-nukem [Wiki](https://github.com/LlimaV10/doom-nukem_v2/wiki) describing the main formulas and mathematical functions will be around (April(May))(June). Please Star this repository if you want it. To give me more motivation to do it.
 
 ***
