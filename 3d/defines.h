@@ -55,7 +55,7 @@
 # define WRITE_MAP O_WRONLY | O_TRUNC
 # define READ_MAP O_RDONLY
 # define MAX_FPS 250
-# define CLKS_P_S (CLOCKS_PER_SEC * 2)
+# define CLKS_P_S (CLOCKS_PER_SEC / 2)
 #elif __linux__
 # define WRITE_MAP O_WRONLY | O_TRUNC
 # define READ_MAP O_RDONLY

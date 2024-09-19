@@ -169,15 +169,11 @@ SRC =	3d/SRC/minimap.c \
 
 OBJ = $(SRC:.c=.o)
 
-INC =	-I./frameworks/SDL2.framework/Headers\
-		-I./frameworks/SDL2_ttf.framework/Headers\
-		-I./frameworks/SDL2_mixer.framework/Versions/A/Headers
+INC = -F/Library/Frameworks
 
 ERRFL = -Wall -Wextra -g # -Werror
 
-FL = -F./frameworks \
-	-rpath ./frameworks \
-	-framework SDL2 -framework SDL2_ttf -framework SDL2_mixer -framework OpenCL
+FL = -framework SDL2 -framework SDL2_ttf -framework SDL2_mixer -framework OpenCL
 
 all: $(NAME)
 
@@ -189,7 +185,7 @@ $(NAME): $(OBJ)
 	@echo "\033[93mCompiling libft\033[0m"
 	@make -C ./libft
 	@echo "\033[93mCompiling $(NAME)\033[0m"
-	@gcc $(ERRFL) $(FL) -o $@ $(OBJ) -L libft/ ./libft/libft.a 
+	@gcc $(ERRFL) -o $@ $(OBJ) -L libft/ ./libft/libft.a $(INC) $(FL)
 	@echo "\033[92mDONE\033[0m"
 	
 
